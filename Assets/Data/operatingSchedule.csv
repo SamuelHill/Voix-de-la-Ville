@@ -1,0 +1,44 @@
+﻿LocationType,OpenSunday,OpenMonday,OpenTuesday,OpenWednesday,OpenThursday,OpenFriday,OpenSaturday
+House           ,true,true,true,true,true,true,true
+ApartmentComplex,true,true,true,true,true,true,true
+Inn             ,true,true,true,true,true,true,true
+Bank            ,true,true,true,true,true,true,true
+CityHall        ,true,true,true,true,true,true,true
+CommunityCenter ,true,true,true,true,true,true,true
+PostOffice      ,true,true,true,true,true,true,true
+FireStation     ,true,true,true,true,true,true,true
+PoliceStation   ,true,true,true,true,true,true,true
+Park            ,true,true,true,true,true,true,true
+DayCare         ,true,true,true,true,true,true,true
+School          ,true,true,true,true,true,true,true
+CarpentryCompany,true,true,true,true,true,true,true
+FurnitureStore  ,true,true,true,true,true,true,true
+GeneralStore    ,true,true,true,true,true,true,true
+HardwareStore   ,true,true,true,true,true,true,true
+Bar             ,true,true,true,true,true,true,true
+Diner           ,true,true,true,true,true,true,true
+Restaurant      ,true,true,true,true,true,true,true
+Bakery          ,true,true,true,true,true,true,true
+Brewery         ,true,true,true,true,true,true,true
+ButcherShop     ,true,true,true,true,true,true,true
+CandyShop       ,true,true,true,true,true,true,true
+Dairy           ,true,true,true,true,true,true,true
+Distillery      ,true,true,true,true,true,true,true
+GroceryStore    ,true,true,true,true,true,true,true
+DoctorOffice    ,true,true,true,true,true,true,true
+DentistOffice   ,true,true,true,true,true,true,true
+OptometryClinic ,true,true,true,true,true,true,true
+Hospital        ,true,true,true,true,true,true,true
+Pharmacy        ,true,true,true,true,true,true,true
+Farm            ,true,true,true,true,true,true,true
+Foundry         ,true,true,true,true,true,true,true
+LumberMill      ,true,true,true,true,true,true,true
+Orchard         ,true,true,true,true,true,true,true
+Quarry          ,true,true,true,true,true,true,true
+Barbershop      ,true,true,true,true,true,true,true
+ClothingStore   ,true,true,true,true,true,true,true
+DepartmentStore ,true,true,true,true,true,true,true
+JewelryShop     ,true,true,true,true,true,true,true
+ShoemakerShop   ,true,true,true,true,true,true,true
+TailorShop      ,true,true,true,true,true,true,true
+TattooParlor    ,true,true,true,true,true,true,true
