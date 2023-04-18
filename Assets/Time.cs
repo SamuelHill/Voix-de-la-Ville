@@ -115,9 +115,9 @@ public readonly struct Date {
         Month = month;
         Day = day; }
 
-    public static Date Random() =>
-        new(Enum.GetValues(typeof(Month)).Cast<Month>().ToList().RandomElement(),
-            Byte(1, 28));
+    internal static Month RandomMonth() =>
+        Enum.GetValues(typeof(Month)).Cast<Month>().ToList().RandomElement();
+    public static Date Random() => new(RandomMonth(), Byte(1, 28));
 
     public bool Equals(Month month, byte date) => month == Month && date == Day;
     public bool Equals(Date other) => Month == other.Month && Day == other.Day;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -23,48 +24,53 @@ public class Sims {
 
 public enum Sex { Male, Female, Other }
 
+public enum Sexualities { Asexual, FemalePreference, MalePreference, Bisexual }
+
 public struct Sexuality {
     public bool MaleAttraction;
     public bool FemaleAttraction;
-    
+
     private const float HomosexualityIncidence = 0.1F;
     private const float BisexualityIncidence = 0.15F;
     private const float AsexualIncidence = 0.05F;
-    private const float QueerIncidence = HomosexualityIncidence + BisexualityIncidence + AsexualIncidence;
 
     public Sexuality(bool men, bool women) {
         MaleAttraction = men;
         FemaleAttraction = women; }
-    
-    public static Sexuality Asexual() => new(false, false);
-    public static Sexuality Bisexual() => new(true, true);
-    public static Sexuality Homosexual(Sex sex) => sex == Sex.Male ? new Sexuality(true, false) : new Sexuality(false, true);
-    public static Sexuality Heterosexual(Sex sex) => sex == Sex.Female ? new Sexuality(true, false) : new Sexuality(false, true);
-    public static Sexuality Random(Sex sex) {
-        var sexualityNum = Probability();
-        return sexualityNum switch {
-            >= QueerIncidence => Heterosexual(sex),
-            >= QueerIncidence - HomosexualityIncidence => Homosexual(sex),
-            _ => sexualityNum >= AsexualIncidence ? Bisexual() : Asexual()
-        };
-    }
 
-    public bool Attracted(Sex potentialPartner) =>
+    public static Sexuality Asexual() => new(false, false);
+    public static Sexuality FemalePreference() => new(false, true);
+    public static Sexuality MalePreference() => new(true, false);
+    public static Sexuality Bisexual() => new(true, true);
+
+    public static Dictionary<Sexualities, Func<Sexuality>> GetSexuality = new() {
+        {Sexualities.Asexual, Asexual},
+        {Sexualities.FemalePreference, FemalePreference},
+        {Sexualities.MalePreference, MalePreference},
+        {Sexualities.Bisexual, Bisexual} };
+    public Sexualities GetSexualities() => MaleAttraction && FemaleAttraction ? Sexualities.Bisexual :
+        MaleAttraction ? Sexualities.MalePreference : FemaleAttraction ? Sexualities.FemalePreference : Sexualities.Asexual;
+
+    public static Sexuality Homosexual(Sex sex) => sex == Sex.Male ? MalePreference() : FemalePreference();
+    public static Sexuality Heterosexual(Sex sex) => sex == Sex.Female ? MalePreference() : FemalePreference();
+    public static Sexuality Random(Sex sex) => Probability() switch {
+        >= HomosexualityIncidence + BisexualityIncidence + AsexualIncidence => Heterosexual(sex),
+        >= BisexualityIncidence + AsexualIncidence => Homosexual(sex),
+        >= AsexualIncidence => Bisexual(),
+        _ => Asexual() };
+
+    public bool IsAttracted(Sex potentialPartner) =>
         (potentialPartner == Sex.Male && MaleAttraction) ||
         (potentialPartner == Sex.Female && FemaleAttraction);
 
-    public override string ToString() =>
-        MaleAttraction && FemaleAttraction ? "Bisexual" :
-        FemaleAttraction ? "Attracted to women" :
-        MaleAttraction ? "Attracted to men" : "Asexual";
-
-    // 4 sexualities (2 booleans); 0 == ace, 1 == female, 2 == male, 3 == both
+    public override string ToString() => GetSexualities().ToString();
     public static Sexuality FromString(string sexualityString) {
-        byte.TryParse(sexualityString, out var bits);
-        return new Sexuality((bits & 0b10) != 0, (bits & 0b01) != 0); }
+        Enum.TryParse<Sexualities>(sexualityString, out var sexualities);
+        return GetSexuality[sexualities](); }
 }
 
-public class Person : IEquatable<Person> {
+
+public class Person {
     public string FirstName;
     public string LastName;
     private string FullName => FirstName + " " + LastName;
@@ -82,11 +88,8 @@ public class Person : IEquatable<Person> {
             _personalityScores[i] = SByteBellCurve();
         for (var i = 0; i < _occupationalAptness.Length; i++)
             _occupationalAptness[i] = SByteBellCurve(); }
-
-    public bool Equals(Person other) => other is not null && ReferenceEquals(this, other);
-    // TODO - is this type of equals check breaking reference equals (going to far)?
-    public override bool Equals(object obj) =>
-        obj is not null && (ReferenceEquals(this, obj) || obj.GetType() == GetType() && Equals((Person)obj));
+    
+    public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
     public override int GetHashCode() => HashCode.Combine(_personalityScores, _occupationalAptness);
     public static bool operator ==([NotNull] Person p, string potentialName) => p.FullName == potentialName;
     public static bool operator !=([NotNull] Person p, string potentialName) => !(p == potentialName);

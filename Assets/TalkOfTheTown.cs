@@ -112,6 +112,8 @@ public class TalkOfTheTown {
         var Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
 
         var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
+        var IsAttracted = Test<Sexuality, Sex>("IsAttracted", 
+            (sexuality, sex) => sexuality.IsAttracted(sex));
         var IsOpen = TestMethod<DailyOperation, TimeOfDay>(Town.IsOpen);
         var IsAccessible = TestMethod<Accessibility, bool, bool>(Town.IsAccessible);
         var IsDate = TestMethod<Date>(Time.IsDate);
