@@ -93,12 +93,14 @@ public class TalkOfTheTown {
         _firstTick = true;
 
         // ReSharper disable InconsistentNaming
-        var GetTimeOfDay = GetMember<TimeOfDay>(typeof(Time), "TimeOfDay");
-        var GetYear = GetMember(() => Time.Year);
-        var GetDate = GetMember(() => Time.Date);
+        var GetTimeOfDay = Time.GetProperty<TimeOfDay>(nameof(Time.TimeOfDay));
+        var GetYear = Time.GetProperty<int>(nameof(Time.Year));
+        var GetDate = Time.GetProperty<Date>(nameof(Time.Date));
+        var YearsSince = Method<Date, int, int>(Time.YearsSince);
         var RandomSex = Method(Sims.RandomSex);
         var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
         var NewPerson = Method<string, string, Person>(Sims.NewPerson);
+        var RandomDate = Function("RandomDate", Date.Random);
         var RandomAdultAge = Method(SimsUtils.RandomAdultAge);
         var Surname = Function<Person, string>("Surname", p => p.LastName);
         var GetFacet = Function<Person, Facet, sbyte>("GetFacet", (p, f) => p.GetFacet(f));
@@ -113,13 +115,13 @@ public class TalkOfTheTown {
         var IsOpen = TestMethod<DailyOperation, TimeOfDay>(Town.IsOpen);
         var IsAccessible = TestMethod<Accessibility, bool, bool>(Town.IsAccessible);
         var IsDate = TestMethod<Date>(Time.IsDate);
-        var IsMonday = TestMember(() => Time.IsMonday);
-        var IsTuesday = TestMember(() => Time.IsTuesday);
-        var IsWednesday = TestMember(() => Time.IsWednesday);
-        var IsThursday = TestMember(() => Time.IsThursday);
-        var IsFriday = TestMember(() => Time.IsFriday);
-        var IsSaturday = TestMember(() => Time.IsSaturday);
-        var IsSunday = TestMember(() => Time.IsSunday);
+        var IsMonday = Time.TestProperty(nameof(Time.IsMonday));
+        var IsTuesday = Time.TestProperty(nameof(Time.IsTuesday));
+        var IsWednesday = Time.TestProperty(nameof(Time.IsWednesday));
+        var IsThursday = Time.TestProperty(nameof(Time.IsThursday));
+        var IsFriday = Time.TestProperty(nameof(Time.IsFriday));
+        var IsSaturday = Time.TestProperty(nameof(Time.IsSaturday));
+        var IsSunday = Time.TestProperty(nameof(Time.IsSunday));
         var IsVacant = Test<Vector2Int>("IsVacant", 
             vec => UsedLots.All(v => v != vec)); 
         var IsLocationType = Test<Location, LocationType>("IsLocationType", 
@@ -255,7 +257,7 @@ public class TalkOfTheTown {
 
         Vocations = Predicate("Vocation", job, employee, location);
 
-        var Aptitude = Definition("Aptitude", person, job, vocationScore).If(vocationScore == GetVocation[person, job]);
+        var Aptitude = Definition("Aptitude", person, job, vocationScore).Is(vocationScore == GetVocation[person, job]);
         var BestForJob = Predicate("BestForJob", job, person).If(Maximal(person, vocationScore, Aptitude[person, job, vocationScore]));
 
         var OnShift = Predicate("OnShift", person, job, location);

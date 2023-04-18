@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Threading;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -50,11 +52,14 @@ public class Town {
 }
 
 public class Location : IEquatable<Location> {
+    private static readonly CultureInfo CultureInfo = Thread.CurrentThread.CurrentCulture;
+    private static readonly TextInfo TextInfo = CultureInfo.TextInfo;
+
     // No renaming businesses through the Location.
     public readonly string Name;
     public readonly LocationType Type;
 
-    public Location(string name, LocationType type) { Name = name; Type = type; }
+    public Location(string name, LocationType type) { Name = TextInfo.ToTitleCase(name); Type = type; }
 
     public bool Equals(Location other) => other is not null && ReferenceEquals(this, other);
     public override bool Equals(object obj) =>

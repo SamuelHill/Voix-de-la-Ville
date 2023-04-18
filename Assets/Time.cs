@@ -1,6 +1,9 @@
 ﻿using static Randomize;
 using System;
 using System.Linq;
+using TED;
+using TED.Primitives;
+using static TED.Language;
 
 public enum Month { January, February, March, April, May, June, July, August, September, October, November, December }
 public enum DayOfWeek { Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday }
@@ -53,6 +56,10 @@ public class Time {
         _year++;
         _clock = 1; }
 
+    public Function<T> GetProperty<T>(string property) => GetMember<T>(typeof(Time), property);
+    public PrimitiveTest TestProperty(string property) => TestMember(typeof(Time), property);
+
+    #region Properties & Helper functions
     public int Year => (int)_year + _offset;
     #region Month
     internal static Month GetMonth(ushort clock) => (Month)((clock - 1) / TicksPerMonth);
@@ -84,6 +91,7 @@ public class Time {
     public TimeOfDay TimeOfDay => GetTimeOfDay(_clock);
     public bool IsAM => TimeOfDay == TimeOfDay.AM;
     public bool IsPM => TimeOfDay == TimeOfDay.PM;
+    #endregion
     #endregion
 
     #region Probability helpers
@@ -119,6 +127,7 @@ public readonly struct Date {
     public static bool operator !=(Date d1, Date d2) => !(d1 == d2);
 
     public override string ToString() => $"{(int)Month + 1}/{Day}";
+
     // TODO - change the FromString to be "mm/dd" not "MMM,dd"
     public static Date FromString(string dateString) { // Month,date
         var date = dateString.Split(',');
