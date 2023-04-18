@@ -68,7 +68,7 @@ public class TalkOfTheTown {
     public TalkOfTheTown(Color defaultTileColor, int year, ushort tick) : this(defaultTileColor) => Time = new Time(year, tick);
     #endregion
 
-    #region "Extensional" Databases
+    #region public Tables
     public TablePredicate<Person, int, Date, Sex, Sexuality> Agents;
     public TablePredicate<Person> Dead;
     public TablePredicate<Person, Person> Couples;
@@ -88,45 +88,42 @@ public class TalkOfTheTown {
     public TablePredicate<Person, Location> Homes;
     #endregion
 
-    #region Functions
-    public Function<TimeOfDay> GetTimeOfDay => GetMember(() => Time.TimeOfDay);
-    public Function<int> GetYear => GetMember(() => Time.Year);
-    public Function<Date> GetDate => GetMember(() => Time.Date);
-    public Function<Sex> RandomSex => Method(Sims.RandomSex);
-    public Function<Sex, Sexuality> RandomSexuality => new("RandomSexuality", Sexuality.Random);
-    public Function<string, string, Person> NewPerson => new(Sims.NewPerson);
-    public Function<int> RandomAdultAge => Method(SimsUtils.RandomAdultAge);
-    public Function<Person, string> Surname => new("Surname", p => p.LastName);
-    public Function<Person, Facet, sbyte> GetFacet => new("GetFacet", (p, f) => p.GetFacet(f));
-    public Function<Person, Vocation, sbyte> GetVocation => new("GetVocation", (p, v) => p.GetVocation(v));
-    public Function<Location, LocationType> GetLocationType => new("GetLocationType", l => l.Type);
-    public Function<uint> NumLots => Function("NumLots", () => UsedLots.Length);
-    public Function<uint, Vector2Int> RandomLot => new(TownToTalkAbout.RandomLot);
-    public Function<string, LocationType, Location> NewLocation => new(Town.NewLocation);
-    public Function<Vector2Int, Vector2Int, int> Distance => new(Town.Distance);
-    #endregion
-
-    #region PrimitiveTests
-    public PrimitiveTest<DailyOperation, TimeOfDay> IsOpen => new(Town.IsOpen);
-    public PrimitiveTest<Accessibility, bool, bool> IsAccessible => new(Town.IsAccessible);
-    public PrimitiveTest<Date> IsDate => new(Time.IsDate);
-    public PrimitiveTest IsMonday => TestMember(() => Time.IsMonday);
-    public PrimitiveTest IsTuesday => TestMember(() => Time.IsTuesday);
-    public PrimitiveTest IsWednesday => TestMember(() => Time.IsWednesday);
-    public PrimitiveTest IsThursday => TestMember(() => Time.IsThursday);
-    public PrimitiveTest IsFriday => TestMember(() => Time.IsFriday);
-    public PrimitiveTest IsSaturday => TestMember(() => Time.IsSaturday);
-    public PrimitiveTest IsSunday => TestMember(() => Time.IsSunday);
-    public PrimitiveTest IsNotFirstTick => new("IsNotFirstTick", () => !_firstTick);
-    public PrimitiveTest<Vector2Int> IsVacant => new("IsVacant", 
-        vec => UsedLots.All(v => v != vec));
-    public PrimitiveTest<Location, LocationType> IsLocationType =>
-        new("IsLocationType", (location, locationType) => location.Type == locationType);
-    #endregion
-
     public void InitSimulator() {
         Simulation = new Simulation("Talk of the Town");
         _firstTick = true;
+
+        // ReSharper disable InconsistentNaming
+        var GetTimeOfDay = GetMember<TimeOfDay>(typeof(Time), "TimeOfDay");
+        var GetYear = GetMember(() => Time.Year);
+        var GetDate = GetMember(() => Time.Date);
+        var RandomSex = Method(Sims.RandomSex);
+        var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
+        var NewPerson = Method<string, string, Person>(Sims.NewPerson);
+        var RandomAdultAge = Method(SimsUtils.RandomAdultAge);
+        var Surname = Function<Person, string>("Surname", p => p.LastName);
+        var GetFacet = Function<Person, Facet, sbyte>("GetFacet", (p, f) => p.GetFacet(f));
+        var GetVocation = Function<Person, Vocation, sbyte>("GetVocation", (p, v) => p.GetVocation(v));
+        var GetLocationType = Function<Location, LocationType>("GetLocationType", l => l.Type);
+        var NumLots = Function("NumLots", () => UsedLots.Length);
+        var RandomLot = Method<uint, Vector2Int>(TownToTalkAbout.RandomLot);
+        var NewLocation = Method<string, LocationType, Location>(Town.NewLocation);
+        var Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
+
+        var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
+        var IsOpen = TestMethod<DailyOperation, TimeOfDay>(Town.IsOpen);
+        var IsAccessible = TestMethod<Accessibility, bool, bool>(Town.IsAccessible);
+        var IsDate = TestMethod<Date>(Time.IsDate);
+        var IsMonday = TestMember(() => Time.IsMonday);
+        var IsTuesday = TestMember(() => Time.IsTuesday);
+        var IsWednesday = TestMember(() => Time.IsWednesday);
+        var IsThursday = TestMember(() => Time.IsThursday);
+        var IsFriday = TestMember(() => Time.IsFriday);
+        var IsSaturday = TestMember(() => Time.IsSaturday);
+        var IsSunday = TestMember(() => Time.IsSunday);
+        var IsVacant = Test<Vector2Int>("IsVacant", 
+            vec => UsedLots.All(v => v != vec)); 
+        var IsLocationType = Test<Location, LocationType>("IsLocationType", 
+            (location, locationType) => location.Type == locationType);
 
         Simulation.BeginPredicates();
 
@@ -168,10 +165,11 @@ public class TalkOfTheTown {
         var positions        = (Var<int>)"positions";
         var employee         = (Var<Person>)"employee";
         var occupant         = (Var<Person>)"occupant";
+        var personalityScore = (Var<sbyte>)"personalityScore";
+        var vocationScore    = (Var<sbyte>)"vocationScore";
         #endregion
-        // Tables, despite being local variables, will still be capitalized for style/identification purposes.
-        // ReSharper disable InconsistentNaming
 
+        // Tables, despite being local variables, will still be capitalized for style/identification purposes.
         var MaleNames = FromCsv("MaleNames", Txt("male_names"), firstName);
         var FemaleNames = FromCsv("FemaleNames", Txt("female_names"), firstName);
         var Surnames = FromCsv("Surnames", Txt("english_surnames"), lastName);
@@ -243,9 +241,8 @@ public class TalkOfTheTown {
         UsedLots.Unique = true;
 
         var FreeLot = Definition("FreeLot", position).Is(position == RandomLot[NumLots], IsVacant[position]);
-        NewLocations.If(FreeLot[position], 
-            location == NewLocation["Test", LocationType.House], 
-            founded == GetYear, opening == GetDate, Prob[Time.PerWeek(0.8f)], IsNotFirstTick);
+        NewLocations[location, position, GetYear, GetDate].If(FreeLot[position], 
+            location == NewLocation["Test", LocationType.House], Prob[Time.PerWeek(0.8f)], IsNotFirstTick);
         Locations.Accumulates(NewLocations);
         UsedLots.If(Locations);
 
@@ -257,6 +254,9 @@ public class TalkOfTheTown {
 
 
         Vocations = Predicate("Vocation", job, employee, location);
+
+        var Aptitude = Definition("Aptitude", person, job, vocationScore).If(vocationScore == GetVocation[person, job]);
+        var BestForJob = Predicate("BestForJob", job, person).If(Maximal(person, vocationScore, Aptitude[person, job, vocationScore]));
 
         var OnShift = Predicate("OnShift", person, job, location);
 

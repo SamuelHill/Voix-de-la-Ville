@@ -3602,9 +3602,19 @@
             Makes a PrimitiveTest with the same name as the System.Predicate being passed in
             </summary>
         </member>
+        <member name="M:TED.Language.Test``1(System.String,System.Predicate{``0})">
+            <summary>
+            Makes a PrimitiveTest with the given name
+            </summary>
+        </member>
         <member name="M:TED.Language.TestMethod``2(System.Func{``0,``1,System.Boolean})">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
+            </summary>
+        </member>
+        <member name="M:TED.Language.Test``2(System.String,System.Func{``0,``1,System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the given name
             </summary>
         </member>
         <member name="M:TED.Language.TestMethod``3(System.Func{``0,``1,``2,System.Boolean})">
@@ -3612,9 +3622,19 @@
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
+        <member name="M:TED.Language.Test``3(System.String,System.Func{``0,``1,``2,System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the given name
+            </summary>
+        </member>
         <member name="M:TED.Language.TestMethod``4(System.Func{``0,``1,``2,``3,System.Boolean})">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
+            </summary>
+        </member>
+        <member name="M:TED.Language.Test``4(System.String,System.Func{``0,``1,``2,``3,System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the given name
             </summary>
         </member>
         <member name="M:TED.Language.TestMethod``5(System.Func{``0,``1,``2,``3,``4,System.Boolean})">
@@ -3622,9 +3642,19 @@
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
+        <member name="M:TED.Language.Test``5(System.String,System.Func{``0,``1,``2,``3,``4,System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the given name
+            </summary>
+        </member>
         <member name="M:TED.Language.TestMethod``6(System.Func{``0,``1,``2,``3,``4,``5,System.Boolean})">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
+            </summary>
+        </member>
+        <member name="M:TED.Language.Test``6(System.String,System.Func{``0,``1,``2,``3,``4,``5,System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the given name
             </summary>
         </member>
         <member name="M:TED.Language.TestMethod``7(System.Func{``0,``1,``2,``3,``4,``5,``6,System.Boolean})">
@@ -3632,9 +3662,19 @@
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
+        <member name="M:TED.Language.Test``7(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the given name
+            </summary>
+        </member>
         <member name="M:TED.Language.TestMethod``8(System.Func{``0,``1,``2,``3,``4,``5,``6,``7,System.Boolean})">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
+            </summary>
+        </member>
+        <member name="M:TED.Language.Test``8(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7,System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the given name
             </summary>
         </member>
         <member name="M:TED.Language.Function``1(System.String,System.Func{``0})">
@@ -5050,6 +5090,11 @@
             Forcibly recompute all the predicates
             </summary>
         </member>
+        <member name="M:TED.Simulation.UpdateTableColumns">
+            <summary>
+            Run any column updates defined using the Set() method.
+            </summary>
+        </member>
         <member name="M:TED.Simulation.AppendAllInputs">
             <summary>
             Append all the inputs to tables that accumulate other tables
@@ -5275,6 +5320,38 @@
             Return a function that modifies the value of the specified column given a row.
             </summary>
         </member>
+        <member name="M:TED.TablePredicate.Accessor``2(TED.Var{``1},TED.Var{``0})">
+            <summary>
+            Obtain an object that makes the column of the table behave like a dictionary
+            Given the key for a row, you can get or set the value of the column
+            </summary>
+            <param name="key">Column to use as the key</param>
+            <param name="column">Column to access</param>
+            <typeparam name="TColumn">Data type of the column</typeparam>
+            <typeparam name="TKey">Data type of the key</typeparam>
+            <returns>The accessor that lets you read and write column data</returns>
+        </member>
+        <member name="E:TED.TablePredicate.OnUpdateColumns">
+            <summary>
+            List of procedures to call when the table is updated.
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.Set``2(TED.Var{``0},TED.Var{``1})">
+            <summary>
+            Return a table predicate to which rules can be added to update the specified column of this table predicate
+            given a key for the row to update.
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.Set``2(TED.Var{``0},TED.Var{``1},``1)">
+            <summary>
+            Sets the conditions for resetting the specified column to the specified value
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.UpdateColumns">
+            <summary>
+            Run any column updates for this table
+            </summary>
+        </member>
         <member name="T:TED.TablePredicate`1">
             <summary>
             A 1-argument TablePredicate
@@ -5496,15 +5573,7 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`2.Accessor``2(TED.Var{``1},TED.Var{``0})">
-            <summary>
-            Obtain an object that makes the column of the table behave like a dictionary
-            Given the key for a row, you can get or set the value of the column
-            </summary>
-            <param name="key">Column to use as the key</param>
-            <param name="column">Column to access</param>
-            <typeparam name="TColumn">Data type of the column</typeparam>
-            <typeparam name="TKey">Data type of the key</typeparam>
-            <returns>The accessor that lets you read and write column data</returns>
+            <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`3">
             <summary>
@@ -5635,15 +5704,7 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`3.Accessor``2(TED.Var{``1},TED.Var{``0})">
-            <summary>
-            Obtain an object that makes the column of the table behave like a dictionary
-            Given the key for a row, you can get or set the value of the column
-            </summary>
-            <param name="key">Column to use as the key</param>
-            <param name="column">Column to access</param>
-            <typeparam name="TColumn">Data type of the column</typeparam>
-            <typeparam name="TKey">Data type of the key</typeparam>
-            <returns>The accessor that lets you read and write column data</returns>
+            <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`4">
             <summary>
@@ -5778,15 +5839,7 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`4.Accessor``2(TED.Var{``1},TED.Var{``0})">
-            <summary>
-            Obtain an object that makes the column of the table behave like a dictionary
-            Given the key for a row, you can get or set the value of the column
-            </summary>
-            <param name="key">Column to use as the key</param>
-            <param name="column">Column to access</param>
-            <typeparam name="TColumn">Data type of the column</typeparam>
-            <typeparam name="TKey">Data type of the key</typeparam>
-            <returns>The accessor that lets you read and write column data</returns>
+            <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`5">
             <summary>
@@ -5925,15 +5978,7 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`5.Accessor``2(TED.Var{``1},TED.Var{``0})">
-            <summary>
-            Obtain an object that makes the column of the table behave like a dictionary
-            Given the key for a row, you can get or set the value of the column
-            </summary>
-            <param name="key">Column to use as the key</param>
-            <param name="column">Column to access</param>
-            <typeparam name="TColumn">Data type of the column</typeparam>
-            <typeparam name="TKey">Data type of the key</typeparam>
-            <returns>The accessor that lets you read and write column data</returns>
+            <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`6">
             <summary>
@@ -6076,15 +6121,7 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`6.Accessor``2(TED.Var{``1},TED.Var{``0})">
-            <summary>
-            Obtain an object that makes the column of the table behave like a dictionary
-            Given the key for a row, you can get or set the value of the column
-            </summary>
-            <param name="key">Column to use as the key</param>
-            <param name="column">Column to access</param>
-            <typeparam name="TColumn">Data type of the column</typeparam>
-            <typeparam name="TKey">Data type of the key</typeparam>
-            <returns>The accessor that lets you read and write column data</returns>
+            <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`7">
             <summary>
@@ -6231,15 +6268,7 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`7.Accessor``2(TED.Var{``1},TED.Var{``0})">
-            <summary>
-            Obtain an object that makes the column of the table behave like a dictionary
-            Given the key for a row, you can get or set the value of the column
-            </summary>
-            <param name="key">Column to use as the key</param>
-            <param name="column">Column to access</param>
-            <typeparam name="TColumn">Data type of the column</typeparam>
-            <typeparam name="TKey">Data type of the key</typeparam>
-            <returns>The accessor that lets you read and write column data</returns>
+            <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`8">
             <summary>
@@ -6390,15 +6419,14 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`8.Accessor``2(TED.Var{``1},TED.Var{``0})">
+            <inheritdoc />
+        </member>
+        <member name="P:TED.Tables.ColumnAccessor`2.Item(`1)">
             <summary>
-            Obtain an object that makes the column of the table behave like a dictionary
-            Given the key for a row, you can get or set the value of the column
+            Get or set the value of the column for whatever row matches the specified key
             </summary>
-            <param name="key">Column to use as the key</param>
-            <param name="column">Column to access</param>
-            <typeparam name="TColumn">Data type of the column</typeparam>
-            <typeparam name="TKey">Data type of the key</typeparam>
-            <returns>The accessor that lets you read and write column data</returns>
+            <param name="key">Key of the row to access</param>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">If no row has that key</exception>
         </member>
         <member name="T:TED.Tables.ColumnAccessor`3">
             <summary>
@@ -6410,11 +6438,7 @@
             <typeparam name="TKey">Type of the key used to select a unique row</typeparam>
         </member>
         <member name="P:TED.Tables.ColumnAccessor`3.Item(`2)">
-            <summary>
-            Get or set the value of the column for whatever row matches the specified key
-            </summary>
-            <param name="key">Key of the row to access</param>
-            <exception cref="T:System.Collections.Generic.KeyNotFoundException">If no row has that key</exception>
+            <inheritdoc />
         </member>
         <member name="T:TED.Tables.GeneralIndex`2">
             <summary>
