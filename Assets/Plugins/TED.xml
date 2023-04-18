@@ -3597,6 +3597,21 @@
             "() => MemberExpression" where MemberExpression is a C# Predicate
             </summary>
         </member>
+        <member name="M:TED.Language.TestMember(System.Object,System.String)">
+            <summary>
+            Makes a PrimitiveTest where the bool Func is built from a property on the given type
+            </summary>
+        </member>
+        <member name="M:TED.Language.Test(System.Func{System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the same name as the Func being passed in
+            </summary>
+        </member>
+        <member name="M:TED.Language.Test(System.String,System.Func{System.Boolean})">
+            <summary>
+            Makes a PrimitiveTest with the given name
+            </summary>
+        </member>
         <member name="M:TED.Language.TestMethod``1(System.Predicate{``0})">
             <summary>
             Makes a PrimitiveTest with the same name as the System.Predicate being passed in
@@ -3696,11 +3711,22 @@
             Expression should be of the form: "() => MemberExpression"
             </summary>
         </member>
+        <member name="M:TED.Language.Member``1(System.Object,System.String)">
+            <summary>
+            Makes a Function where the Func T is built from a property on the given type
+            </summary>
+        </member>
         <member name="M:TED.Language.GetMember``1(System.Linq.Expressions.Expression{System.Func{``0}})">
             <summary>
             Makes a function that can be placed in functional expressions with the name:
             "GetMemberExpression" where MemberExpression is the name of the member in the expression
             Expression should be of the form: "() => MemberExpression"
+            </summary>
+        </member>
+        <member name="M:TED.Language.GetMember``1(System.Object,System.String)">
+            <summary>
+            Makes a Function where the Func T is built from a property on the given type,
+            pre-pending Get to the property for the Function name
             </summary>
         </member>
         <member name="M:TED.Language.Function``2(System.String,System.Func{``0,``1})">

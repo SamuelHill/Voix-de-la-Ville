@@ -8,18 +8,6 @@ using TED.Utilities;
 using UnityEngine;
 using static TED.Language;
 
-public static unsafe class FromPointer<T> where T : unmanaged {
-    public static Func<T> Get(T variable) {
-        var pointer = &variable;
-        return () => *pointer; }
-    public static Func<bool> Is(bool variable) {
-        var pointer = &variable;
-        return () => *pointer; }
-    public static Func<bool> Not(bool variable) {
-        var pointer = &variable;
-        return () => !*pointer; }
-}
-
 public class TalkOfTheTown {
     public static Simulation Simulation = null!;
     public static Time Time;
@@ -93,6 +81,7 @@ public class TalkOfTheTown {
         _firstTick = true;
 
         // ReSharper disable InconsistentNaming
+        #region Functions
         var GetTimeOfDay = Time.GetProperty<TimeOfDay>(nameof(Time.TimeOfDay));
         var GetYear = Time.GetProperty<int>(nameof(Time.Year));
         var GetDate = Time.GetProperty<Date>(nameof(Time.Date));
@@ -110,7 +99,9 @@ public class TalkOfTheTown {
         var RandomLot = Method<uint, Vector2Int>(TownToTalkAbout.RandomLot);
         var NewLocation = Method<string, LocationType, Location>(Town.NewLocation);
         var Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
+        #endregion
 
+        #region PrimitiveTests
         var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
         var IsAttracted = Test<Sexuality, Sex>("IsAttracted", 
             (sexuality, sex) => sexuality.IsAttracted(sex));
@@ -128,10 +119,9 @@ public class TalkOfTheTown {
             vec => UsedLots.All(v => v != vec)); 
         var IsLocationType = Test<Location, LocationType>("IsLocationType", 
             (location, locationType) => location.Type == locationType);
+        #endregion
 
-        Simulation.BeginPredicates();
-
-        // Vars, just so happen to fit the naming conventions for local variables, i.e. lowercase.
+        // variables just so happen to follow c# var name norms, still disabling InconsistentNaming
         #region Variables
         var person           = (Var<Person>)"person";
         var partner          = (Var<Person>)"partner";
@@ -172,6 +162,8 @@ public class TalkOfTheTown {
         var personalityScore = (Var<sbyte>)"personalityScore";
         var vocationScore    = (Var<sbyte>)"vocationScore";
         #endregion
+
+        Simulation.BeginPredicates();
 
         // Tables, despite being local variables, will still be capitalized for style/identification purposes.
         var MaleNames = FromCsv("MaleNames", Txt("male_names"), firstName);
@@ -256,11 +248,10 @@ public class TalkOfTheTown {
             Locations, IsLocationType[location, LocationType.House], !Homes[occupant, home],
             !Homes[person, location] | (Homes[person, location] & IsFamily[person, occupant]));
 
-
         Vocations = Predicate("Vocation", job, employee, location);
 
-        var Aptitude = Definition("Aptitude", person, job, vocationScore).Is(vocationScore == GetVocation[person, job]);
-        var BestForJob = Predicate("BestForJob", job, person).If(Maximal(person, vocationScore, Aptitude[person, job, vocationScore]));
+        //var Aptitude = Definition("Aptitude", person, job, vocationScore).If(vocationScore == GetVocation[person, job]);
+        //var BestForJob = Predicate("BestForJob", job, person).If(Maximal(person, vocationScore, Aptitude[person, job, vocationScore]));
 
         var OnShift = Predicate("OnShift", person, job, location);
 
@@ -304,5 +295,4 @@ public class TalkOfTheTown {
             });
         }
     }
-
 }

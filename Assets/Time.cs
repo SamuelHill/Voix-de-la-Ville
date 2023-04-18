@@ -56,8 +56,8 @@ public class Time {
         _year++;
         _clock = 1; }
 
-    public Function<T> GetProperty<T>(string property) => GetMember<T>(typeof(Time), property);
-    public PrimitiveTest TestProperty(string property) => TestMember(typeof(Time), property);
+    public Function<T> GetProperty<T>(string property) => GetMember<T>(this, property);
+    public PrimitiveTest TestProperty(string property) => TestMember(this, property);
 
     #region Properties & Helper functions
     public int Year => (int)_year + _offset;
