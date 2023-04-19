@@ -24,9 +24,6 @@ public enum Accessibility { Public, Private, NoTrespass }
 public enum DailyOperation { Morning, Evening, AllDay }
 
 public class Town {
-    private static readonly CultureInfo CultureInfo = Thread.CurrentThread.CurrentCulture;
-    private static readonly TextInfo TextInfo = CultureInfo.TextInfo;
-
     public Vector2Int Max = new(10, 10);
     public Vector2Int Min = new(-10, -10);
 
@@ -38,7 +35,7 @@ public class Town {
             ExpandAllSides();
         return RandomLot(); }
 
-    public static Location NewLocation(string name, LocationType type) => new(TextInfo.ToTitleCase(name), type);
+    public static Location NewLocation(string name, LocationType type) => new(Utils.Title(name), type);
 
     private static int EuclideanSquare(int x1, int y1, int x2, int y2) => (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
     public static int Distance(Vector2Int loc1, Vector2Int loc2) => EuclideanSquare(loc1.x, loc1.y, loc2.x, loc2.y);
@@ -55,18 +52,19 @@ public class Town {
 }
 
 public class Location {
-    // No renaming businesses through the Location.
     public readonly string Name;
     public readonly LocationType Type;
 
-    public Location(string name, LocationType type) { Name = name; Type = type; }
+    public Location(string name, LocationType type) {
+        Name = name; 
+        Type = type; }
     
     public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
     public override int GetHashCode() => HashCode.Combine(Name, (int)Type);
     public static bool operator ==([NotNull] Location l, string potentialName) => l.Name == potentialName;
     public static bool operator !=([NotNull] Location l, string potentialName) => !(l == potentialName);
 
-    public override string ToString() => Name + " (" + Type + ")";
+    public override string ToString() => $"{Name} ({Type})";
 
     public static Location FromString(string locationString) {
         var location = locationString.Split(',');

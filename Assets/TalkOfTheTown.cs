@@ -11,7 +11,6 @@ using static TED.Language;
 public class TalkOfTheTown {
     public static Simulation Simulation = null!;
     public static Time Time;
-    public Sims SimsUtils;
     public Town TownToTalkAbout;
     public Color DefaultTileColor;
     private bool _firstTick;
@@ -41,7 +40,6 @@ public class TalkOfTheTown {
     public TalkOfTheTown(Color defaultTileColor) {
         Time = new Time();
         TownToTalkAbout = new Town();
-        SimsUtils = new Sims();
         DefaultTileColor = defaultTileColor;
         CsvReader.DeclareParser(typeof(Vector2Int), ParseVector2Int);
         CsvReader.DeclareParser(typeof(Date), ParseDate);
@@ -90,11 +88,14 @@ public class TalkOfTheTown {
         var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
         var NewPerson = Method<string, string, Person>(Sims.NewPerson);
         var RandomDate = Function("RandomDate", Date.Random);
-        var RandomAdultAge = Method(SimsUtils.RandomAdultAge);
+        var RandomAdultAge = Method(Sims.RandomAdultAge);
         var Surname = Function<Person, string>("Surname", p => p.LastName);
-        var GetFacet = Function<Person, Facet, sbyte>("GetFacet", (p, f) => p.GetFacet(f));
-        var GetVocation = Function<Person, Vocation, sbyte>("GetVocation", (p, v) => p.GetVocation(v));
-        var GetLocationType = Function<Location, LocationType>("GetLocationType", l => l.Type);
+        var GetFacet = Function<Person, Facet, sbyte>("GetFacet", 
+            (p, f) => p.GetFacet(f));
+        var GetVocation = Function<Person, Vocation, sbyte>("GetVocation", 
+            (p, v) => p.GetVocation(v));
+        var GetLocationType = Function<Location, LocationType>("GetLocationType", 
+            l => l.Type);
         var NumLots = Function("NumLots", () => UsedLots.Length);
         var RandomLot = Method<uint, Vector2Int>(TownToTalkAbout.RandomLot);
         var NewLocation = Method<string, LocationType, Location>(Town.NewLocation);
@@ -250,8 +251,8 @@ public class TalkOfTheTown {
 
         Vocations = Predicate("Vocation", job, employee, location);
 
-        //var Aptitude = Definition("Aptitude", person, job, vocationScore).If(vocationScore == GetVocation[person, job]);
-        //var BestForJob = Predicate("BestForJob", job, person).If(Maximal(person, vocationScore, Aptitude[person, job, vocationScore]));
+        //var Aptitude = Definition("Aptitude", person, job, vocationScore).Is(Agents, Alive[person], vocationScore == GetVocation[person, job]);
+        var BestForJob = Predicate("BestForDaycareWork", person).If(Agents, Alive[person], Maximal(person, vocationScore, vocationScore == GetVocation[person, Vocation.DaycareProvider]));
 
         var OnShift = Predicate("OnShift", person, job, location);
 

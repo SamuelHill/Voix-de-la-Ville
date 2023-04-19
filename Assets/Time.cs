@@ -95,10 +95,10 @@ public class Time {
     #endregion
 
     #region Probability helpers
-    public float PerDay(float chance) => chance / TimesOfDay;
-    public float PerWeek(float chance) => chance / (TimesOfDay * DaysOfWeek);
-    public float PerMonth(float chance) => chance / TicksPerMonth;
-    public float PerYear(float chance) => chance / NumTicks;
+    public static float PerDay(float chance) => chance / TimesOfDay;
+    public static float PerWeek(float chance) => chance / (TimesOfDay * DaysOfWeek);
+    public static float PerMonth(float chance) => chance / TicksPerMonth;
+    public static float PerYear(float chance) => chance / NumTicks;
     #endregion
 
     public override string ToString() => 
