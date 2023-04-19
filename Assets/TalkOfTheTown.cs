@@ -89,6 +89,7 @@ public class TalkOfTheTown {
         var NewPerson = Method<string, string, Person>(Sims.NewPerson);
         var RandomDate = Function("RandomDate", Date.Random);
         var RandomAdultAge = Method(Sims.RandomAdultAge);
+        var FertilityRate = Method<int, float>(Sims.FertilityRate);
         var Surname = Function<Person, string>("Surname", p => p.LastName);
         var GetFacet = Function<Person, Facet, sbyte>("GetFacet", 
             (p, f) => p.GetFacet(f));

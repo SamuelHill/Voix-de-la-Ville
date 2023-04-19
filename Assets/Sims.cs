@@ -64,6 +64,7 @@ public static class Sims {
 
     #region Fertility Math and precompute arrays
     // ReSharper disable once InconsistentNaming
+    // See wolfram alpha's equation solver, using approximations (not exact forms):
     // https://www.wolframalpha.com/input?i=equation+solver&assumption=%7B%22F%22%2C+%22SolveEquation%22%2C+%22solveequation%22%7D+-%3E%22-30%28t-1%29%285t%5E2-t%2B2%29+%3D+18%22
     private static readonly float[] tForAge = { 1,
         0.99440f, 0.98870f, 0.98290f, 0.97699f, 0.97098f,
