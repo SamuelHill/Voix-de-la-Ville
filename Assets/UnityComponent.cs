@@ -26,12 +26,11 @@ public class UnityComponent : MonoBehaviour {
     public Tilemap Tilemap;
     // for the tile to be able to change color: https://github.com/Unity-Technologies/2d-extras/issues/96
     public Tile OccupiedLot;
-    public Color DefaultTileColor = Color.white;
     internal Vector3Int? SelectedLocationTile;
 
     internal void Start() {
         TED.Comparer<Vector2Int>.Default = new GridComparer();
-        TalkOfTheTown = new TalkOfTheTown(DefaultTileColor, StartYear);
+        TalkOfTheTown = new TalkOfTheTown(StartYear);
         TalkOfTheTown.InitSimulator();
         ProcessInitialLocations();
         Manager = GUIManager.Manager;
@@ -47,6 +46,7 @@ public class UnityComponent : MonoBehaviour {
             TalkOfTheTown.NewLocations,
             TalkOfTheTown.VacatedLocations,
             TalkOfTheTown.UsedLots,
+            TalkOfTheTown.Aptitude,
         });
         Manager.SetActiveTables(new[] { "Agents", "Couples", "Parents", "Dead" });
         Manager.AddSelectedTileInfo(SelectedLocation);

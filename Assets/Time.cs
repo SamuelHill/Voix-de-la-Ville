@@ -4,10 +4,17 @@ using System.Linq;
 using TED;
 using TED.Primitives;
 using static TED.Language;
+using System.Collections.Generic;
 
-public enum Month { January, February, March, April, May, June, July, August, September, October, November, December }
+public enum Month { January, February, March, April, May, June, 
+    July, August, September, October, November, December }
 public enum DayOfWeek { Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday }
 public enum TimeOfDay { AM, PM }
+public enum Schedules { Everyday, Weekdays, ClosedSunday, 
+    ClosedMonday, ClosedTuesday, ClosedWednesday, 
+    ClosedThursday, ClosedFriday, ClosedSaturday, 
+    MondayToThursday, TuesdayToFriday, ThursdayToSunday }
+public enum DailyOperation { Morning, Evening, AllDay }
 
 public static class ByteExtensions {
     public static string SuffixedDate(this byte num) {
@@ -85,12 +92,17 @@ public class Time {
     public bool IsFriday => DayOfWeek == DayOfWeek.Friday;
     public bool IsSaturday => DayOfWeek == DayOfWeek.Saturday;
     public bool IsSunday => DayOfWeek == DayOfWeek.Sunday;
+    public bool IsOpen(Schedule schedule) => schedule.OpenOn[(int)DayOfWeek];
     #endregion
     #region TimeOfDay
     internal static TimeOfDay GetTimeOfDay(ushort clock) => (TimeOfDay)((clock + 1) % TimesOfDay);
     public TimeOfDay TimeOfDay => GetTimeOfDay(_clock);
     public bool IsAM => TimeOfDay == TimeOfDay.AM;
     public bool IsPM => TimeOfDay == TimeOfDay.PM;
+    public bool InOperation(DailyOperation operation) =>
+        operation is DailyOperation.AllDay ||
+        (operation is DailyOperation.Morning && IsAM) ||
+        (operation is DailyOperation.Evening && IsPM);
     #endregion
     #endregion
 
@@ -133,4 +145,42 @@ public readonly struct Date {
         var date = dateString.Split(',');
         Enum.TryParse(date[0], out Month month);
         return new Date(month, byte.Parse(date[1])); }
+}
+
+public readonly struct Schedule {
+    public readonly bool[] OpenOn;
+
+    public Schedule(bool[] openOn) {
+        if (openOn.Length != Time.DaysOfWeek)
+            throw new ArgumentException($"openOn must be a bool[] of length {Time.DaysOfWeek}");
+        OpenOn = openOn; }
+    public Schedule(Schedules schedule) : this(GetSchedule(schedule)) { }
+
+    public static bool[] GetSchedule(Schedules schedule) => SchedulesMapping[(int)schedule];
+    public static bool[][] SchedulesMapping = {
+        new[] { true, true, true, true, true, true, true }, // indexed by Schedules Enum
+        new[] { true, true, true, true, true, false, false },
+        new[] { true, true, true, true, true, true, false },
+        new[] { false, true, true, true, true, true, true },
+        new[] { true, false, true, true, true, true, true },
+        new[] { true, true, false, true, true, true, true },
+        new[] { true, true, true, false, true, true, true },
+        new[] { true, true, true, true, false, true, true },
+        new[] { true, true, true, true, true, false, true },
+        new[] { true, true, true, true, false, false, false },
+        new[] { false, true, true, true, true, false, false },
+        new[] { false, false, false, true, true, true, true }};
+
+    private string DayOfWeekList() {
+        var strings = new List<string>();
+        for (var i = 0; i < Time.DaysOfWeek; i++) {
+            if (OpenOn[i]) strings.Add(((DayOfWeek)i).ToString()); }
+        return string.Join(", ", strings); }
+    public override string ToString() {
+        var schedule = Array.IndexOf(SchedulesMapping, OpenOn);
+        return schedule != -1 ? ((Schedules)schedule).ToString() : DayOfWeekList(); }
+
+    public static Schedule FromString(string scheduleString) {
+        Enum.TryParse(scheduleString, out Schedules schedule);
+        return new Schedule(schedule); }
 }

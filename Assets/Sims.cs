@@ -2,17 +2,25 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
-using JetBrains.Annotations;
 using UnityEngine;
 using static Randomize;
 
-public static class Sims {
-    public static int RandomAdultAge() => Integer(18, 79);
-    
-    public static Sex RandomSex() => (Sex)BooleanInt();
+public enum Facet {
+    AbstractInclined, ActivityLevel, Altruism, Ambition, AngerPropensity,
+    AnxietyPropensity, ArtInclined, Assertiveness, Bashful, Bravery,
+    CheerPropensity, Closeminded, Confidence, Cruelty, Curious,
+    DepressionPropensity, Discord, DisdainAdvice, Dutifulness,
+    EmotionallyObsessive, EnvyPropensity, ExcitementSeeking, Friendliness,
+    Gratitude, Greed, Gregarioiusness, HatePropensity, Hopeful, Humor,
+    Imagination, Immoderation, Immodesty, LovePropensity, LustPropensity,
+    Orderliness, Perfectionist, Perseverance, Politeness, Pride, Privacy,
+    Singleminded, StressVulnerability, SwayedByEmotions, Thoughtlessness,
+    Tolerant, Trust, Vanity, Vengeful, Violent, Wastefulness }
 
+public static class Sims {
     public static Person NewPerson(string first, string last) => new(Utils.Title(first), Utils.Title(last));
+    public static int RandomAdultAge() => Integer(18, 79);
+    public static Sex RandomSex() => (Sex)BooleanInt();
 
     #region Fertility Calculation Notes
     public static void FertilityCurve(float t) {
@@ -61,7 +69,6 @@ public static class Sims {
     public static float SimpleX(float t) => -150*MathF.Pow(t, 3) + 180*MathF.Pow(t, 2) - 90*t + 60;
     public static float SimpleXSolveForT(float t) => -30*(t - 1)*(5*MathF.Pow(t, 2) - t + 2);
     #endregion
-
     #region Fertility Math and precompute arrays
     // ReSharper disable once InconsistentNaming
     // See wolfram alpha's equation solver, using approximations (not exact forms):
@@ -83,8 +90,31 @@ public static class Sims {
     private static readonly float[] FertilityForAge = 
         (from t in tForAge select Time.PerYear(SimpleY(t))).ToArray();
     #endregion
-
     public static float FertilityRate(int age) => age >= FertilityForAge.Length ? 0 : FertilityForAge[age];
+}
+
+public class Person {
+    private readonly Guid _id;
+    public string FirstName;
+    public string LastName;
+
+    private string FullName => FirstName + " " + LastName;
+
+    public Person(string firstName, string lastName) {
+        _id = Guid.NewGuid();
+        FirstName = firstName;
+        LastName = lastName; }
+
+    public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
+    public override int GetHashCode() => _id.GetHashCode();
+    public static bool operator ==(Person p, string potentialName) => p != null && p.FullName == potentialName;
+    public static bool operator !=(Person p, string potentialName) => !(p == potentialName);
+
+    public override string ToString() => FullName;
+
+    public static Person FromString(string personName) {
+        var person = personName.Split(' ');
+        return new Person(person[0], person[1]); }
 }
 
 public enum Sex { Male, Female, Other }
@@ -132,53 +162,3 @@ public readonly struct Sexuality {
         Enum.TryParse<Sexualities>(sexualityString, out var sexualities);
         return GetSexuality[sexualities](); }
 }
-
-public class Person {
-    public string FirstName;
-    public string LastName;
-    private string FullName => FirstName + " " + LastName;
-
-    private readonly sbyte[] _personalityScores = new sbyte[Enum.GetValues(typeof(Facet)).Length];
-    public sbyte GetFacet(Facet facet) => _personalityScores[(int)facet];
-
-    private readonly sbyte[] _occupationalAptness = new sbyte[Enum.GetValues(typeof(Vocation)).Length];
-    public sbyte GetVocation(Vocation vocations) => _occupationalAptness[(int)vocations];
-
-    public Person(string firstName, string lastName) {
-        FirstName = firstName;
-        LastName = lastName;
-        for (var i = 0; i < _personalityScores.Length; i++)
-            _personalityScores[i] = SByteBellCurve();
-        for (var i = 0; i < _occupationalAptness.Length; i++)
-            _occupationalAptness[i] = SByteBellCurve(); }
-    
-    public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
-    public override int GetHashCode() => HashCode.Combine(_personalityScores, _occupationalAptness);
-    public static bool operator ==([NotNull] Person p, string potentialName) => p.FullName == potentialName;
-    public static bool operator !=([NotNull] Person p, string potentialName) => !(p == potentialName);
-
-    public override string ToString() => FullName;
-    public string DebugString() {
-        var scores = _personalityScores.ToList();
-        var aptness = _occupationalAptness.ToList();
-        return FullName + " : Highest; " + (Facet)scores.IndexOf(_personalityScores.Max()) +
-                          ", Lowest; " + (Facet)scores.IndexOf(_personalityScores.Min()) +
-                          ", Highest; " + (Vocation)aptness.IndexOf(_occupationalAptness.Max()) +
-                          ", Lowest; " + (Vocation)aptness.IndexOf(_occupationalAptness.Min()); }
-
-    public static Person FromString(string personName) {
-        var person = personName.Split(' ');
-        return new Person(person[0], person[1]); }
-}
-
-public enum Facet {
-    AbstractInclined, ActivityLevel, Altruism, Ambition, AngerPropensity,
-    AnxietyPropensity, ArtInclined, Assertiveness, Bashful, Bravery,
-    CheerPropensity, Closeminded, Confidence, Cruelty, Curious,
-    DepressionPropensity, Discord, DisdainAdvice, Dutifulness,
-    EmotionallyObsessive, EnvyPropensity, ExcitementSeeking, Friendliness,
-    Gratitude, Greed, Gregarioiusness, HatePropensity, Hopeful, Humor,
-    Imagination, Immoderation, Immodesty, LovePropensity, LustPropensity,
-    Orderliness, Perfectionist, Perseverance, Politeness, Pride, Privacy,
-    Singleminded, StressVulnerability, SwayedByEmotions, Thoughtlessness,
-    Tolerant, Trust, Vanity, Vengeful, Violent, Wastefulness }

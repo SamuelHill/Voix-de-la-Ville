@@ -11,8 +11,6 @@ using static TED.Language;
 public class TalkOfTheTown {
     public static Simulation Simulation = null!;
     public static Time Time;
-    public Town TownToTalkAbout;
-    public Color DefaultTileColor;
     private bool _firstTick;
 
     #region CSV/TXT file helpers and CSV parsing functions
@@ -29,29 +27,29 @@ public class TalkOfTheTown {
         if (Locations == null) return potentialLocation;
         var potentialLocations = Locations.Where(x => x.Item1 == potentialLocation).Select(x => x.Item1).ToList();
         return potentialLocations.Any() ? potentialLocations.First() : potentialLocation;  }
-    private object ParseColor(string htmlColorString) => ColorUtility.TryParseHtmlString(htmlColorString, out var color) ? color : DefaultTileColor;
+    private static object ParseColor(string htmlColorString) => ColorUtility.TryParseHtmlString(htmlColorString, out var color) ? color : Color.white;
     private static object ParseVector2Int(string vector2String) => IntArrayToVector((from i in vector2String.Split(',') select int.Parse(i)).ToArray());
     private static Vector2Int IntArrayToVector(IReadOnlyList<int> intArray) => new (intArray[0], intArray[1]);
     private static object ParseDate(string dateString) => Date.FromString(dateString);
     private static object ParseSexuality(string sexualityString) => Sexuality.FromString(sexualityString);
+    private static object ParseSchedule(string scheduleString) => Schedule.FromString(scheduleString);
     #endregion
 
     #region Constructors
-    public TalkOfTheTown(Color defaultTileColor) {
+    public TalkOfTheTown() {
         Time = new Time();
-        TownToTalkAbout = new Town();
-        DefaultTileColor = defaultTileColor;
         CsvReader.DeclareParser(typeof(Vector2Int), ParseVector2Int);
         CsvReader.DeclareParser(typeof(Date), ParseDate);
         CsvReader.DeclareParser(typeof(Sexuality), ParseSexuality);
         CsvReader.DeclareParser(typeof(Person), ParsePerson);
         CsvReader.DeclareParser(typeof(Location), ParseLocation);
+        CsvReader.DeclareParser(typeof(Schedule), ParseSchedule);
         CsvReader.DeclareParser(typeof(Color), ParseColor);
         // Share the same Randomize Seed for now...
         TED.Utilities.Random.Rng = new System.Random(Randomize.Seed);
     }
-    public TalkOfTheTown(Color defaultTileColor, int year) : this(defaultTileColor) => Time = new Time(year);
-    public TalkOfTheTown(Color defaultTileColor, int year, ushort tick) : this(defaultTileColor) => Time = new Time(year, tick);
+    public TalkOfTheTown(int year) : this() => Time = new Time(year);
+    public TalkOfTheTown(int year, ushort tick) : this() => Time = new Time(year, tick);
     #endregion
 
     #region public Tables
@@ -59,8 +57,8 @@ public class TalkOfTheTown {
     public TablePredicate<Person> Dead;
     public TablePredicate<Person, Person> Couples;
     public TablePredicate<Person, Person> Parents;
-    public TablePredicate<LocationType, LocationCategories, Accessibility, DailyOperation> LocationInformation;
-    public KeyIndex<(LocationType, LocationCategories, Accessibility, DailyOperation), LocationType> LocationTypeKeyInfo;
+    public TablePredicate<LocationType, LocationCategories, Accessibility, DailyOperation, Schedule> LocationInformation;
+    public KeyIndex<(LocationType, LocationCategories, Accessibility, DailyOperation, Schedule), LocationType> LocationTypeKeyInfo;
     public TablePredicate<LocationCategories, Color> CategoryColors;
     public TablePredicate<LocationType, Color> LocationColors;
     public KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
@@ -72,6 +70,7 @@ public class TalkOfTheTown {
     public TablePredicate<Vector2Int> UsedLots;
     public TablePredicate<Vocation, Person, Location> Vocations;
     public TablePredicate<Person, Location> Homes;
+    public TablePredicate<Person, Vocation, sbyte> Aptitude;
     #endregion
 
     public void InitSimulator() {
@@ -81,6 +80,7 @@ public class TalkOfTheTown {
         // ReSharper disable InconsistentNaming
         #region Functions
         var GetTimeOfDay = Time.GetProperty<TimeOfDay>(nameof(Time.TimeOfDay));
+        var GetDayOfWeek = Time.GetProperty<DayOfWeek>(nameof(Time.DayOfWeek));
         var GetYear = Time.GetProperty<int>(nameof(Time.Year));
         var GetDate = Time.GetProperty<Date>(nameof(Time.Date));
         var YearsSince = Method<Date, int, int>(Time.YearsSince);
@@ -90,32 +90,22 @@ public class TalkOfTheTown {
         var RandomDate = Function("RandomDate", Date.Random);
         var RandomAdultAge = Method(Sims.RandomAdultAge);
         var FertilityRate = Method<int, float>(Sims.FertilityRate);
+        var SByteBellCurve = Method(Randomize.SByteBellCurve);
         var Surname = Function<Person, string>("Surname", p => p.LastName);
-        var GetFacet = Function<Person, Facet, sbyte>("GetFacet", 
-            (p, f) => p.GetFacet(f));
-        var GetVocation = Function<Person, Vocation, sbyte>("GetVocation", 
-            (p, v) => p.GetVocation(v));
-        var GetLocationType = Function<Location, LocationType>("GetLocationType", 
-            l => l.Type);
+        var GetLocationType = Function<Location, LocationType>("GetLocationType", l => l.Type);
         var NumLots = Function("NumLots", () => UsedLots.Length);
-        var RandomLot = Method<uint, Vector2Int>(TownToTalkAbout.RandomLot);
+        var RandomLot = Method<uint, Vector2Int>(Town.RandomLot);
         var NewLocation = Method<string, LocationType, Location>(Town.NewLocation);
         var Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
         #endregion
 
         #region PrimitiveTests
         var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
-        var IsAttracted = Test<Sexuality, Sex>("IsAttracted", 
-            (sexuality, sex) => sexuality.IsAttracted(sex));
-        var IsOpen = TestMethod<DailyOperation, TimeOfDay>(Town.IsOpen);
+        var IsAttracted = Test<Sexuality, Sex>("IsAttracted", (se, s) => se.IsAttracted(s));
+        var InOperation = TestMethod<DailyOperation>(Time.InOperation);
+        var IsOpen = TestMethod<Schedule>(Time.IsOpen);
         var IsAccessible = TestMethod<Accessibility, bool, bool>(Town.IsAccessible);
         var IsDate = TestMethod<Date>(Time.IsDate);
-        var IsMonday = Time.TestProperty(nameof(Time.IsMonday));
-        var IsTuesday = Time.TestProperty(nameof(Time.IsTuesday));
-        var IsWednesday = Time.TestProperty(nameof(Time.IsWednesday));
-        var IsThursday = Time.TestProperty(nameof(Time.IsThursday));
-        var IsFriday = Time.TestProperty(nameof(Time.IsFriday));
-        var IsSaturday = Time.TestProperty(nameof(Time.IsSaturday));
         var IsSunday = Time.TestProperty(nameof(Time.IsSunday));
         var IsVacant = Test<Vector2Int>("IsVacant", 
             vec => UsedLots.All(v => v != vec)); 
@@ -140,6 +130,8 @@ public class TalkOfTheTown {
         var sexOfPartner     = (Var<Sex>)"sexOfPartner";
         var sexuality        = (Var<Sexuality>)"sexuality";
         var sexualOfPartner  = (Var<Sexuality>)"sexualityOfPartner";
+        var facet            = (Var<Facet>)"facet";
+        var personality      = (Var<sbyte>)"personality";
         var location         = (Var<Location>)"location";
         var home             = (Var<Location>)"home";
         var position         = (Var<Vector2Int>)"position";
@@ -149,20 +141,13 @@ public class TalkOfTheTown {
         var locationCategory = (Var<LocationCategories>)"locationCategory";
         var accessibility    = (Var<Accessibility>)"accessibility";
         var operation        = (Var<DailyOperation>)"operation";
+        var schedule         = (Var<Schedule>)"schedule";
         var color            = (Var<Color>)"color";
-        var openSunday       = (Var<bool>)"openSunday";
-        var openMonday       = (Var<bool>)"openMonday";
-        var openTuesday      = (Var<bool>)"openTuesday";
-        var openWednesday    = (Var<bool>)"openWednesday";
-        var openThursday     = (Var<bool>)"openThursday";
-        var openFriday       = (Var<bool>)"openFriday";
-        var openSaturday     = (Var<bool>)"openSaturday";
         var job              = (Var<Vocation>)"job";
+        var aptitude         = (Var<sbyte>)"aptitude";
         var positions        = (Var<int>)"positions";
         var employee         = (Var<Person>)"employee";
         var occupant         = (Var<Person>)"occupant";
-        var personalityScore = (Var<sbyte>)"personalityScore";
-        var vocationScore    = (Var<sbyte>)"vocationScore";
         #endregion
 
         Simulation.BeginPredicates();
@@ -171,6 +156,8 @@ public class TalkOfTheTown {
         var MaleNames = FromCsv("MaleNames", Txt("male_names"), firstName);
         var FemaleNames = FromCsv("FemaleNames", Txt("female_names"), firstName);
         var Surnames = FromCsv("Surnames", Txt("english_surnames"), lastName);
+
+        // TODO Should RandomFirstName and RandomPerson be Definitions?
         var RandomFirstName = Predicate("RandomFirstName", sex, firstName);
         RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
         RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
@@ -207,31 +194,32 @@ public class TalkOfTheTown {
         Agents.Add[person, -1, GetDate, sex, sexuality].If(
             BirthTo[man, woman, sex, person], sexuality == RandomSexuality[sex]);
 
+        var Facets = Predicate("Facets", facet);
+        Facets.AddRows(Enum.GetValues(typeof(Facet)).Cast<Facet>());
+        var Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
+        Personality.Add[person, facet, SByteBellCurve].If(Agents, Alive[person], Facets, !Personality[person, facet, personality]);
+
         var IsFamily = Definition("IsFamily", person, otherPerson).Is(
             Couples[person, otherPerson] | Couples[otherPerson, person] | 
             (Parents[person, otherPerson] & Agents[otherPerson, age, dateOfBirth, sex, sexuality] & age <= 18) |
             (Parents[otherPerson, person] & Agents[person, age, dateOfBirth, sex, sexuality] & age <= 18));
 
         LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"), 
-            locationType.Key, locationCategory.Indexed, accessibility, operation);
+            locationType.Key, locationCategory.Indexed, accessibility, operation, schedule);
         LocationTypeKeyInfo = LocationInformation.KeyIndex(locationType);
         CategoryColors = FromCsv("CategoryColors", Csv("locationColors"), locationCategory.Key, color);
         LocationColors = Predicate("LocationColors", locationType.Key, color);
         LocationColors.Unique = true;
         LocationColors.Add.If(LocationInformation, CategoryColors);
         LocationColorsIndex = LocationColors.KeyIndex(locationType);
-
-        var OperatingSchedule = FromCsv("OperatingSchedule", 
-            Csv("operatingSchedule"), locationType.Key, 
-            openSunday, openMonday, openTuesday, openWednesday, 
-            openThursday, openFriday, openSaturday);
+        
         var VocationLocations = FromCsv("VocationLocations", 
-            Csv("vocationLocations"), job, locationType);
+            Csv("vocationLocations"), job.Indexed, locationType.Indexed);
         var PositionsPerJob = FromCsv("PositionsPerJob", 
             Csv("positionsPerJob"), job.Key, positions);
 
-        Locations = FromCsv("Locations", Csv("locations"), location, position.Key, founded, opening);
-        //LocationsLocationIndex = Locations.KeyIndex(location);
+        Locations = FromCsv("Locations", Csv("locations"), location.Key, position.Key, founded, opening);
+        LocationsLocationIndex = Locations.KeyIndex(location);
         LocationsPositionIndex = Locations.KeyIndex(position);
         NewLocations = Predicate("NewLocations", location, position, founded, opening);
         VacatedLocations = Predicate("VacatedLocations", location, position, founded, opening);  // UNUSED
@@ -250,23 +238,18 @@ public class TalkOfTheTown {
             Locations, IsLocationType[location, LocationType.House], !Homes[occupant, home],
             !Homes[person, location] | (Homes[person, location] & IsFamily[person, occupant]));
 
-        Vocations = Predicate("Vocation", job, employee, location);
+        var Jobs = Predicate("Jobs", job);
+        Jobs.AddRows(Enum.GetValues(typeof(Vocation)).Cast<Vocation>());
+        Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
+        Aptitude.Add[person, job, SByteBellCurve].If(Agents, Alive[person], Jobs, !Aptitude[person, job, aptitude]);
+        var BestForJob = Definition("BestForJob", person, job).Is(Maximal(person, aptitude, Aptitude));
 
-        //var Aptitude = Definition("Aptitude", person, job, vocationScore).Is(Agents, Alive[person], vocationScore == GetVocation[person, job]);
-        var BestForJob = Predicate("BestForDaycareWork", person).If(Agents, Alive[person], Maximal(person, vocationScore, vocationScore == GetVocation[person, Vocation.DaycareProvider]));
+        Vocations = Predicate("Vocations", job, employee, location);
 
         var OnShift = Predicate("OnShift", person, job, location);
 
-        var OpenForBusiness = Predicate("OpenForBusiness", location);
-        OpenForBusiness.If(Locations, locationType == GetLocationType[location],
-            LocationInformation, IsOpen[operation, GetTimeOfDay], OperatingSchedule,
-            (openMonday == true & IsMonday) |
-            (openTuesday == true & IsTuesday) | 
-            (openWednesday == true & IsWednesday) | 
-            (openThursday == true & IsThursday) |
-            (openFriday == true & IsFriday) | 
-            (openSaturday == true & IsSaturday) | 
-            (openSunday == true & IsSunday));
+        var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations, 
+            locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
 
         // ReSharper restore InconsistentNaming
 
