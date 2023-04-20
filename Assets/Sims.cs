@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using static Randomize;
 
+public enum Status { Alive, Dead }
 public enum Facet {
     AbstractInclined, ActivityLevel, Altruism, Ambition, AngerPropensity,
     AnxietyPropensity, ArtInclined, Assertiveness, Bashful, Bravery,

@@ -79,8 +79,6 @@ public class TalkOfTheTown {
 
         // ReSharper disable InconsistentNaming
         #region Functions
-        var GetTimeOfDay = Time.GetProperty<TimeOfDay>(nameof(Time.TimeOfDay));
-        var GetDayOfWeek = Time.GetProperty<DayOfWeek>(nameof(Time.DayOfWeek));
         var GetYear = Time.GetProperty<int>(nameof(Time.Year));
         var GetDate = Time.GetProperty<Date>(nameof(Time.Date));
         var YearsSince = Method<Date, int, int>(Time.YearsSince);
@@ -185,9 +183,8 @@ public class TalkOfTheTown {
         Couples.Accumulates(NewCouples);
 
         var BirthTo = Predicate("Birth", woman, man, sex, child).If(
-            Couples[woman, man], sex == RandomSex,
-            Prob[Time.PerYear(0.3f)], RandomFirstName, 
-            child == NewPerson[firstName, Surname[man]]);
+            Couples[woman, man], sex == RandomSex, Agents[woman, age, dateOfBirth, Sex.Female, sexuality],
+            Prob[FertilityRate[age]], RandomFirstName, child == NewPerson[firstName, Surname[man]]);
         Parents = Predicate("Parents", parent, child);
         Parents.Add.If(BirthTo[parent, person, sex, child]);
         Parents.Add.If(BirthTo[person, parent, sex, child]);
@@ -255,9 +252,8 @@ public class TalkOfTheTown {
 
         Simulation.EndPredicates();
         Simulation.Update();
-
         _firstTick = false;
-        Time.Tick(); // Call this so that these initial table builds get proper update treatment.
+        Time.Tick();
     }
 
     public void UpdateSimulator() {

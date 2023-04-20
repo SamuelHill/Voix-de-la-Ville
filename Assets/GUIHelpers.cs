@@ -155,10 +155,14 @@ public class GUITable {
     internal Rect LeftSideTables(int tableNum) => PaddedTableRect(tableNum, tableNum * (TableHeight + TablePadding));
 
     internal void LayoutRow(string[] strings) {
-        GUILayout.BeginHorizontal();
-        for (var i = 0; i < NumColumns; i++) GUILayout.Label(strings[i],
-            GUILayout.Width(longestStrings[i] + ColumnPadding));
-        GUILayout.EndHorizontal(); }
+        try {
+            GUILayout.BeginHorizontal();
+            for (var i = 0; i < NumColumns; i++) GUILayout.Label(strings[i],
+                GUILayout.Width(longestStrings[i] + ColumnPadding));
+            GUILayout.EndHorizontal(); }
+        catch (ArgumentException e) {
+            Debug.Log($"'{e.Message}' on strings {string.Join(", ", strings)}"); }
+    }
 
     public void OnGUI(int tableNum) {
         GUILayout.BeginArea(LeftSideTables(tableNum));
@@ -179,7 +183,8 @@ public class GUITable {
             else if (previousRowCount < numRowsToDisplay && RowCount != previousRowCount) {
                 Update();
                 previousRowCount = RowCount; }
-        } 
+        }
+        // This bit throws argument errors for changing the values before the scrollBar appears...
         else if (RowCount != previousRowCount) {
             Update();
             previousRowCount = RowCount; }

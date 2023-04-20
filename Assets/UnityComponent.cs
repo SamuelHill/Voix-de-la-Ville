@@ -76,7 +76,8 @@ public class UnityComponent : MonoBehaviour {
         //    orderby -table.RuleExecutionTime 
         //    select $"{table.Name} {table.RuleExecutionTime}\n"));
         Manager.SelectActiveTables();
-        if (!SimulationRunning) Manager.ShowPaused(); }
+        if (!SimulationRunning) Manager.ShowPaused();
+    }
 
     
     internal Color GetLocationColor(Location location) => 
