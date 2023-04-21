@@ -48,10 +48,7 @@ public class GUIManager {
     public void GetTableToolbarSize() => TableToolbarSize = 
         (from content in GUITableNames select (int)GUI.skin.button.CalcSize(content).x).Sum();
     public void InitAllTables() {
-        foreach (var table in Tables.Values) {
-            table.InitializeLongestStrings();
-            table.Update(); }
-    }
+        foreach (var table in Tables.Values) table.Initialize(); }
 
     // Called in OnGUI
     public void ShowActiveTables() {
@@ -103,55 +100,60 @@ public class GUIManager {
 }
 
 public class GUITable {
-    internal TablePredicate predicate;
-    internal string[] Headings => predicate.ColumnHeadings;
-    internal int[] longestStrings;
-    internal int NumColumns => Headings.Length;
-    internal uint RowCount => predicate.Length;
-    internal uint previousRowCount;
-    internal int numRowsToDisplay = (TableHeight / LabelHeight) - 2;  // 9, but ~flexible~
-    internal string[][] buffer;
-    internal uint bufferedRows;
-    internal float scrollPosition;
-    internal float oldScroll;
-    internal bool Scrolled => Math.Abs(scrollPosition - oldScroll) > 0.001f;
-    internal uint ScrollRow => (uint)Math.Floor(scrollPosition);
     #region Table display constants
     internal const int ColumnPadding = 5;
     internal const int LabelHeight = 21; // calculated once via:
     // (int)GUI.skin.label.CalcSize(new GUIContent("Any string here will do")).y
-    internal const int TableHeight = 250;
+    internal const int TableHeight = 255;
     internal const int TablePadding = 15;
     internal const int TableWidthOffset = 50;
+    internal const int numRowsToDisplay = (TableHeight - TablePadding) / LabelHeight - 2;  // 9, but ~flexible~
     #endregion
+
+    internal TablePredicate predicate;
+    internal string[][] buffer;
+    internal int[] longestStrings;
+    internal uint bufferedRows;
+    internal uint previousRowCount;
+    internal bool usingScroll;
+    internal float scrollPosition;
+    internal float oldScroll;
+
+    internal string Name => predicate.Name;
+    internal string[] Headings => predicate.ColumnHeadings;
+    internal int NumColumns => Headings.Length;
+    internal uint RowCount => predicate.Length;
+    internal bool Scrolled => Math.Abs(scrollPosition - oldScroll) > 0.0001f;
+    internal uint ScrollRow => (uint)Math.Floor(scrollPosition);
+    internal int NoData => (int)GUI.skin.label.CalcSize(new GUIContent($"No entries in table {Name}")).x;
+    internal int LongestRow => longestStrings.Sum() + longestStrings.Length * ColumnPadding;
+    internal int TableWidth => RowCount == 0 ? Math.Max(NoData, LongestRow) : LongestRow;
 
     public GUITable(TablePredicate predicate) {
         this.predicate = predicate;
-        BuildBuffer();
+        buffer = new string[numRowsToDisplay][];
+        for (var i = 0; i < numRowsToDisplay; i++)
+            buffer[i] = new string[NumColumns];
         longestStrings = new int[NumColumns]; }
 
-    public void RebuildBuffer(int newNumRows) {
-        numRowsToDisplay = newNumRows;
-        BuildBuffer(); }
-    internal void BuildBuffer() {
-        buffer = new string[numRowsToDisplay][];
-        for (var i = 0; i < numRowsToDisplay; i++) 
-            buffer[i] = new string[NumColumns]; }
-
-    public void Update() => Update(ScrollRow);
-    internal void Update(uint startRow) {
-        bufferedRows = predicate.RowRangeToStrings(startRow, buffer);
+    public void Initialize() {
+        UpdateLongestStrings(Headings);
+        Update(); }
+    public void Update() {
+        bufferedRows = predicate.RowRangeToStrings(ScrollRow, buffer);
         for (var i = 0; i < bufferedRows; i++) UpdateLongestStrings(buffer[i]); }
     internal void UpdateLongestStrings(string[] strings) {
         for (var i = 0; i < NumColumns; i++) {
             var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
-            if (longestStrings[i] < stringLength) longestStrings[i] = stringLength; }
-    }
-
-    public void InitializeLongestStrings() => UpdateLongestStrings(Headings);
+            if (longestStrings[i] < stringLength) longestStrings[i] = stringLength; } }
+    internal void UpdateOldScroll() => oldScroll = scrollPosition;
+    internal bool UpdateRowCount() {
+        if (previousRowCount == RowCount) return false;
+        previousRowCount = RowCount;
+        return true; }
 
     internal Rect PaddedTableRect(int x, int y) => new(x + TablePadding, y + TablePadding,
-        longestStrings.Sum() + longestStrings.Length * ColumnPadding + TablePadding + TableWidthOffset, TableHeight);
+        TableWidth + TablePadding + TableWidthOffset, TableHeight);
     internal Rect LeftSideTables(int tableNum) => PaddedTableRect(tableNum, tableNum * (TableHeight + TablePadding));
 
     internal void LayoutRow(string[] strings) {
@@ -160,34 +162,27 @@ public class GUITable {
             for (var i = 0; i < NumColumns; i++) GUILayout.Label(strings[i],
                 GUILayout.Width(longestStrings[i] + ColumnPadding));
             GUILayout.EndHorizontal(); }
-        catch (ArgumentException e) {
-            Debug.Log($"'{e.Message}' on strings {string.Join(", ", strings)}"); }
-    }
+        catch (ArgumentException) {
+            Debug.Log($"Table {Name} updated without user input..."); } }
 
     public void OnGUI(int tableNum) {
         GUILayout.BeginArea(LeftSideTables(tableNum));
         LayoutRow(Headings);
         GUILayout.BeginHorizontal();
         GUILayout.BeginVertical();
-        for (var i = 0; i < bufferedRows; i++) LayoutRow(buffer[i]);
+        if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
+        else { for (var i = 0; i < bufferedRows; i++) LayoutRow(buffer[i]); }
         GUILayout.EndVertical();
         GUILayout.Space(TablePadding);
-        if (RowCount >= numRowsToDisplay) {
+        if (RowCount != 0 && RowCount >= numRowsToDisplay) {
             scrollPosition = GUILayout.VerticalScrollbar(scrollPosition,
                 numRowsToDisplay - 0.1f, 0f, RowCount,
-                GUILayout.Height(TableHeight - (2 * LabelHeight)));
-            if (Scrolled) {
+                GUILayout.Height((numRowsToDisplay + 1) * LabelHeight));
+            if (Scrolled || !usingScroll) {
                 Update();
-                oldScroll = scrollPosition; }
-            // Get the final update based on table growth when moving to the scroll regime
-            else if (previousRowCount < numRowsToDisplay && RowCount != previousRowCount) {
-                Update();
-                previousRowCount = RowCount; }
-        }
-        // This bit throws argument errors for changing the values before the scrollBar appears...
-        else if (RowCount != previousRowCount) {
-            Update();
-            previousRowCount = RowCount; }
+                UpdateOldScroll(); }
+            if (!usingScroll) usingScroll = true; }
+        else if (!usingScroll && UpdateRowCount()) Update();
         GUILayout.EndHorizontal();
         GUILayout.EndArea();
     }

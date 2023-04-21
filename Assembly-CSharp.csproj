@@ -60,10 +60,10 @@
     <Compile Include="Assets\UnityComponent.cs" />
     <Compile Include="Assets\Sims.cs" />
     <Compile Include="Assets\GUIHelpers.cs" />
+    <Compile Include="Assets\Utils.cs" />
     <Compile Include="Assets\TalkOfTheTown.cs" />
     <Compile Include="Assets\Randomize.cs" />
     <Compile Include="Assets\Town.cs" />
-    <Compile Include="Assets\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
