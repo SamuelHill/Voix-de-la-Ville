@@ -5,17 +5,21 @@ using TED;
 using UnityEngine;
 
 // ReSharper disable InconsistentNaming
-public class GUIManager {
-    internal Dictionary<string, GUITable> Tables = new();
-    internal string[] AvailableTableNames;
-    internal GUIContent[] GUITableNames;
-    internal string[] ActiveTables;  // should also be a string[4]
-    internal string[] TableSelectorToolbar = { "Table 1", "Table 2", "Table 3", "Table 4" };
-    internal int TableToChange;
-    internal bool ShowTableToggle = true;
-    internal int ChangeTableSelector;
-    internal bool ChangeTableToggle;
-    internal const string ShowTables = "Show/hide tables?";
+public static class GUIManager {
+    internal static Dictionary<string, GUITable> Tables = new();
+    internal static string[] TableNames;
+    internal static GUIContent[] GUITableNames;
+    internal static string[] ActiveTables;  // should also be a string[4]
+    internal static string[] TableSelector = { "Table 1", "Table 2", "Table 3", "Table 4" };
+    internal static int TableToChange;
+    internal static bool ShowTables = true;
+    internal static int ChangeTableSelector;
+    internal static bool ChangeTable;
+    // set with a call to GetTableToolbarSize, only called once in the OnGUI function via SetupGUI
+    internal static int TableToolbarSize;
+
+    #region Display Constants
+    internal const string ShowHideTables = "Show/hide tables?";
     internal const int ShowTablesWidth = 121 + LabelBorders;
     internal const string ChangeTables = "Change tables?";
     internal const int ChangeTablesWidth = 105 + LabelBorders;
@@ -23,67 +27,62 @@ public class GUIManager {
     internal const int TopMiddleRectHeight = 30; // allows for TopMiddleRectStacks
     internal const int TableToolbarWidth = 250;
     internal const int MaxToolbarSize = 600;
-    // set with a call to GetTableToolbarSize, only called once in the OnGUI function via SetupGUI
-    internal int TableToolbarSize;
-    internal bool UseSelectionGrid => TableToolbarSize > MaxToolbarSize;
+    #endregion
 
-    internal GUIString paused = new("Simulation is paused", CenteredRect);
-    internal GUIString time = new(TalkOfTheTown.Time.ToString, TopRightRect);
-    internal GUIString tileInfo;
-
-    static GUIManager() {}
-    private GUIManager() {}
-    public static GUIManager Manager { get; } = new();
+    // Some GUIStrings will always be displayed - these can just go in the list. Others,
+    // like pause need to be addressed with external logic so its easiest to keep separate
+    internal static GUIString paused = new("Simulation is paused", CenteredRect);
+    internal static List<GUIString> guiStrings = new() {
+        new GUIString(TalkOfTheTown.Time.ToString, TopRightRect), };
 
     // Called once each in Start 
-    public void SetAvailableTables(List<TablePredicate> tables) {
+    public static void SetAvailableTables(List<TablePredicate> tables) {
         foreach (var table in tables) Tables[table.Name] = new GUITable(table);
-        AvailableTableNames = Tables.Keys.ToArray();
-        GUITableNames = (from available in AvailableTableNames 
+        TableNames = Tables.Keys.ToArray();
+        GUITableNames = (from available in TableNames 
                          select new GUIContent(available)).ToArray(); }
-    public void SetActiveTables(string[] activeTables) => ActiveTables = activeTables;
-    public void AddSelectedTileInfo(Func<string> tileString) => tileInfo = new GUIString(tileString, BottomMiddleRect);
+    public static void SetActiveTables(string[] activeTables) => ActiveTables = activeTables;
+    public static void AddSelectedTileInfo(Func<string> tileString) =>
+        guiStrings.Add(new GUIString(tileString, BottomMiddleRect));
+    public static void AddPopulationInfo(Func<string> populationString) =>
+        guiStrings.Add(new GUIString(populationString, BottomRightRect));
 
     // Called once each in SetupGUI
-    public void GetTableToolbarSize() => TableToolbarSize = 
+    public static void GetTableToolbarSize() => TableToolbarSize = 
         (from content in GUITableNames select (int)GUI.skin.button.CalcSize(content).x).Sum();
-    public void InitAllTables() {
-        foreach (var table in Tables.Values) table.Initialize(); }
+    public static void InitAllTables() { foreach (var table in Tables.Values) table.Initialize(); }
 
     // Called in OnGUI
-    public void ShowActiveTables() {
-        if (!ShowTableToggle) return;
+    public static void ShowPaused() => paused.OnGUI();
+    public static void ShowStrings() { foreach (var guiString in guiStrings) guiString.OnGUI(); }
+    public static void ShowActiveTables() {
+        if (!ShowTables) return;
         for (var i = 0; i < ActiveTables.Length; i++) Tables[ActiveTables[i]].OnGUI(i); }
-    public void SelectActiveTables() {
-        ToggleGroup();
-        if (!ChangeTableToggle || !ShowTableToggle) return;
-        TableToChangeToolbar();
-        ChangeTableSelector = Array.IndexOf(AvailableTableNames, ActiveTables[TableToChange]);
-        SelectionGridOrToolbar();
-        ActiveTables[TableToChange] = AvailableTableNames[ChangeTableSelector]; }
-    public void ShowPaused() => paused.OnGUI();
-    public void ShowTime() => time.OnGUI();
-    public void ShowTileInfo() => tileInfo.OnGUI();
-
-    // Display helpers
-    internal void ToggleGroup() {
+    public static void ChangeActiveTables() {
         GUI.BeginGroup(TopMiddleRectStack(ChangeTablesWidth + ShowTablesWidth));
-        ChangeTableToggle = GUI.Toggle(new Rect(0, 0, ChangeTablesWidth, TopMiddleRectHeight),
-            ChangeTableToggle, ChangeTables);
-        ShowTableToggle = GUI.Toggle(new Rect(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight),
-            ShowTableToggle, ShowTables);
-        GUI.EndGroup(); }
-    internal void TableToChangeToolbar() =>
-        TableToChange = GUI.Toolbar(TopMiddleRectStack(TableToolbarWidth, 2), 
-            TableToChange, TableSelectorToolbar);
-    internal void SelectionGridOrToolbar() {
-        if (UseSelectionGrid) {
-            var selectionGridHeight = Mathf.CeilToInt(AvailableTableNames.Length / 5f) * TopMiddleRectHeight;
+        ChangeTable = GUI.Toggle(ChangeTablesRect(), ChangeTable, ChangeTables);
+        ShowTables = GUI.Toggle(ShowTablesRect(), ShowTables, ShowHideTables);
+        GUI.EndGroup();
+        if (!ChangeTable || !ShowTables) return;
+        TableToChange = GUI.Toolbar(TopMiddleRectStack(TableToolbarWidth, 2), TableToChange, TableSelector);
+        ChangeTableSelector = Array.IndexOf(TableNames, ActiveTables[TableToChange]);
+        if (TableToolbarSize > MaxToolbarSize) {
+            var selectionGridHeight = Mathf.CeilToInt(TableNames.Length / 5f) * TopMiddleRectHeight;
             var selectionGridRect = TopMiddleRectStack(MaxToolbarSize, selectionGridHeight, 3);
-            ChangeTableSelector = GUI.SelectionGrid(selectionGridRect, ChangeTableSelector, AvailableTableNames, 5);
+            ChangeTableSelector = GUI.SelectionGrid(selectionGridRect, ChangeTableSelector, TableNames, 5);
         } else ChangeTableSelector = GUI.Toolbar(TopMiddleRectStack(TableToolbarSize, 3),
-            ChangeTableSelector, GUITableNames, GUI.skin.button, GUI.ToolbarButtonSize.FitToContents); }
+            ChangeTableSelector, GUITableNames, GUI.skin.button, GUI.ToolbarButtonSize.FitToContents);
+        ActiveTables[TableToChange] = TableNames[ChangeTableSelector]; }
 
+    public static void RuleExecutionTimes() => GUI.Label(CenteredRect(400, 400), 
+        string.Concat(from table in TalkOfTheTown.Simulation.Tables
+                           where table.RuleExecutionTime > 0
+                           orderby -table.RuleExecutionTime
+                           select $"{table.Name} {table.RuleExecutionTime}\n"));
+
+    #region Rects
+    internal static Rect ChangeTablesRect() => new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
+    internal static Rect ShowTablesRect() => new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
     internal static Rect TopMiddleRectStack(int width, int num = 1) => TopMiddleRectStack(width, TopMiddleRectHeight, num);
     // height should always be a multiple of TopMiddleRectHeight (unless its the final row)
     internal static Rect TopMiddleRectStack(int width, int height, int num) =>
@@ -97,6 +96,7 @@ public class GUIManager {
         new(Screen.width / 2 - width / 2, Screen.height - (height + LabelBorders), width, height);
     internal static Rect BottomRightRect(int width, int height) => 
         new(Screen.width - (width + LabelBorders), Screen.height - (height + LabelBorders), width, height);
+    #endregion
 }
 
 public class GUITable {
@@ -189,12 +189,14 @@ public class GUITable {
 }
 
 public class GUIString {
-    internal string displayString;
-    internal Func<string> GetStringFunc { get; }
-    internal Func<int, int, Rect> DisplayFunc { get; }
     internal const int LabelWidthOffset = 26;
     internal const int LabelHeightOffset = 6;
-    internal bool sizeCalcForStaticStrings;
+
+    internal Func<string> GetStringFunc { get; }
+    internal Func<int, int, Rect> DisplayFunc { get; }
+
+    internal string displayString;
+    internal bool staticStringCalcOnce;
     internal Vector2 displayStringSize;
     internal int width;
     internal int height;
@@ -206,7 +208,7 @@ public class GUIString {
         DisplayFunc = displayFunc;
         GetStringFunc = null;
         this.displayString = displayString;
-        sizeCalcForStaticStrings = true; }
+        staticStringCalcOnce = true; }
 
     public void OnGUI() {
         UpdateString();
@@ -215,8 +217,8 @@ public class GUIString {
     internal void UpdateString() {
         if (GetStringFunc is not null) {
             if (IsNewString()) UpdateSize(); }
-        if (!sizeCalcForStaticStrings) return;
-        sizeCalcForStaticStrings = false;
+        if (!staticStringCalcOnce) return;
+        staticStringCalcOnce = false;
         UpdateSize(); }
     internal bool IsNewString() {
         var newString = GetStringFunc();

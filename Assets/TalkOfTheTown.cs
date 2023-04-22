@@ -71,6 +71,8 @@ public class TalkOfTheTown {
     public TablePredicate<Vocation, Person, Location> Vocations;
     public TablePredicate<Person, Location> Homes;
     public TablePredicate<Person, Vocation, sbyte> Aptitude;
+    public TablePredicate<Person, Location> WhereTheyAt;
+    public KeyIndex<(Person, Location), Location> WhereTheyAtLocationIndex;
     #endregion
 
     public void InitSimulator() {
@@ -224,14 +226,17 @@ public class TalkOfTheTown {
         UsedLots.Unique = true;
 
         var FreeLot = Definition("FreeLot", position).Is(position == RandomLot[NumLots], IsVacant[position]);
-        NewLocations[location, position, GetYear, GetDate].If(FreeLot[position], 
+        NewLocations[location, position, GetYear, GetDate].If(FreeLot[position],
+            // , Count(Homes) <= Count(Agents)
             location == NewLocation["Test", LocationType.House], Prob[Time.PerWeek(0.8f)], IsNotFirstTick);
         Locations.Accumulates(NewLocations);
         UsedLots.If(Locations);
+        var AllPlaces = Predicate("AllPlaces", location).If(Locations);
 
         Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
         Homes.Add.If(Agents[occupant, age, dateOfBirth, sex, sexuality], age > 18,
+            // all bound at once
             Locations, IsLocationType[location, LocationType.House], !Homes[occupant, home],
             !Homes[person, location] | (Homes[person, location] & IsFamily[person, occupant]));
 
@@ -240,6 +245,12 @@ public class TalkOfTheTown {
         Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
         Aptitude.Add[person, job, SByteBellCurve].If(Agents, Alive[person], Jobs, !Aptitude[person, job, aptitude]);
         var BestForJob = Definition("BestForJob", person, job).Is(Maximal(person, aptitude, Aptitude));
+
+        WhereTheyAt = Predicate("WhereTheyAt", person.Key, location.Indexed);
+        // WhereTheyAtLocationIndex = WhereTheyAt.KeyIndex(location);
+        var Homebodies = Predicate("Homebodies", person);
+        Homebodies.If(Agents, Alive[person]);
+        WhereTheyAt.If(Homebodies, RandomElement(AllPlaces, location));
 
         Vocations = Predicate("Vocations", job, employee, location);
 
