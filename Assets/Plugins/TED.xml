@@ -3591,12 +3591,6 @@
             <param name="arg5">Fifth argument to the predicate</param>
             <param name="arg6">Sixth argument to the predicate</param>
         </member>
-        <member name="M:TED.Language.TestMember(System.Linq.Expressions.Expression{System.Func{System.Boolean}})">
-            <summary>
-            Makes a PrimitiveTest based on an Expression of the form:
-            "() => MemberExpression" where MemberExpression is a C# Predicate
-            </summary>
-        </member>
         <member name="M:TED.Language.TestMember(System.Object,System.String)">
             <summary>
             Makes a PrimitiveTest where the bool Func is built from a property on the given type
@@ -3612,12 +3606,12 @@
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``1(System.Predicate{``0})">
+        <member name="M:TED.Language.TestMethod``1(System.Func{``0,System.Boolean})">
             <summary>
             Makes a PrimitiveTest with the same name as the System.Predicate being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``1(System.String,System.Predicate{``0})">
+        <member name="M:TED.Language.Test``1(System.String,System.Func{``0,System.Boolean})">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
@@ -3704,23 +3698,9 @@
             Makes a Function with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Member``1(System.Linq.Expressions.Expression{System.Func{``0}})">
-            <summary>
-            Makes a function that can be placed in functional expressions with the name of
-            the delegate member being passed inside the expression.
-            Expression should be of the form: "() => MemberExpression"
-            </summary>
-        </member>
         <member name="M:TED.Language.Member``1(System.Object,System.String)">
             <summary>
             Makes a Function where the Func T is built from a property on the given type
-            </summary>
-        </member>
-        <member name="M:TED.Language.GetMember``1(System.Linq.Expressions.Expression{System.Func{``0}})">
-            <summary>
-            Makes a function that can be placed in functional expressions with the name:
-            "GetMemberExpression" where MemberExpression is the name of the member in the expression
-            Expression should be of the form: "() => MemberExpression"
             </summary>
         </member>
         <member name="M:TED.Language.GetMember``1(System.Object,System.String)">
@@ -4751,7 +4731,7 @@
             </summary>
             <typeparam name="T1">Type of the argument to the predicate</typeparam>
         </member>
-        <member name="M:TED.Primitives.PrimitiveTest`1.#ctor(System.String,System.Predicate{`0},System.Boolean)">
+        <member name="M:TED.Primitives.PrimitiveTest`1.#ctor(System.String,System.Func{`0,System.Boolean},System.Boolean)">
             <summary>
             Make a primitive test, i.e. a predicate that can only be called on instantiated arguments.
             </summary>
@@ -5190,7 +5170,7 @@
             Add a key index
             </summary>
         </member>
-        <member name="M:TED.TablePredicate.IndexByKey(TED.Term)">
+        <member name="M:TED.TablePredicate.IndexByKey(TED.Interpreter.IVariable)">
             <summary>
             Add a key index
             </summary>
@@ -5200,12 +5180,12 @@
             Add an index; the column isn't a key, i.e. rows aren't assumed to have unique values for this column
             </summary>
         </member>
-        <member name="M:TED.TablePredicate.IndexBy(TED.Term)">
+        <member name="M:TED.TablePredicate.IndexBy(TED.Interpreter.IVariable)">
             <summary>
             Add an index; the column isn't a key, i.e. rows aren't assumed to have unique values for this column
             </summary>
         </member>
-        <member name="M:TED.TablePredicate.ColumnPositionOfDefaultVariable(TED.Term)">
+        <member name="M:TED.TablePredicate.ColumnPositionOfDefaultVariable(TED.Interpreter.IVariable)">
             <summary>
             Find the column/argument position of an argument, given the variable used to declare it.
             </summary>
@@ -5220,6 +5200,14 @@
             Return the index of the specified type for the specified column
             </summary>
             <param name="columnIndex">Column to find the index for</param>
+            <param name="key">Whether to look for a key or non-key</param>
+            <returns>The index or null if there is not index of that type for that column</returns>
+        </member>
+        <member name="M:TED.TablePredicate.IndexFor(TED.Interpreter.IVariable,System.Boolean)">
+            <summary>
+            Return the index of the specified type for the specified column
+            </summary>
+            <param name="column">Column to find the index for</param>
             <param name="key">Whether to look for a key or non-key</param>
             <returns>The index or null if there is not index of that type for that column</returns>
         </member>
