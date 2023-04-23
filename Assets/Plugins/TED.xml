@@ -65,6 +65,11 @@
         <member name="M:TED.Definition.#ctor(System.String)">
             <inheritdoc />
         </member>
+        <member name="M:TED.Definition.op_Implicit(TED.Definition)~TED.Interpreter.Goal">
+            <summary>
+            A call to this definition using it's "default" arguments
+            </summary>
+        </member>
         <member name="T:TED.Definition.DefinitionGoal">
             <summary>
             Goal representing a call to a definition

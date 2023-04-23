@@ -162,7 +162,7 @@ public class TalkOfTheTown {
         RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
         RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
         var RandomPerson = Definition("RandomPerson", sex, person);
-        RandomPerson.Is(RandomFirstName[sex, firstName], RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
+        RandomPerson.Is(RandomFirstName, RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
 
         Agents = FromCsv("Agents", Csv("agents"), person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality);
         Dead = Predicate("Dead", person);
@@ -186,7 +186,7 @@ public class TalkOfTheTown {
 
         var BirthTo = Predicate("Birth", woman, man, sex, child).If(
             Couples[woman, man], sex == RandomSex, Agents[woman, age, dateOfBirth, Sex.Female, sexuality],
-            Prob[FertilityRate[age]], RandomFirstName[sex, firstName], child == NewPerson[firstName, Surname[man]]);
+            Prob[FertilityRate[age]], RandomFirstName, child == NewPerson[firstName, Surname[man]]);
         Parents = Predicate("Parents", parent, child);
         Parents.Add.If(BirthTo[parent, person, sex, child]);
         Parents.Add.If(BirthTo[person, parent, sex, child]);
