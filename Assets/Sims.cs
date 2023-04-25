@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using static Randomize;
 
-public enum Status { Alive, Dead }
+public enum VitalStatus { Alive, Dead }
 public enum Facet {
     AbstractInclined, ActivityLevel, Altruism, Ambition, AngerPropensity,
     AnxietyPropensity, ArtInclined, Assertiveness, Bashful, Bravery,
@@ -99,7 +99,7 @@ public class Person {
     public string FirstName;
     public string LastName;
 
-    private string FullName => FirstName + " " + LastName;
+    public string FullName => FirstName + " " + LastName;
 
     public Person(string firstName, string lastName) {
         _id = Guid.NewGuid();

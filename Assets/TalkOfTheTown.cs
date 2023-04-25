@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TED;
-using TED.Primitives;
 using TED.Tables;
 using TED.Utilities;
 using UnityEngine;
@@ -53,8 +52,10 @@ public class TalkOfTheTown {
     #endregion
 
     #region public Tables
-    public TablePredicate<Person, int, Date, Sex, Sexuality> Agents;
-    public TablePredicate<Person> Dead;
+    public TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> Agents;
+    public GeneralIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), VitalStatus> AgentsVitalStatusIndex;
+    public TablePredicate<Person, Vocation, sbyte> Aptitude;
+    public TablePredicate<Person, Facet, sbyte> Personality;
     public TablePredicate<Person, Person> Couples;
     public TablePredicate<Person, Person> Parents;
     public TablePredicate<LocationType, LocationCategories, Accessibility, DailyOperation, Schedule> LocationInformation;
@@ -70,9 +71,9 @@ public class TalkOfTheTown {
     public TablePredicate<Vector2Int> UsedLots;
     public TablePredicate<Vocation, Person, Location> Vocations;
     public TablePredicate<Person, Location> Homes;
-    public TablePredicate<Person, Vocation, sbyte> Aptitude;
+    public GeneralIndex<(Person, Location), Location> HomesLocationIndex;
     public TablePredicate<Person, Location> WhereTheyAt;
-    public KeyIndex<(Person, Location), Location> WhereTheyAtLocationIndex;
+    public GeneralIndex<(Person, Location), Location> WhereTheyAtLocationIndex;
     #endregion
 
     public void InitSimulator() {
@@ -130,6 +131,7 @@ public class TalkOfTheTown {
         var sexOfPartner     = (Var<Sex>)"sexOfPartner";
         var sexuality        = (Var<Sexuality>)"sexuality";
         var sexualOfPartner  = (Var<Sexuality>)"sexualityOfPartner";
+        var vitalStatus      = (Var<VitalStatus>)"vitalStatus";
         var facet            = (Var<Facet>)"facet";
         var personality      = (Var<sbyte>)"personality";
         var location         = (Var<Location>)"location";
@@ -157,24 +159,44 @@ public class TalkOfTheTown {
         var FemaleNames = FromCsv("FemaleNames", Txt("female_names"), firstName);
         var Surnames = FromCsv("Surnames", Txt("english_surnames"), lastName);
 
-        // TODO Should RandomFirstName and RandomPerson be Definitions?
         var RandomFirstName = Definition("RandomFirstName", sex, firstName);
         RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
         RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
         var RandomPerson = Definition("RandomPerson", sex, person);
         RandomPerson.Is(RandomFirstName, RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
+        
+        // ******************************************************************************
+        // Agents:
 
-        Agents = FromCsv("Agents", Csv("agents"), person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality);
-        Dead = Predicate("Dead", person);
-        var Alive = Definition("Alive", person).Is(Not[Dead[person]]);
-        var Died = Predicate("Died", person).If(Agents, age > 60,
-            Prob[Time.PerMonth(0.001f)], Alive[person]);
-        Dead.Accumulates(Died);
+        var PrimordialBeings = FromCsv("PrimordialBeings", 
+            Csv("agents"), person, age, dateOfBirth, sex, sexuality);
+        Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
+        Agents.AddRows(from being in PrimordialBeings 
+            select (being.Item1, being.Item2, being.Item3, being.Item4, being.Item5, VitalStatus.Alive));
+        AgentsVitalStatusIndex = (GeneralIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), VitalStatus>)Agents.IndexFor(vitalStatus, false);
+
+        var Dead = Definition("Dead", person).Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Dead]);
+        var Alive = Definition("Alive", person).Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]);
+        Agents.Set(person, vitalStatus, VitalStatus.Dead).If(Alive, Agents, age > 60, Prob[Time.PerMonth(0.001f)]);
+
+        var Facets = Predicate("Facets", facet);
+        Facets.AddRows(Enum.GetValues(typeof(Facet)).Cast<Facet>());
+        Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
+        Personality.AddRows(from being in PrimordialBeings
+                            from face in Facets
+                            select (being.Item1, face, Randomize.SByteBellCurve()));
+
+        var Jobs = Predicate("Jobs", job);
+        Jobs.AddRows(Enum.GetValues(typeof(Vocation)).Cast<Vocation>());
+        Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
+        Aptitude.AddRows(from being in PrimordialBeings
+                         from face in Jobs
+                         select (being.Item1, face, Randomize.SByteBellCurve()));
 
         var Man = Predicate("Man", person).If(
-            Agents[person, age, dateOfBirth, Sex.Male, sexuality], Alive[person], age >= 18);
+            Agents[person, age, dateOfBirth, Sex.Male, sexuality, VitalStatus.Alive], age >= 18);
         var Woman = Predicate("Woman", person).If(
-            Agents[person, age, dateOfBirth, Sex.Female, sexuality], Alive[person], age >= 18);
+            Agents[person, age, dateOfBirth, Sex.Female, sexuality, VitalStatus.Alive], age >= 18);
 
         Couples = Predicate("Couples", person, partner);
         Couples.Unique = true;
@@ -185,28 +207,30 @@ public class TalkOfTheTown {
         Couples.Accumulates(NewCouples);
 
         var BirthTo = Predicate("Birth", woman, man, sex, child).If(
-            Couples[woman, man], sex == RandomSex, Agents[woman, age, dateOfBirth, Sex.Female, sexuality],
+            Couples[woman, man], sex == RandomSex, Agents[woman, age, dateOfBirth, Sex.Female, sexuality, VitalStatus.Alive],
             Prob[FertilityRate[age]], RandomFirstName, child == NewPerson[firstName, Surname[man]]);
         Parents = Predicate("Parents", parent, child);
         Parents.Add.If(BirthTo[parent, person, sex, child]);
         Parents.Add.If(BirthTo[person, parent, sex, child]);
-        Agents.Add[person, -1, GetDate, sex, sexuality].If(
+        Agents.Add[person, -1, GetDate, sex, sexuality, VitalStatus.Alive].If(
             BirthTo[man, woman, sex, person], sexuality == RandomSexuality[sex]);
-
-        var Facets = Predicate("Facets", facet);
-        Facets.AddRows(Enum.GetValues(typeof(Facet)).Cast<Facet>());
-        var Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
-        Personality.Add[person, facet, SByteBellCurve].If(Agents, Alive[person], Facets, !Personality[person, facet, personality]);
+        Personality.Add[person, facet, SByteBellCurve].If(BirthTo[man, woman, sex, person], Facets);
+        Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[man, woman, sex, person], Jobs);
 
         var IsFamily = Definition("IsFamily", person, otherPerson).Is(
             Couples[person, otherPerson] | Couples[otherPerson, person] | 
-            (Parents[person, otherPerson] & Agents[otherPerson, age, dateOfBirth, sex, sexuality] & age <= 18) |
-            (Parents[otherPerson, person] & Agents[person, age, dateOfBirth, sex, sexuality] & age <= 18));
+            (Parents[person, otherPerson] & Agents[otherPerson, age, dateOfBirth, sex, sexuality, VitalStatus.Alive] & age <= 18) |
+            (Parents[otherPerson, person] & Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive] & age <= 18));
+
+        // ******************************************************************************
+        // LOCATIONS:
 
         LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"), 
             locationType.Key, locationCategory.Indexed, accessibility, operation, schedule);
         LocationTypeKeyInfo = LocationInformation.KeyIndex(locationType);
         CategoryColors = FromCsv("CategoryColors", Csv("locationColors"), locationCategory.Key, color);
+        
+        // TODO - Force this to only compute once also
         LocationColors = Predicate("LocationColors", locationType.Key, color);
         LocationColors.Unique = true;
         LocationColors.Add.If(LocationInformation, CategoryColors);
@@ -226,38 +250,33 @@ public class TalkOfTheTown {
         UsedLots.Unique = true;
 
         var FreeLot = Definition("FreeLot", position).Is(position == RandomLot[NumLots], IsVacant[position]);
-        NewLocations[location, position, GetYear, GetDate].If(FreeLot[position],
+        NewLocations[location, position, GetYear, GetDate].If(FreeLot,
             // , Count(Homes) <= Count(Agents)
             location == NewLocation["Test", LocationType.House], Prob[Time.PerWeek(0.8f)], IsNotFirstTick);
         Locations.Accumulates(NewLocations);
         UsedLots.If(Locations);
         var AllPlaces = Predicate("AllPlaces", location).If(Locations);
 
+        Vocations = Predicate("Vocations", job, employee, location);
+        var BestForJob = Definition("BestForJob", person, job).Is(Maximal(person, aptitude, Aptitude));
+        var OnShift = Predicate("OnShift", person, job, location);
+        var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
+            locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
+
         Homes = Predicate("Homes", occupant.Key, location.Indexed);
+        HomesLocationIndex = (GeneralIndex<(Person, Location), Location>)Homes.IndexFor(location, false);
         Homes.Unique = true;
-        Homes.Add.If(Agents[occupant, age, dateOfBirth, sex, sexuality], age > 18,
-            // all bound at once
-            Locations, IsLocationType[location, LocationType.House], !Homes[occupant, home],
+        // TODO - Agents change to BirthTo
+        // modeling homelessness vs primordial housing
+        Homes.Add.If(Agents[occupant, age, dateOfBirth, sex, sexuality, VitalStatus.Alive], !Homes[occupant, home],
+            Locations, IsLocationType[location, LocationType.House],
             !Homes[person, location] | (Homes[person, location] & IsFamily[person, occupant]));
 
-        var Jobs = Predicate("Jobs", job);
-        Jobs.AddRows(Enum.GetValues(typeof(Vocation)).Cast<Vocation>());
-        Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
-        Aptitude.Add[person, job, SByteBellCurve].If(Agents, Alive[person], Jobs, !Aptitude[person, job, aptitude]);
-        var BestForJob = Definition("BestForJob", person, job).Is(Maximal(person, aptitude, Aptitude));
-
         WhereTheyAt = Predicate("WhereTheyAt", person.Key, location.Indexed);
-        // WhereTheyAtLocationIndex = WhereTheyAt.KeyIndex(location);
+        WhereTheyAtLocationIndex = (GeneralIndex<(Person, Location), Location>)WhereTheyAt.IndexFor(location, false);
         var Homebodies = Predicate("Homebodies", person);
-        Homebodies.If(Agents, Alive[person]);
+        Homebodies.If(Agents, Alive);
         WhereTheyAt.If(Homebodies, RandomElement(AllPlaces, location));
-
-        Vocations = Predicate("Vocations", job, employee, location);
-
-        var OnShift = Predicate("OnShift", person, job, location);
-
-        var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations, 
-            locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
 
         // ReSharper restore InconsistentNaming
 
@@ -276,13 +295,13 @@ public class TalkOfTheTown {
     public void UpdateRows() {
         // Age a person on the first tick of a given date
         if (Time.IsAM) {
-            Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, Sex __, Sexuality ___) agent) => {
+            Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, Sex __, Sexuality ___, VitalStatus ____) agent) => {
                 if (Time.IsDate(agent.dateOfBirth) && agent.age >= 0) agent.age++;
             });
         }
         // However, if they were born on today's date (as denoted with the age -1), set the age to 0 in the last tick of the given date
         else if (Time.IsPM) {
-            Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, Sex __, Sexuality ___) agent) => {
+            Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, Sex __, Sexuality ___, VitalStatus ____) agent) => {
                 if (Time.IsDate(agent.dateOfBirth) && agent.age < 0) agent.age = 0;
             });
         }

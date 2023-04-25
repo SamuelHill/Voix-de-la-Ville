@@ -4944,6 +4944,11 @@
             All Predicates defined in this Program
             </summary>
         </member>
+        <member name="P:TED.Program.BaseTables">
+            <summary>
+            Base tables in the program
+            </summary>
+        </member>
         <member name="F:TED.Program.Name">
             <summary>
             Name of the program, for debugging
@@ -5309,6 +5314,11 @@
             Append all the rows of the tables in Inputs to this table
             </summary>
         </member>
+        <member name="P:TED.TablePredicate.Inputs">
+            <summary>
+            Table predicates that this table predicate accumulates, if any.
+            </summary>
+        </member>
         <member name="M:TED.TablePredicate.op_Implicit(TED.TablePredicate)~TED.Interpreter.Goal">
             <summary>
             If you put a predicate in a rule body without arguments, it defaults to the rule's "default" arguments.
@@ -5369,6 +5379,29 @@
         <member name="M:TED.TablePredicate.UpdateColumns">
             <summary>
             Run any column updates for this table
+            </summary>
+        </member>
+        <member name="F:TED.TablePredicate.Property">
+            <summary>
+            Property list for meta-data.
+            For Boolean data, Feature[] is preferred.
+            </summary>
+        </member>
+        <member name="F:TED.TablePredicate.Feature">
+            <summary>
+            Boolean meta-data about the table.
+            For non-Boolean data, use Property[]
+            </summary>
+        </member>
+        <member name="F:TED.TablePredicate.UpdaterFor">
+            <summary>
+            Name of the metadata property indicating that this table predicate is an internal table
+            make for updating another table using Input or Set().
+            </summary>
+        </member>
+        <member name="F:TED.TablePredicate.VisualizerName">
+            <summary>
+            Name of the metadata property specifying a preferred name to include in a dataflow visualization
             </summary>
         </member>
         <member name="T:TED.TablePredicate`1">
@@ -5451,6 +5484,9 @@
             <summary>
             Add rows of t to rows of this predicate
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`1.Inputs">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`1.Accumulates(TED.TablePredicate{`0})">
             <summary>
@@ -5551,6 +5587,9 @@
             </summary>
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
+        </member>
+        <member name="P:TED.TablePredicate`2.Inputs">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`2.Accumulates(TED.TablePredicate{`0,`1})">
             <summary>
@@ -5701,6 +5740,9 @@
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
         </member>
+        <member name="P:TED.TablePredicate`3.Inputs">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`3.Accumulates(TED.TablePredicate{`0,`1,`2})">
             <summary>
             Declare that on each simulation tick, the contents of the specified tables should be appended to this table.
@@ -5835,6 +5877,9 @@
             </summary>
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
+        </member>
+        <member name="P:TED.TablePredicate`4.Inputs">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`4.Accumulates(TED.TablePredicate{`0,`1,`2,`3})">
             <summary>
@@ -5974,6 +6019,9 @@
             </summary>
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
+        </member>
+        <member name="P:TED.TablePredicate`5.Inputs">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`5.Accumulates(TED.TablePredicate{`0,`1,`2,`3,`4})">
             <summary>
@@ -6117,6 +6165,9 @@
             </summary>
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
+        </member>
+        <member name="P:TED.TablePredicate`6.Inputs">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`6.Accumulates(TED.TablePredicate{`0,`1,`2,`3,`4,`5})">
             <summary>
@@ -6264,6 +6315,9 @@
             </summary>
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
+        </member>
+        <member name="P:TED.TablePredicate`7.Inputs">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`7.Accumulates(TED.TablePredicate{`0,`1,`2,`3,`4,`5,`6})">
             <summary>
@@ -6415,6 +6469,9 @@
             </summary>
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
+        </member>
+        <member name="P:TED.TablePredicate`8.Inputs">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`8.Accumulates(TED.TablePredicate{`0,`1,`2,`3,`4,`5,`6,`7})">
             <summary>
@@ -7064,6 +7121,315 @@
             Read a quoted column
             This just reads into the string buffer.  We depend on the caller to move the string buffer into the row buffer.
             </summary>
+        </member>
+        <member name="T:TED.Utilities.DataflowVisualizer">
+            <summary>
+            Makes GraphViz visualizations of the data flow from one TED TablePredicate to another
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.DataflowVisualizer.MakeGraph(TED.Program,System.String)">
+            <summary>
+            Make a visualization of the dataflow between predicates in a Program or Simulation.
+            </summary>
+            <param name="p"></param>
+            <param name="path"></param>
+        </member>
+        <member name="T:TED.Utilities.GraphViz">
+            <summary>
+            Represents a graph to be written to a .dot file for rendering using GraphViz
+            This is the untyped base class.  Use the version with a type parameter to make a real graph.
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz.Attributes">
+            <summary>
+            Attributes of the graph itself
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz.GlobalNodeAttributes">
+            <summary>
+            Attributes to be applied by default to all nodes
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz.GlobalEdgeAttributes">
+            <summary>
+            Attributes to be applied by default to all edges
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz.WriteAttribute(System.Object,System.IO.TextWriter)">
+            <summary>
+            Write the value part of an attribute/value pair in .dot format
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz.WriteAttribute(System.String,System.Object,System.IO.TextWriter)">
+            <summary>
+            Write an attribute/value pair in .dot format
+            </summary>
+            <param name="attr">Name of the attribute</param>
+            <param name="value">Value of the attribute</param>
+            <param name="o">Stream to write to</param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz.WriteAttribute(System.Collections.Generic.KeyValuePair{System.String,System.Object},System.IO.TextWriter)">
+            <summary>
+            Write an attribute/value pair in .dot format
+            </summary>
+            <param name="attr">Name of the attribute + its value</param>
+            <param name="o">Stream to write to</param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz.WriteAttributeList(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Object}},System.String,System.String,System.IO.TextWriter)">
+            <summary>
+            Write a series of attribute/value pairs in .dot format
+            </summary>
+            <param name="attributes">List of attribute/value pairs</param>
+            <param name="preamble">string to print before a pair</param>
+            <param name="postamble">String to print after a pair</param>
+            <param name="o">Stream to print to</param>
+        </member>
+        <member name="T:TED.Utilities.GraphViz`1">
+            <summary>
+            A graph to be written to a .dot file for visualization using GraphViz
+            </summary>
+            <typeparam name="T">The data type of the nodes in the graph</typeparam>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.DefaultNodeAttributes">
+            <summary>
+            Optional function to compute attributes of a node
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.DefaultEdgeAttributes">
+            <summary>
+            Optional function to compute attributes of an edge
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.NodeId">
+            <summary>
+            Function to compute the ID string to use for a node in the file, as distinct from its label
+            By default, this just assigns a serial number to each node.  But you can specify your own function.
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.NodeLabel">
+            <summary>
+            Function to compute the label to display inside a node
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.NodeCluster">
+            <summary>
+            Function to compute the cluster to assign a node to, if any.
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.IdOf">
+            <summary>
+            The internal ID string assigned to a node
+            This is not defined until the node is added to the graph
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.nodes">
+            <summary>
+            The set of all nodes in the graph
+            </summary>
+        </member>
+        <member name="P:TED.Utilities.GraphViz`1.Nodes">
+            <summary>
+            The set of all nodes in the graph
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.NodeAttributes">
+            <summary>
+            The attributes assigned to a given node
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.#ctor">
+            <summary>
+            Make a graph to be rendered using GraphViz.
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.AddNode(`0)">
+            <summary>
+            Add a node to the graph.
+            IF the node is already present in the graph, this does nothing.
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.AddEdge(TED.Utilities.GraphViz{`0}.Edge)">
+            <summary>
+            Add the edge.
+            If edge is already present, merge the attributes of the edge with the attributes listed here
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.AddReachableFrom(System.Collections.Generic.IEnumerable{`0},System.Func{`0,System.Collections.Generic.IEnumerable{TED.Utilities.GraphViz{`0}.Edge}})">
+            <summary>
+            Add all the nodes listed, and all the nodes reachable from them via the nodeEdges.
+            The edges are added too.
+            In other words, this adds the connected components of all the nodes in roots.
+            </summary>
+            <param name="roots">All the nodes to start from</param>
+            <param name="nodeEdges">Function to list the set of edges incident on a specified node</param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.AddReachableFrom(`0,System.Func{`0,System.Collections.Generic.IEnumerable{TED.Utilities.GraphViz{`0}.Edge}})">
+            <summary>
+            Add this node and all the nodes reachable from it via nodeEdges.  The edges are added too.
+            In other words, this adds the specified node's connected component.
+            </summary>
+            <param name="root">Node to start tracing from</param>
+            <param name="nodeEdges">Function to list the set of edges incident on a specified node</param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.WriteGraph(System.IO.TextWriter)">
+            <summary>
+            Write the graph to the specified stream
+            </summary>
+            <param name="o">Stream to write to</param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.WriteGraph(System.String)">
+            <summary>
+            Write the graph in .dot format to the specified file.
+            </summary>
+            <param name="path">Path to the file to write</param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.WriteEdge(TED.Utilities.GraphViz{`0}.Edge,System.IO.TextWriter)">
+            <summary>
+            Write an edge in DOT format
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.WriteNode(`0,System.IO.TextWriter)">
+            <summary>
+            Write a node in DOT format
+            </summary>
+        </member>
+        <member name="P:TED.Utilities.GraphViz`1.Edges">
+            <summary>
+            The set of all edges in the graph
+            </summary>
+        </member>
+        <member name="T:TED.Utilities.GraphViz`1.Edge">
+            <summary>
+            Represents an edge in a GraphViz graph
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Edge.StartNode">
+            <summary>
+            Node this edge originates at.
+            If this is an undirected edge, then StartNode and EndNode are interchangeable
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Edge.EndNode">
+            <summary>
+            Node this edge ends at.
+            If this is an undirected edge, then StartNode and EndNode are interchangeable
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Edge.Directed">
+            <summary>
+            Whether this is a directed edge or not
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Edge.Label">
+            <summary>
+            Text to mark this edge with, or null, if edge is to be unlabeled.
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Edge.Attributes">
+            <summary>
+            Attributes to be applied to this edge
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.#ctor(`0,`0,System.Boolean,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Make an edge
+            </summary>
+            <param name="startNode">Node the edge should start from.</param>
+            <param name="endNode">Node the edge should end at</param>
+            <param name="directed">Whether the edge is directed.  If not, startNode and endNode can be switched.</param>
+            <param name="label">Text to display along with the edge, or null</param>
+            <param name="attributes">Attributes to apply to the edge, if any</param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.AddAttributes(TED.Utilities.GraphViz{`0}.Edge)">
+            <summary>
+            Copy the attributes from the specified edge into this edge's attributes
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.AddAttributes(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Object}})">
+            <summary>
+            Add the specified attributes to this edge
+            </summary>
+            <param name="attributes"></param>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.op_Equality(TED.Utilities.GraphViz{`0}.Edge,TED.Utilities.GraphViz{`0}.Edge)">
+            <summary>
+            True if two edges are the same.
+            Edges are the same if they have the same start and end nodes, directedness, and label.
+            If the node isn't directed, the the order of start and end nodes doesn't matter.
+            Attributes are ignored for purposes of equality.
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.op_Inequality(TED.Utilities.GraphViz{`0}.Edge,TED.Utilities.GraphViz{`0}.Edge)">
+            <summary>
+            True if the nodes are not the same
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.op_Implicit(System.ValueTuple{`0,`0})~TED.Utilities.GraphViz{`0}.Edge">
+            <summary>
+            Make an edge from a tuple
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.op_Implicit(System.ValueTuple{`0,`0,System.String})~TED.Utilities.GraphViz{`0}.Edge">
+            <summary>
+            Make an edge from a tuple
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.op_Implicit(System.ValueTuple{`0,`0,System.String,System.Boolean})~TED.Utilities.GraphViz{`0}.Edge">
+            <summary>
+            Make an edge from a tuple
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.Equals(System.Object)">
+            <summary>
+            True if obj is an edge that is == to this edge
+            Edges are the same if they have the same start and end nodes, directedness, and label.
+            If the node isn't directed, the the order of start and end nodes doesn't matter.
+            Attributes are ignored for purposes of equality.
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.Edge.GetHashCode">
+            <summary>
+            Return a hash code for the edge.  If the edge is directed, then it is symmetric in the start and end nodes
+            </summary>
+        </member>
+        <member name="T:TED.Utilities.GraphViz`1.Cluster">
+            <summary>
+            A cluster of nodes to be grouped together during rendering
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Cluster.Name">
+            <summary>
+            Name of the cluster
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Cluster.Nodes">
+            <summary>
+            Nodes in the cluster
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Cluster.Attributes">
+            <summary>
+            Attributes rendering for this cluster
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.Cluster.SubClusters">
+            <summary>
+            Other clusters to be rendered inside this cluster
+            </summary>
+        </member>
+        <member name="F:TED.Utilities.GraphViz`1.topLevelClusters">
+            <summary>
+            Clusters for this graph that are not inside other clusters
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.GraphViz`1.MakeCluster(System.String,TED.Utilities.GraphViz{`0}.Cluster)">
+            <summary>
+            Add a cluster to the graph
+            </summary>
+            <param name="name">Name to give to the cluster</param>
+            <param name="parent">Cluster inside of which to render this cluster, or null</param>
+            <returns></returns>
         </member>
         <member name="T:TED.Utilities.Random">
             <summary>

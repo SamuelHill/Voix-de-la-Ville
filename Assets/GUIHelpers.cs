@@ -120,7 +120,7 @@ public class GUITable {
     internal float oldScroll;
 
     internal string Name => predicate.Name;
-    internal string[] Headings => predicate.ColumnHeadings;
+    internal string[] Headings => (from heading in predicate.ColumnHeadings select Utils.Title(heading)).ToArray();
     internal int NumColumns => Headings.Length;
     internal uint RowCount => predicate.Length;
     internal bool Scrolled => Math.Abs(scrollPosition - oldScroll) > 0.0001f;
@@ -167,7 +167,9 @@ public class GUITable {
 
     public void OnGUI(int tableNum) {
         GUILayout.BeginArea(LeftSideTables(tableNum));
+        GUI.skin.label.fontStyle = FontStyle.Bold;
         LayoutRow(Headings);
+        GUI.skin.label.fontStyle = FontStyle.Normal;
         GUILayout.BeginHorizontal();
         GUILayout.BeginVertical();
         if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
@@ -212,7 +214,7 @@ public class GUIString {
 
     public void OnGUI() {
         UpdateString();
-        GUI.Box(DisplayFunc(width, height), displayString); }
+        if (displayString != null) GUI.Box(DisplayFunc(width, height), displayString); }
 
     internal void UpdateString() {
         if (GetStringFunc is not null) {

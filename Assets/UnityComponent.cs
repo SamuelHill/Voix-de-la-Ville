@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using TED;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -27,6 +28,8 @@ public class UnityComponent : MonoBehaviour {
     internal bool TrySelectTile(out Vector3Int tile) {
         tile = Tilemap.WorldToCell(Camera.main.ScreenToWorldPoint(mousePosition));
         return Tilemap.HasTile(tile); }
+    internal LocationRow GetLocationInfo(Vector3Int selectedTile) =>
+        TalkOfTheTown.LocationsPositionIndex[TileToLot(selectedTile)];
     #endregion
 
     internal bool SimulationRunning = true;
@@ -43,7 +46,6 @@ public class UnityComponent : MonoBehaviour {
         ProcessInitialLocations();
         GUIManager.SetAvailableTables(new List<TablePredicate> {
             TalkOfTheTown.Agents,
-            TalkOfTheTown.Dead,
             TalkOfTheTown.Couples,
             TalkOfTheTown.Parents,
             TalkOfTheTown.Locations,
@@ -54,6 +56,7 @@ public class UnityComponent : MonoBehaviour {
             TalkOfTheTown.VacatedLocations,
             TalkOfTheTown.UsedLots,
             TalkOfTheTown.Aptitude,
+            TalkOfTheTown.Personality,
             TalkOfTheTown.WhereTheyAt,
         });
         GUIManager.SetActiveTables(new[] { "Agents", "Couples", "Parents", "Homes" });
@@ -110,22 +113,19 @@ public class UnityComponent : MonoBehaviour {
     internal void OccupyTiles(Vector3Int[] tiles) => SetTiles(tiles, OccupiedLot);
     #endregion
 
-
-    internal LocationRow LocationInfo(Vector3Int selectedTile) =>
-        TalkOfTheTown.LocationsPositionIndex[TileToLot(selectedTile)];
-    internal IEnumerable<Person> PeopleAtLocation(LocationRow locationInfo) =>
-        from pair in TalkOfTheTown.WhereTheyAt where ReferenceEquals(pair.Item2, locationInfo.Item1) select pair.Item1;
-
-
+    #region String processing
+    internal string SelectedLocation() => 
+        SelectedLocationTile is null ? null : 
+            LocationRowToString(GetLocationInfo((Vector3Int)SelectedLocationTile));
     internal string LocationRowToString(LocationRow locationRow) => 
-        $"{locationRow.Item1}:\nLocated at {locationRow.Item2},\n" + 
-        $"Founded on {locationRow.Item4}, {locationRow.Item3} " +
-        $"({TalkOfTheTown.Time.YearsSince(locationRow.Item4, locationRow.Item3)} years ago)";
-    internal string SelectedLocation() {
-        return SelectedLocationTile is null
-            ? "No location selected..."
-            : LocationRowToString(LocationInfo((Vector3Int)SelectedLocationTile)) + 
-              $"\nPeople at location: {string.Join(", ", PeopleAtLocation(LocationInfo((Vector3Int)SelectedLocationTile)))}"; }
-
-    internal string Population() => $"Population of {TalkOfTheTown.Agents.Length - TalkOfTheTown.Dead.Length}";
+        LocationInfo(locationRow) + "\n" + PeopleAtLocation(locationRow.Item1);
+    internal string LocationInfo(LocationRow row) =>
+        $"{row.Item1} located at x: {row.Item2.x}, y: {row.Item2.y}\nFounded on {row.Item4}, {row.Item3} ({LocationAge(row)} years ago)";
+    internal int LocationAge(LocationRow row) => TalkOfTheTown.Time.YearsSince(row.Item4, row.Item3);
+    internal string PeopleAtLocation(Location l) {
+        var atLocation = TalkOfTheTown.WhereTheyAtLocationIndex.RowsMatching(l).Select(p => p.Item1.FullName).ToArray();
+        return atLocation.Length != 0 ? $"People at location: {string.Join(", ", atLocation)}" : "Nobody is here right now"; }
+    
+    internal string Population() => $"Population of {TalkOfTheTown.AgentsVitalStatusIndex.RowsMatching(VitalStatus.Alive).ToArray().Length}";
+    #endregion
 }
