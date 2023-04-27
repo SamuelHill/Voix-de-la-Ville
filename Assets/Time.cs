@@ -140,11 +140,9 @@ public readonly struct Date {
 
     public override string ToString() => $"{(int)Month + 1}/{Day}";
 
-    // TODO - change the FromString to be "mm/dd" not "MMM,dd"
-    public static Date FromString(string dateString) { // Month,date
-        var date = dateString.Split(',');
-        Enum.TryParse(date[0], out Month month);
-        return new Date(month, byte.Parse(date[1])); }
+    public static Date FromString(string dateString) {
+        var date = dateString.Split('/');
+        return new Date((Month)(int.Parse(date[0]) - 1), byte.Parse(date[1])); }
 }
 
 public readonly struct Schedule {
