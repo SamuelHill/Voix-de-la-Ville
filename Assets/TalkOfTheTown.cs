@@ -70,10 +70,10 @@ public class TalkOfTheTown {
     public TablePredicate<Person, Location> Homes;
     public TablePredicate<Person, Location> WhereTheyAt;
     public GeneralIndex<(Person, Location), Location> WhereTheyAtLocationIndex;
-    //public TablePredicate REPL;
+    public TablePredicate REPL;
     #endregion
 
-    //public void SetREPL(string query) => REPL = Simulation.Repl.Query("REPL", query);
+    public void SetREPL(string query) => REPL = Simulation.Repl.Query("REPL", query);
 
     public void InitSimulator() {
         Simulation = new Simulation("Talk of the Town");

@@ -113,8 +113,8 @@ public class GUITable {
     internal const int ColumnPadding = 5;
     internal const int LabelHeight = 21; // calculated once via:
     // (int)GUI.skin.label.CalcSize(new GUIContent("Any string here will do")).y
-    internal const int TableHeight = 255;
-    internal const int TablePadding = 15;
+    internal const int TableHeight = 260;
+    internal const int TablePadding = 10;
     internal const int TableWidthOffset = 50;
     internal const int numRowsToDisplay = (TableHeight - TablePadding) / LabelHeight - 2;  // 9, but ~flexible~
     #endregion
@@ -167,9 +167,8 @@ public class GUITable {
         previousRowCount = RowCount;
         return true; }
 
-    internal Rect PaddedTableRect(int x, int y) => new(x + TablePadding, y + TablePadding,
-        TableWidth + TablePadding + TableWidthOffset, TableHeight);
-    internal Rect LeftSideTables(int tableNum) => PaddedTableRect(tableNum, tableNum * (TableHeight + TablePadding));
+    internal Rect TableRect(int x, int y) => new(x, y, TableWidth + TableWidthOffset, TableHeight);
+    internal Rect LeftSideTables(int tableNum) => TableRect(TablePadding, tableNum * (TableHeight + TablePadding) + TablePadding);
 
     internal GUILayoutOption ScrollHeight = GUILayout.Height((numRowsToDisplay + 1) * LabelHeight);
     internal GUILayoutOption ColumnWidth(int i) => GUILayout.Width(longestStrings[i] + ColumnPadding);
@@ -183,10 +182,9 @@ public class GUITable {
         if (header) GUI.skin.label.fontStyle = FontStyle.Normal; }
 
     public void OnGUI(int tableNum) => OnGUI(LeftSideTables(tableNum));
+    public void OnGUI(int x, int y) => OnGUI(TableRect(x, y));
 
-    public void OnGUI(int x, int y) => OnGUI(new Rect(x, y, TableWidth + TablePadding + TableWidthOffset, TableHeight));
-
-    // The ScrollHeight, numRowsToDisplay, and TablePadding are all const based so a
+    // The ScrollHeight and numRowsToDisplay are const based so a
     // table must be of a certain size with this implementation
     internal void OnGUI(Rect screenRect) {
         GUILayout.BeginArea(screenRect);
@@ -196,14 +194,12 @@ public class GUITable {
         if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
         else { foreach (var row in buffer) LayoutRow(row); }
         GUILayout.EndVertical();
-        GUILayout.Space(TablePadding);
         if (RowCount != 0 && RowCount >= numRowsToDisplay) {
             scrollPosition = GUILayout.VerticalScrollbar(scrollPosition,
                 numRowsToDisplay - 0.1f, 0f, RowCount, ScrollHeight);
             if (Scrolled || !usingScroll) {
                 Update();
-                oldScroll = scrollPosition;
-            }
+                oldScroll = scrollPosition; }
             if (!usingScroll) usingScroll = true;
         } else if (!usingScroll && UpdateRowCount()) Update();
         GUILayout.EndHorizontal();
