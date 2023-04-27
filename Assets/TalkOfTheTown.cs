@@ -14,7 +14,6 @@ public class TalkOfTheTown {
 
     #region CSV/TXT file helpers and CSV parsing functions
     private const string DataPath = "../TalkOfTheTown/Assets/Data/";
-    private static string Txt(string filename) => $"{DataPath}{filename}.txt";
     private static string Csv(string filename) => $"{DataPath}{filename}.csv";
     private object ParsePerson(string personString) {
         var potentialPerson = Person.FromString(personString);
@@ -108,8 +107,6 @@ public class TalkOfTheTown {
         var IsAccessible = TestMethod<Accessibility, bool, bool>(Town.IsAccessible);
         var IsDate = TestMethod<Date>(Time.IsDate);
         var IsSunday = Time.TestProperty(nameof(Time.IsSunday));
-        var IsVacant = Test<Vector2Int>("IsVacant", 
-            vec => UsedLots.All(v => v != vec)); 
         var IsLocationType = Test<Location, LocationType>("IsLocationType", 
             (location, locationType) => location.Type == locationType);
         #endregion
@@ -155,9 +152,9 @@ public class TalkOfTheTown {
         Simulation.BeginPredicates();
 
         // Tables, despite being local variables, will still be capitalized for style/identification purposes.
-        var MaleNames = FromCsv("MaleNames", Txt("male_names"), firstName);
-        var FemaleNames = FromCsv("FemaleNames", Txt("female_names"), firstName);
-        var Surnames = FromCsv("Surnames", Txt("english_surnames"), lastName);
+        var MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);
+        var FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
+        var Surnames = FromCsv("Surnames", Csv("english_surnames"), lastName);
 
         var RandomFirstName = Definition("RandomFirstName", sex, firstName);
         RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
@@ -249,6 +246,7 @@ public class TalkOfTheTown {
         UsedLots = Predicate("UsedLots", position);
         UsedLots.Unique = true;
 
+        var IsVacant = Definition("IsVacant", position).Is(!UsedLots[position]);
         var FreeLot = Definition("FreeLot", position).Is(position == RandomLot[NumLots], IsVacant[position]);
         NewLocations[location, position, GetYear, GetDate].If(FreeLot,
             // , Count(Homes) <= Count(Agents)
@@ -281,6 +279,7 @@ public class TalkOfTheTown {
         // ReSharper restore InconsistentNaming
 
         Simulation.EndPredicates();
+        DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
         Simulation.Update();
         _firstTick = false;
         Time.Tick();

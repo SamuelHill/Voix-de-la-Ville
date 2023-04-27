@@ -1,44 +1,44 @@
 ﻿LocationType,LocationCategory,Accessibility,Operation,Schedule
-House            ,Accommodation   ,Private      ,AllDay  ,Everyday
-ApartmentComplex ,Accommodation   ,Private      ,AllDay  ,Everyday
-Inn              ,Accommodation   ,Public       ,AllDay  ,Everyday
-Bank             ,Administration  ,Public       ,Morning ,ClosedSunday
-CityHall         ,Administration  ,Public       ,Morning ,ClosedSunday
-CommunityCenter  ,Administration  ,Public       ,AllDay  ,Everyday
-PostOffice       ,Administration  ,Public       ,Morning ,ClosedSunday
-FireStation      ,Administration  ,Private      ,AllDay  ,Everyday
-PoliceStation    ,Administration  ,Public       ,AllDay  ,Everyday
-Park             ,Amenity         ,Public       ,AllDay  ,Everyday
-DayCare          ,ChildCare       ,Private      ,Morning ,Weekdays
-School           ,ChildCare       ,Private      ,Morning ,Weekdays
-CarpentryCompany ,Commerce        ,Public       ,Morning ,Weekdays
-FurnitureStore   ,Commerce        ,Public       ,Morning ,MondayToThursday
-GeneralStore     ,Commerce        ,Public       ,AllDay  ,ClosedSunday
-HardwareStore    ,Commerce        ,Public       ,Morning ,Weekdays
-Bar              ,Eatery          ,Public       ,Evening ,ThursdayToSunday
-Diner            ,Eatery          ,Public       ,AllDay  ,ClosedSaturday
-Restaurant       ,Eatery          ,Public       ,AllDay  ,Everyday
-Bakery           ,Food            ,Public       ,Morning ,Everyday
-Brewery          ,Food            ,Public       ,Morning ,ClosedMonday
-ButcherShop      ,Food            ,Public       ,Morning ,ClosedSunday
-CandyShop        ,Food            ,Public       ,Morning ,ClosedSunday
-Dairy            ,Food            ,Public       ,Morning ,Weekdays
-Distillery       ,Food            ,Public       ,Morning ,ClosedMonday
-GroceryStore     ,Food            ,Public       ,AllDay  ,Everyday
-DoctorOffice     ,Health          ,Public       ,Morning ,Everyday
-DentistOffice    ,Health          ,Public       ,Morning ,Weekdays
-OptometryClinic  ,Health          ,Public       ,Morning ,Weekdays
-Hospital         ,Health          ,Public       ,AllDay  ,Everyday
-Pharmacy         ,Health          ,Public       ,Morning ,Everyday
-Farm             ,Industry        ,NoTrespass   ,Morning ,Everyday
-Foundry          ,Industry        ,NoTrespass   ,AllDay  ,ClosedThursday
-LumberMill       ,Industry        ,NoTrespass   ,Morning ,ClosedTuesday
-Orchard          ,Industry        ,NoTrespass   ,Morning ,Everyday
-Quarry           ,Industry        ,NoTrespass   ,Morning ,ClosedWednesday
-Barbershop       ,Personal        ,Public       ,Morning ,Weekdays
-ClothingStore    ,Personal        ,Public       ,Morning ,ClosedSunday
-DepartmentStore  ,Personal        ,Public       ,AllDay  ,Weekdays
-JewelryShop      ,Personal        ,Public       ,Morning ,TuesdayToFriday
-ShoemakerShop    ,Personal        ,Public       ,Morning ,MondayToThursday
-TailorShop       ,Personal        ,Public       ,Morning ,ClosedSunday
-TattooParlor     ,Personal        ,Public       ,Morning ,ClosedSaturday
+House,Accommodation,Private,AllDay,Everyday
+ApartmentComplex,Accommodation,Private,AllDay,Everyday
+Inn,Accommodation,Public,AllDay,Everyday
+Bank,Administration,Public,Morning,ClosedSunday
+CityHall,Administration,Public,Morning,ClosedSunday
+CommunityCenter,Administration,Public,AllDay,Everyday
+PostOffice,Administration,Public,Morning,ClosedSunday
+FireStation,Administration,Private,AllDay,Everyday
+PoliceStation,Administration,Public,AllDay,Everyday
+Park,Amenity,Public,AllDay,Everyday
+DayCare,ChildCare,Private,Morning,Weekdays
+School,ChildCare,Private,Morning,Weekdays
+CarpentryCompany,Commerce,Public,Morning,Weekdays
+FurnitureStore,Commerce,Public,Morning,MondayToThursday
+GeneralStore,Commerce,Public,AllDay,ClosedSunday
+HardwareStore,Commerce,Public,Morning,Weekdays
+Bar,Eatery,Public,Evening,ThursdayToSunday
+Diner,Eatery,Public,AllDay,ClosedSaturday
+Restaurant,Eatery,Public,AllDay,Everyday
+Bakery,Food,Public,Morning,Everyday
+Brewery,Food,Public,Morning,ClosedMonday
+ButcherShop,Food,Public,Morning,ClosedSunday
+CandyShop,Food,Public,Morning,ClosedSunday
+Dairy,Food,Public,Morning,Weekdays
+Distillery,Food,Public,Morning,ClosedMonday
+GroceryStore,Food,Public,AllDay,Everyday
+DoctorOffice,Health,Public,Morning,Everyday
+DentistOffice,Health,Public,Morning,Weekdays
+OptometryClinic,Health,Public,Morning,Weekdays
+Hospital,Health,Public,AllDay,Everyday
+Pharmacy,Health,Public,Morning,Everyday
+Farm,Industry,NoTrespass,Morning,Everyday
+Foundry,Industry,NoTrespass,AllDay,ClosedThursday
+LumberMill,Industry,NoTrespass,Morning,ClosedTuesday
+Orchard,Industry,NoTrespass,Morning,Everyday
+Quarry,Industry,NoTrespass,Morning,ClosedWednesday
+Barbershop,Personal,Public,Morning,Weekdays
+ClothingStore,Personal,Public,Morning,ClosedSunday
+DepartmentStore,Personal,Public,AllDay,Weekdays
+JewelryShop,Personal,Public,Morning,TuesdayToFriday
+ShoemakerShop,Personal,Public,Morning,MondayToThursday
+TailorShop,Personal,Public,Morning,ClosedSunday
+TattooParlor,Personal,Public,Morning,ClosedSaturday

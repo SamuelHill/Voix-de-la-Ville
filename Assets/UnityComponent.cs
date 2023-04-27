@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using TED;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -22,22 +21,12 @@ public class UnityComponent : MonoBehaviour {
     // for the tile to be able to change color: https://github.com/Unity-Technologies/2d-extras/issues/96
     public Tile OccupiedLot;
 
-    #region Tilemap helpers
-    internal Vector3Int LotToTile(Vector2Int lot) => (Vector3Int)(TownCenter + lot);
-    internal Vector2Int TileToLot(Vector3Int tile) => (Vector2Int)tile - TownCenter;
-    internal bool TrySelectTile(out Vector3Int tile) {
-        tile = Tilemap.WorldToCell(Camera.main.ScreenToWorldPoint(mousePosition));
-        return Tilemap.HasTile(tile); }
-    internal LocationRow GetLocationInfo(Vector3Int selectedTile) =>
-        TalkOfTheTown.LocationsPositionIndex[TileToLot(selectedTile)];
-    #endregion
-
     internal bool SimulationRunning = true;
     internal bool SimulationSingleStep;
     internal bool DebugRuleExecutionTime;
-    internal Vector3Int? SelectedLocationTile;
     // ReSharper disable once InconsistentNaming
     internal bool GUIRunOnce;
+    internal Vector3Int? SelectedLocationTile;
 
     internal void Start() {
         TED.Comparer<Vector2Int>.Default = new GridComparer();
@@ -71,7 +60,7 @@ public class UnityComponent : MonoBehaviour {
             TalkOfTheTown.UpdateSimulator();
             ProcessLots();
             SimulationSingleStep = false; }
-        if (TrySelectTile(out var tile)) SelectedLocationTile = tile; }
+        SelectedLocationTile = TrySelectTile(out var tile) ? tile : null; }
 
     internal void OnGUI() {
         if (!GUIRunOnce) {
@@ -84,6 +73,17 @@ public class UnityComponent : MonoBehaviour {
         GUIManager.ChangeActiveTables();
         if (DebugRuleExecutionTime) GUIManager.RuleExecutionTimes();
         if (!SimulationRunning) GUIManager.ShowPaused(); }
+
+    #region Tilemap helpers
+    internal Vector3Int LotToTile(Vector2Int lot) => (Vector3Int)(TownCenter + lot);
+    internal Vector2Int TileToLot(Vector3Int tile) => (Vector2Int)tile - TownCenter;
+    internal bool TrySelectTile(out Vector3Int tile) {
+        tile = Tilemap.WorldToCell(Camera.main.ScreenToWorldPoint(mousePosition));
+        return Tilemap.HasTile(tile);
+    }
+    internal LocationRow GetLocationInfo(Vector3Int selectedTile) =>
+        TalkOfTheTown.LocationsPositionIndex[TileToLot(selectedTile)];
+    #endregion
 
     #region Process Location Tiles
     internal void ProcessInitialLocations() {
@@ -124,8 +124,15 @@ public class UnityComponent : MonoBehaviour {
     internal int LocationAge(LocationRow row) => TalkOfTheTown.Time.YearsSince(row.Item4, row.Item3);
     internal string PeopleAtLocation(Location l) {
         var atLocation = TalkOfTheTown.WhereTheyAtLocationIndex.RowsMatching(l).Select(p => p.Item1.FullName).ToArray();
-        return atLocation.Length != 0 ? $"People at location: {string.Join(", ", atLocation)}" : "Nobody is here right now"; }
-    
+        return atLocation.Length != 0 ? $"People at location: {GroupUp(atLocation, 3)}" : "Nobody is here right now"; }
+    internal string GroupUp(string[] strings, int itemsPerGroup) =>
+        // Concat an empty string to the beginning - the starting line includes "People at location: "
+        string.Join(",\n", new[] { "" }.Concat(strings).ToList().Select(
+            (s, i) => new { s, i }).ToLookup(
+            str => str.i / itemsPerGroup, str => str.s).Select(
+            // remove the extra ", " that gets joined on the empty string in the first row
+            row => string.Join(", ", row)))[2..];
+
     internal string Population() => $"Population of {TalkOfTheTown.AgentsVitalStatusIndex.RowsMatching(VitalStatus.Alive).ToArray().Length}";
     #endregion
 }
