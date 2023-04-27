@@ -58,22 +58,22 @@ public class TalkOfTheTown {
     public TablePredicate<Person, Person> Couples;
     public TablePredicate<Person, Person> Parents;
     public TablePredicate<LocationType, LocationCategories, Accessibility, DailyOperation, Schedule> LocationInformation;
-    public KeyIndex<(LocationType, LocationCategories, Accessibility, DailyOperation, Schedule), LocationType> LocationTypeKeyInfo;
     public TablePredicate<LocationCategories, Color> CategoryColors;
     public TablePredicate<LocationType, Color> LocationColors;
     public KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
     public TablePredicate<Location, Vector2Int, int, Date> Locations;
-    public KeyIndex<(Location, Vector2Int, int, Date), Location> LocationsLocationIndex;
     public KeyIndex<(Location, Vector2Int, int, Date), Vector2Int> LocationsPositionIndex;
     public TablePredicate<Location, Vector2Int, int, Date> NewLocations;
     public TablePredicate<Location, Vector2Int, int, Date> VacatedLocations;
     public TablePredicate<Vector2Int> UsedLots;
     public TablePredicate<Vocation, Person, Location> Vocations;
     public TablePredicate<Person, Location> Homes;
-    public GeneralIndex<(Person, Location), Location> HomesLocationIndex;
     public TablePredicate<Person, Location> WhereTheyAt;
     public GeneralIndex<(Person, Location), Location> WhereTheyAtLocationIndex;
+    //public TablePredicate REPL;
     #endregion
+
+    //public void SetREPL(string query) => REPL = Simulation.Repl.Query("REPL", query);
 
     public void InitSimulator() {
         Simulation = new Simulation("Talk of the Town");
@@ -224,7 +224,6 @@ public class TalkOfTheTown {
 
         LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"), 
             locationType.Key, locationCategory.Indexed, accessibility, operation, schedule);
-        LocationTypeKeyInfo = LocationInformation.KeyIndex(locationType);
         CategoryColors = FromCsv("CategoryColors", Csv("locationColors"), locationCategory.Key, color);
         
         // TODO - Force this to only compute once also
@@ -239,7 +238,6 @@ public class TalkOfTheTown {
             Csv("positionsPerJob"), job.Key, positions);
 
         Locations = FromCsv("Locations", Csv("locations"), location.Key, position.Key, founded, opening);
-        LocationsLocationIndex = Locations.KeyIndex(location);
         LocationsPositionIndex = Locations.KeyIndex(position);
         NewLocations = Predicate("NewLocations", location, position, founded, opening);
         VacatedLocations = Predicate("VacatedLocations", location, position, founded, opening);  // UNUSED
@@ -262,7 +260,6 @@ public class TalkOfTheTown {
             locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
 
         Homes = Predicate("Homes", occupant.Key, location.Indexed);
-        HomesLocationIndex = (GeneralIndex<(Person, Location), Location>)Homes.IndexFor(location, false);
         Homes.Unique = true;
         // TODO - Agents change to BirthTo
         // modeling homelessness vs primordial housing

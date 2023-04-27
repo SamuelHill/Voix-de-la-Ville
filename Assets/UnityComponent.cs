@@ -33,6 +33,7 @@ public class UnityComponent : MonoBehaviour {
         TalkOfTheTown = new TalkOfTheTown(StartYear);
         TalkOfTheTown.InitSimulator();
         ProcessInitialLocations();
+        //TalkOfTheTown.SetREPL("Agents");
         GUIManager.SetAvailableTables(new List<TablePredicate> {
             TalkOfTheTown.Agents,
             TalkOfTheTown.Couples,
@@ -41,12 +42,14 @@ public class UnityComponent : MonoBehaviour {
             TalkOfTheTown.Vocations,
             TalkOfTheTown.Homes,
             TalkOfTheTown.LocationColors,
+            TalkOfTheTown.LocationInformation,
             TalkOfTheTown.NewLocations,
             TalkOfTheTown.VacatedLocations,
             TalkOfTheTown.UsedLots,
             TalkOfTheTown.Aptitude,
             TalkOfTheTown.Personality,
             TalkOfTheTown.WhereTheyAt,
+            //TalkOfTheTown.REPL
         });
         GUIManager.SetActiveTables(new[] { "Agents", "Couples", "Parents", "Homes" });
         GUIManager.AddSelectedTileInfo(SelectedLocation);
@@ -60,7 +63,9 @@ public class UnityComponent : MonoBehaviour {
             TalkOfTheTown.UpdateSimulator();
             ProcessLots();
             SimulationSingleStep = false; }
-        SelectedLocationTile = TrySelectTile(out var tile) ? tile : null; }
+        SelectedLocationTile = TrySelectTile(out var tile) ? tile : null;
+        //TalkOfTheTown.SetREPL("Agents");
+    }
 
     internal void OnGUI() {
         if (!GUIRunOnce) {

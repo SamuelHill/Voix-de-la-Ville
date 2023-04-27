@@ -27,7 +27,7 @@ public static class GUIManager {
     internal const int LabelBorders = 10;
     internal const int TopMiddleRectHeight = 30; // allows for TopMiddleRectStacks
     internal const int TableToolbarWidth = 250;
-    internal const int MaxToolbarSize = 600;
+    internal const int MaxToolbarSize = 650;
     internal const int TileSize = 16;
     #endregion
 
@@ -182,8 +182,14 @@ public class GUITable {
         GUILayout.EndHorizontal();
         if (header) GUI.skin.label.fontStyle = FontStyle.Normal; }
 
-    public void OnGUI(int tableNum) {
-        GUILayout.BeginArea(LeftSideTables(tableNum));
+    public void OnGUI(int tableNum) => OnGUI(LeftSideTables(tableNum));
+
+    public void OnGUI(int x, int y) => OnGUI(new Rect(x, y, TableWidth + TablePadding + TableWidthOffset, TableHeight));
+
+    // The ScrollHeight, numRowsToDisplay, and TablePadding are all const based so a
+    // table must be of a certain size with this implementation
+    internal void OnGUI(Rect screenRect) {
+        GUILayout.BeginArea(screenRect);
         LayoutRow(headings, true);
         GUILayout.BeginHorizontal();
         GUILayout.BeginVertical();
@@ -196,12 +202,12 @@ public class GUITable {
                 numRowsToDisplay - 0.1f, 0f, RowCount, ScrollHeight);
             if (Scrolled || !usingScroll) {
                 Update();
-                oldScroll = scrollPosition; }
-            if (!usingScroll) usingScroll = true; }
-        else if (!usingScroll && UpdateRowCount()) Update();
+                oldScroll = scrollPosition;
+            }
+            if (!usingScroll) usingScroll = true;
+        } else if (!usingScroll && UpdateRowCount()) Update();
         GUILayout.EndHorizontal();
-        GUILayout.EndArea();
-    }
+        GUILayout.EndArea(); }
 }
 
 public class GUIString {
