@@ -40,6 +40,9 @@ public static class Town {
         modifier is Accessibility.Public ||
         (modifier is Accessibility.Private && liveAtOrInvited) ||
         (modifier is Accessibility.NoTrespass && employedAt);
+
+    public static bool IsLocationType(Location location, LocationType locationType) =>
+        location.IsLocationType(locationType);
 }
 
 public class Location {
@@ -51,7 +54,9 @@ public class Location {
         _id = Guid.NewGuid();
         Name = name; 
         Type = type; }
-    
+
+    public bool IsLocationType(LocationType locationType) => locationType == Type;
+
     public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
     public override int GetHashCode() => _id.GetHashCode();
     public static bool operator ==(Location l, string potentialName) => l != null && l.Name == potentialName;

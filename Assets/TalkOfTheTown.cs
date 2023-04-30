@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TED;
+using TED.Interpreter;
 using TED.Tables;
 using TED.Utilities;
 using UnityEngine;
 using static TED.Language;
+
+using AgentRow = System.ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
 
 public class TalkOfTheTown {
     public static Simulation Simulation = null!;
@@ -52,7 +55,7 @@ public class TalkOfTheTown {
 
     #region public Tables
     public TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> Agents;
-    public GeneralIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), VitalStatus> AgentsVitalStatusIndex;
+    public GeneralIndex<AgentRow, VitalStatus> AgentsVitalStatusIndex;
     public TablePredicate<Person, Vocation, sbyte> Aptitude;
     public TablePredicate<Person, Facet, sbyte> Personality;
     public TablePredicate<Person, Person> Couples;
@@ -61,6 +64,7 @@ public class TalkOfTheTown {
     public TablePredicate<LocationCategories, Color> CategoryColors;
     public TablePredicate<LocationType, Color> LocationColors;
     public KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
+    public TablePredicate<Location, Vector2Int, int, Date> PrimordialLocations;
     public TablePredicate<Location, Vector2Int, int, Date> Locations;
     public KeyIndex<(Location, Vector2Int, int, Date), Vector2Int> LocationsPositionIndex;
     public TablePredicate<Location, Vector2Int, int, Date> NewLocations;
@@ -77,41 +81,23 @@ public class TalkOfTheTown {
 
     public void InitSimulator() {
         Simulation = new Simulation("Talk of the Town");
-        _firstTick = true;
+        _firstTick = true;  // only used to prevent new buildings on the first tick as of now
 
         // ReSharper disable InconsistentNaming
-        #region Functions
+        // variables just so happen to follow c# var name norms, still disabling InconsistentNaming because
+        // Tables, despite being local variables, will still be capitalized for style/identification purposes.
+
+        #region Functions/PrimitiveTests
+        var SByteBellCurve = Method(Randomize.SByteBellCurve);
         var GetYear = Time.GetProperty<int>(nameof(Time.Year));
         var GetDate = Time.GetProperty<Date>(nameof(Time.Date));
+        var IsLocationType = TestMethod<Location, LocationType>(Town.IsLocationType);
         var YearsSince = Method<Date, int, int>(Time.YearsSince);
-        var RandomSex = Method(Sims.RandomSex);
-        var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
-        var NewPerson = Method<string, string, Person>(Sims.NewPerson);
-        var RandomDate = Function("RandomDate", Date.Random);
-        var RandomAdultAge = Method(Sims.RandomAdultAge);
-        var FertilityRate = Method<int, float>(Sims.FertilityRate);
-        var SByteBellCurve = Method(Randomize.SByteBellCurve);
-        var Surname = Function<Person, string>("Surname", p => p.LastName);
-        var GetLocationType = Function<Location, LocationType>("GetLocationType", l => l.Type);
-        var NumLots = Function("NumLots", () => UsedLots.Length);
-        var RandomLot = Method<uint, Vector2Int>(Town.RandomLot);
-        var NewLocation = Method<string, LocationType, Location>(Town.NewLocation);
         var Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
-        #endregion
-
-        #region PrimitiveTests
-        var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
-        var IsAttracted = Test<Sexuality, Sex>("IsAttracted", (se, s) => se.IsAttracted(s));
-        var InOperation = TestMethod<DailyOperation>(Time.InOperation);
-        var IsOpen = TestMethod<Schedule>(Time.IsOpen);
-        var IsAccessible = TestMethod<Accessibility, bool, bool>(Town.IsAccessible);
         var IsDate = TestMethod<Date>(Time.IsDate);
         var IsSunday = Time.TestProperty(nameof(Time.IsSunday));
-        var IsLocationType = Test<Location, LocationType>("IsLocationType", 
-            (location, locationType) => location.Type == locationType);
         #endregion
 
-        // variables just so happen to follow c# var name norms, still disabling InconsistentNaming
         #region Variables
         var person           = (Var<Person>)"person";
         var partner          = (Var<Person>)"partner";
@@ -119,11 +105,12 @@ public class TalkOfTheTown {
         var child            = (Var<Person>)"child";
         var man              = (Var<Person>)"man";
         var woman            = (Var<Person>)"woman";
+        var employee         = (Var<Person>)"employee";
+        var occupant         = (Var<Person>)"occupant";
         var otherPerson      = (Var<Person>)"otherPerson";
         var firstName        = (Var<string>)"firstName";
         var lastName         = (Var<string>)"lastName";
-        var age              = (Var<int>)"age";
-        var dateOfBirth      = (Var<Date>)"dateOfBirth";
+
         var sex              = (Var<Sex>)"sex";
         var sexOfPartner     = (Var<Sex>)"sexOfPartner";
         var sexuality        = (Var<Sexuality>)"sexuality";
@@ -131,27 +118,30 @@ public class TalkOfTheTown {
         var vitalStatus      = (Var<VitalStatus>)"vitalStatus";
         var facet            = (Var<Facet>)"facet";
         var personality      = (Var<sbyte>)"personality";
-        var location         = (Var<Location>)"location";
-        var home             = (Var<Location>)"home";
-        var position         = (Var<Vector2Int>)"position";
-        var opening          = (Var<Date>)"opening";
+        var job              = (Var<Vocation>)"job";
+        var aptitude         = (Var<sbyte>)"aptitude";
+
+        var age              = (Var<int>)"age";
         var founded          = (Var<int>)"founded";
+        var dateOfBirth      = (Var<Date>)"dateOfBirth";
+        var opening          = (Var<Date>)"opening";
+
+        var location         = (Var<Location>)"location";
+        var position         = (Var<Vector2Int>)"position";
         var locationType     = (Var<LocationType>)"locationType";
         var locationCategory = (Var<LocationCategories>)"locationCategory";
         var accessibility    = (Var<Accessibility>)"accessibility";
         var operation        = (Var<DailyOperation>)"operation";
         var schedule         = (Var<Schedule>)"schedule";
         var color            = (Var<Color>)"color";
-        var job              = (Var<Vocation>)"job";
-        var aptitude         = (Var<sbyte>)"aptitude";
         var positions        = (Var<int>)"positions";
-        var employee         = (Var<Person>)"employee";
-        var occupant         = (Var<Person>)"occupant";
         #endregion
 
         Simulation.BeginPredicates();
 
-        // Tables, despite being local variables, will still be capitalized for style/identification purposes.
+        // *********************************** Agents: **********************************
+
+        #region Names and new Person helpers
         var MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);
         var FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
         var Surnames = FromCsv("Surnames", Csv("english_surnames"), lastName);
@@ -159,32 +149,42 @@ public class TalkOfTheTown {
         var RandomFirstName = Definition("RandomFirstName", sex, firstName);
         RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
         RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
+
+        var NewPerson = Method<string, string, Person>(Sims.NewPerson);
         var RandomPerson = Definition("RandomPerson", sex, person);
         RandomPerson.Is(RandomFirstName, RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
-        
-        // ******************************************************************************
-        // Agents:
+        #endregion
 
-        var PrimordialBeings = FromCsv("PrimordialBeings", 
-            Csv("agents"), person, age, dateOfBirth, sex, sexuality);
-        Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
-        Agents.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeings);
-        AgentsVitalStatusIndex = (GeneralIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), VitalStatus>)Agents.IndexFor(vitalStatus, false);
-
-        var Dead = Definition("Dead", person).Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Dead]);
-        var Alive = Definition("Alive", person).Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]);
-        Agents.Set(person, vitalStatus, VitalStatus.Dead).If(Alive, Agents, age > 60, Prob[Time.PerMonth(0.001f)]);
-
+        #region Person traits - Personality and Aptitude
         var Facets = Predicate("Facets", facet);
         Facets.AddRows(Enum.GetValues(typeof(Facet)).Cast<Facet>());
         Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
-        Personality.Initially[person, facet, SByteBellCurve].Where(PrimordialBeings, Facets);
 
         var Jobs = Predicate("Jobs", job);
         Jobs.AddRows(Enum.GetValues(typeof(Vocation)).Cast<Vocation>());
         Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
-        Aptitude.Initially[person, job, SByteBellCurve].Where(PrimordialBeings, Jobs);
+        #endregion
 
+        #region Agents setup and Death (Set) logic
+        Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
+        AgentsVitalStatusIndex = (GeneralIndex<AgentRow, VitalStatus>)Agents.IndexFor(vitalStatus, false);
+        // Dead and Alive definitions:
+        var Dead = Definition("Dead", person).Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Dead]);
+        var Alive = Definition("Alive", person).Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]);
+        // Set Dead condition:
+        Agents.Set(person, vitalStatus, VitalStatus.Dead).If(Alive, Agents, age > 60, Prob[Time.PerMonth(0.01f)]);
+        #endregion
+
+        #region Primordial Beings initialize
+        var PrimordialBeings = FromCsv("PrimordialBeings",
+            Csv("agents"), person, age, dateOfBirth, sex, sexuality);
+
+        Agents.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeings);
+        Personality.Initially[person, facet, SByteBellCurve].Where(PrimordialBeings, Facets);
+        Aptitude.Initially[person, job, SByteBellCurve].Where(PrimordialBeings, Jobs);
+        #endregion
+
+        #region Couples (for procreation)
         var Man = Predicate("Man", person).If(
             Agents[person, age, dateOfBirth, Sex.Male, sexuality, VitalStatus.Alive], age >= 18);
         var Woman = Predicate("Woman", person).If(
@@ -194,79 +194,157 @@ public class TalkOfTheTown {
         Couples.Unique = true;
         var NewCouples = Predicate("NewCouples", person, partner);
         NewCouples.Unique = true;
-        NewCouples.If(Woman[person], RandomElement(Man, partner), Prob[0.5f],
-            !Couples[person, man], !Couples[woman, partner]);
-        Couples.Accumulates(NewCouples);
 
+        // TODO: Improve NewCouple logic. Use IsAttracted... Unless you want to have couples having kids with differing attractions
+        var IsAttracted = Test<Sexuality, Sex>("IsAttracted", (se, s) => se.IsAttracted(s));
+
+        NewCouples.If(Woman[person], RandomElement(Man, partner), Prob[0.5f], !Couples[person, man], !Couples[woman, partner]);
+        Couples.Accumulates(NewCouples);
+        #endregion
+
+        #region Birth
+        var FertilityRate = Method<int, float>(Sims.FertilityRate);
+        var RandomSex = Method(Sims.RandomSex);
+        // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
+        var Surname = Function<Person, string>("Surname", p => p.LastName);
         var BirthTo = Predicate("Birth", woman, man, sex, child).If(
             Couples[woman, man], sex == RandomSex, Agents[woman, age, dateOfBirth, Sex.Female, sexuality, VitalStatus.Alive],
             Prob[FertilityRate[age]], RandomFirstName, child == NewPerson[firstName, Surname[man]]);
+
+        // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
+        // determine the child's sexuality in BirthTo, a child has the sexuality established when they are added to Agents
+        var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
+        Agents.Add[person, -1, GetDate, sex, sexuality, VitalStatus.Alive].If(
+            BirthTo[man, woman, sex, person], sexuality == RandomSexuality[sex]);
+
+        // And add anything else that is needed for a new agent:
+        Personality.Add[person, facet, SByteBellCurve].If(BirthTo[man, woman, sex, person], Facets);
+        Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[man, woman, sex, person], Jobs);
+        #endregion
+
+        #region Family
         Parents = Predicate("Parents", parent, child);
         Parents.Add.If(BirthTo[parent, person, sex, child]);
         Parents.Add.If(BirthTo[person, parent, sex, child]);
-        Agents.Add[person, -1, GetDate, sex, sexuality, VitalStatus.Alive].If(
-            BirthTo[man, woman, sex, person], sexuality == RandomSexuality[sex]);
-        Personality.Add[person, facet, SByteBellCurve].If(BirthTo[man, woman, sex, person], Facets);
-        Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[man, woman, sex, person], Jobs);
 
         var IsFamily = Definition("IsFamily", person, otherPerson).Is(
-            Couples[person, otherPerson] | Couples[otherPerson, person] | 
+            Couples[person, otherPerson] | Couples[otherPerson, person] |
             (Parents[person, otherPerson] & Agents[otherPerson, age, dateOfBirth, sex, sexuality, VitalStatus.Alive] & age <= 18) |
             (Parents[otherPerson, person] & Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive] & age <= 18));
+        #endregion
 
-        // ******************************************************************************
-        // LOCATIONS:
+        #region Drifters - adults moving to town
+        // Using a Definition to wrap RandomPerson and RandomSexuality
+        var RandomDate = Function("RandomDate", Date.Random);
+        var RandomAdultAge = Method(Sims.RandomAdultAge);
+        Agents.Add[person, RandomAdultAge, RandomDate, RandomSex, sexuality, VitalStatus.Alive]
+            .If(Prob[Time.PerYear(0.00001f)],
+                RandomPerson, sexuality == RandomSexuality[sex]);
+        #endregion
 
-        LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"), 
+        // ********************************* Locations: *********************************
+
+        #region Location Information Tables:
+        // Namely used for figuring out where a character can go (time and privacy based)
+        LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"),
             locationType.Key, locationCategory.Indexed, accessibility, operation, schedule);
+        var VocationLocations = FromCsv("VocationLocations",
+            Csv("vocationLocations"), job.Indexed, locationType.Indexed);
+        var PositionsPerJob = FromCsv("PositionsPerJob",
+            Csv("positionsPerJob"), job.Key, positions);
+
+        // Location Colors:
         CategoryColors = FromCsv("CategoryColors", Csv("locationColors"), locationCategory.Key, color);
         LocationColors = Predicate("LocationColors", locationType.Key, color);
         LocationColors.Unique = true;
         LocationColors.Initially.Where(LocationInformation, CategoryColors);
         LocationColorsIndex = LocationColors.KeyIndex(locationType);
-        
-        var VocationLocations = FromCsv("VocationLocations", 
-            Csv("vocationLocations"), job.Indexed, locationType.Indexed);
-        var PositionsPerJob = FromCsv("PositionsPerJob", 
-            Csv("positionsPerJob"), job.Key, positions);
+        #endregion
 
-        Locations = FromCsv("Locations", Csv("locations"), location.Key, position.Key, founded, opening);
-        LocationsPositionIndex = Locations.KeyIndex(position);
+        #region Location Tables:
+        // These tables are used for adding and removing tiles from the tilemap in unity efficiently -
+        // by not having to check over all Locations. VacatedLocations is currently UNUSED
+        PrimordialLocations = FromCsv("PrimordialLocations", Csv("locations"), 
+            location.Key, position.Key, founded, opening);
         NewLocations = Predicate("NewLocations", location, position, founded, opening);
-        VacatedLocations = Predicate("VacatedLocations", location, position, founded, opening);  // UNUSED
+        VacatedLocations = Predicate("VacatedLocations", location, position, founded, opening);
+
+        // This is how Locations gets built from the above tables (relational connections)
+        Locations = Predicate("Locations", location.Key, position.Key, founded, opening);
+        Locations.Initially.Where(PrimordialLocations);
+        Locations.Accumulates(NewLocations);
+        LocationsPositionIndex = Locations.KeyIndex(position);
+        #endregion
+
+        #region Housing:
+        Homes = Predicate("Homes", occupant.Key, location.Indexed);
+        Homes.Unique = true;
+        // !Homes[person, home] does nothing here...
+        Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality],
+            PrimordialLocations, IsLocationType[location, LocationType.House], !Homes[person, location]);
+        // | !Homes[person, location] here means babies fall back on moving into an empty house if their parents are homeless...
+        Homes.Add.If(BirthTo[man, woman, sex, occupant], Locations, IsLocationType[location, LocationType.House],
+            (Homes[person, location] & IsFamily[person, occupant]) | !Homes[person, location]);
+        #endregion
+
+        #region New Location Logic:
+        // UsedLots table lets us keep track of where locations are, feeds into the functions below:
         UsedLots = Predicate("UsedLots", position);
         UsedLots.Unique = true;
+        UsedLots.If(Locations);
 
+        // Helper functions and definitions for creating new locations at a valid lot in town
+        var RandomLot = Method<uint, Vector2Int>(Town.RandomLot);
+        var NumLots = Length("NumLots", UsedLots);
         var IsVacant = Definition("IsVacant", position).Is(!UsedLots[position]);
         var FreeLot = Definition("FreeLot", position).Is(position == RandomLot[NumLots], IsVacant[position]);
-        NewLocations[location, position, GetYear, GetDate].If(FreeLot,
-            // , Count(Homes) <= Count(Agents)
-            location == NewLocation["Test", LocationType.House], Prob[Time.PerWeek(0.8f)], IsNotFirstTick);
-        Locations.Accumulates(NewLocations);
-        UsedLots.If(Locations);
-        var AllPlaces = Predicate("AllPlaces", location).If(Locations);
+        var NewLocation = Method<string, LocationType, Location>(Town.NewLocation);
 
+        // IsNotFirstTick is meant to prevent the addition of locations on the first tick as tiles are only
+        // added to the tilemap from PrimordialLocations on the first tick... Also to prevent attempting to bind
+        // with Count(Homes) before Homes is initialized??
+        var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
+
+        // TODO : HousedPopulation could be a Count(...) that accumulates the housed population that is alive
+        var HousedPopulation = IntLength("HousedPopulation", Homes);
+
+        // Location creation logic: (new houses as of now)
+        NewLocations[location, position, GetYear, GetDate].If(IsNotFirstTick,
+            HousedPopulation < Count(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]),
+            Prob[Time.PerWeek(0.8f)], FreeLot, location == NewLocation["Test", LocationType.House]);
+        #endregion
+
+        // TODO : Give people jobs (need to start adding more location types in the NewLocation logic)
+        #region Vocations:
         Vocations = Predicate("Vocations", job, employee, location);
         var BestForJob = Definition("BestForJob", person, job).Is(Maximal(person, aptitude, Aptitude));
         var OnShift = Predicate("OnShift", person, job, location);
+        #endregion
+
+        // ********************************** Movement: *********************************
+
+        // TODO : Incorporate OpenForBusiness in WhereTheyAt logic
+        // TODO : Incorporate Distance from housing...
+        // TODO : Incorporate IsAccessible...
+        #region Daily Movements
+        WhereTheyAt = Predicate("WhereTheyAt", person.Key, location.Indexed);
+        WhereTheyAtLocationIndex = (GeneralIndex<(Person, Location), Location>)WhereTheyAt.IndexFor(location, false);
+
+        var GetLocationType = Function<Location, LocationType>("GetLocationType", l => l.Type);
+        var InOperation = TestMethod<DailyOperation>(Time.InOperation);
+        var IsOpen = TestMethod<Schedule>(Time.IsOpen);
         var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
             locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
 
-        Homes = Predicate("Homes", occupant.Key, location.Indexed);
-        Homes.Unique = true;
-        Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality], Locations, IsLocationType[location, LocationType.House]);
-        // | !Homes[person, location] here means babies fall back on moving into an empty house if their parents are homeless...?
-        Homes.Add.If(BirthTo[man, woman, sex, occupant], Locations, IsLocationType[location, LocationType.House],
-            (Homes[person, location] & IsFamily[person, occupant]) | !Homes[person, location]);
+        // TODO : Hook this up to a Definition that handles the liveAtOrInvited and employedAt booleans
+        var IsAccessible = TestMethod<Accessibility, bool, bool>(Town.IsAccessible);
 
-        WhereTheyAt = Predicate("WhereTheyAt", person.Key, location.Indexed);
-        WhereTheyAtLocationIndex = (GeneralIndex<(Person, Location), Location>)WhereTheyAt.IndexFor(location, false);
-        var Homebodies = Predicate("Homebodies", person);
-        Homebodies.If(Agents, Alive);
+        var Homebodies = Predicate("Homebodies", person).If(Agents, Alive);
+        var AllPlaces = Predicate("AllPlaces", location).If(Locations);
         WhereTheyAt.If(Homebodies, RandomElement(AllPlaces, location));
+        #endregion
 
         // ReSharper restore InconsistentNaming
-
         Simulation.EndPredicates();
         DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
         Simulation.Update();

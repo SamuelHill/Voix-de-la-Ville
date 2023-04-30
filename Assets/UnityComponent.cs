@@ -91,7 +91,7 @@ public class UnityComponent : MonoBehaviour {
 
     #region Process Location Tiles
     internal void ProcessInitialLocations() {
-        var newTiles = LocationsToTiles(TalkOfTheTown.Locations);
+        var newTiles = LocationsToTiles(TalkOfTheTown.PrimordialLocations);
         OccupyTiles(newTiles.Select(t => t.Item1).ToArray());
         foreach (var newTile in newTiles)
             SetTileColor(newTile.Item1, newTile.Item2);
