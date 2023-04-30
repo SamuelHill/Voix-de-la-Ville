@@ -254,10 +254,10 @@ public class TalkOfTheTown {
 
         Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
-        // TODO - Agents change to BirthTo && Handle Primordial Beings
-        Homes.Add.If(Agents[occupant, age, dateOfBirth, sex, sexuality, VitalStatus.Alive], !Homes[occupant, home],
-            Locations, IsLocationType[location, LocationType.House],
-            !Homes[person, location] | (Homes[person, location] & IsFamily[person, occupant]));
+        Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality], Locations, IsLocationType[location, LocationType.House]);
+        // | !Homes[person, location] here means babies fall back on moving into an empty house if their parents are homeless...?
+        Homes.Add.If(BirthTo[man, woman, sex, occupant], Locations, IsLocationType[location, LocationType.House],
+            (Homes[person, location] & IsFamily[person, occupant]) | !Homes[person, location]);
 
         WhereTheyAt = Predicate("WhereTheyAt", person.Key, location.Indexed);
         WhereTheyAtLocationIndex = (GeneralIndex<(Person, Location), Location>)WhereTheyAt.IndexFor(location, false);
