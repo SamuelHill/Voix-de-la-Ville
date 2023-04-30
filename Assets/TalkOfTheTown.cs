@@ -168,8 +168,7 @@ public class TalkOfTheTown {
         var PrimordialBeings = FromCsv("PrimordialBeings", 
             Csv("agents"), person, age, dateOfBirth, sex, sexuality);
         Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
-        Agents.AddRows(from being in PrimordialBeings 
-            select (being.Item1, being.Item2, being.Item3, being.Item4, being.Item5, VitalStatus.Alive));
+        Agents.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeings);
         AgentsVitalStatusIndex = (GeneralIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), VitalStatus>)Agents.IndexFor(vitalStatus, false);
 
         var Dead = Definition("Dead", person).Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Dead]);
@@ -179,16 +178,12 @@ public class TalkOfTheTown {
         var Facets = Predicate("Facets", facet);
         Facets.AddRows(Enum.GetValues(typeof(Facet)).Cast<Facet>());
         Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
-        Personality.AddRows(from being in PrimordialBeings
-                            from face in Facets
-                            select (being.Item1, face, Randomize.SByteBellCurve()));
+        Personality.Initially[person, facet, SByteBellCurve].Where(PrimordialBeings, Facets);
 
         var Jobs = Predicate("Jobs", job);
         Jobs.AddRows(Enum.GetValues(typeof(Vocation)).Cast<Vocation>());
         Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
-        Aptitude.AddRows(from being in PrimordialBeings
-                         from face in Jobs
-                         select (being.Item1, face, Randomize.SByteBellCurve()));
+        Aptitude.Initially[person, job, SByteBellCurve].Where(PrimordialBeings, Jobs);
 
         var Man = Predicate("Man", person).If(
             Agents[person, age, dateOfBirth, Sex.Male, sexuality, VitalStatus.Alive], age >= 18);
@@ -225,11 +220,9 @@ public class TalkOfTheTown {
         LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"), 
             locationType.Key, locationCategory.Indexed, accessibility, operation, schedule);
         CategoryColors = FromCsv("CategoryColors", Csv("locationColors"), locationCategory.Key, color);
-        
-        // TODO - Force this to only compute once also
         LocationColors = Predicate("LocationColors", locationType.Key, color);
         LocationColors.Unique = true;
-        LocationColors.Add.If(LocationInformation, CategoryColors);
+        LocationColors.Initially.Where(LocationInformation, CategoryColors);
         LocationColorsIndex = LocationColors.KeyIndex(locationType);
         
         var VocationLocations = FromCsv("VocationLocations", 
@@ -261,8 +254,7 @@ public class TalkOfTheTown {
 
         Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
-        // TODO - Agents change to BirthTo
-        // modeling homelessness vs primordial housing
+        // TODO - Agents change to BirthTo && Handle Primordial Beings
         Homes.Add.If(Agents[occupant, age, dateOfBirth, sex, sexuality, VitalStatus.Alive], !Homes[occupant, home],
             Locations, IsLocationType[location, LocationType.House],
             !Homes[person, location] | (Homes[person, location] & IsFamily[person, occupant]));

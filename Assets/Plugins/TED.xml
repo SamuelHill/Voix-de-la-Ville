@@ -1453,6 +1453,13 @@
             You cannot add rules to a table you add rows to using AddRow.
             </summary>
         </member>
+        <member name="M:TED.Interpreter.TableGoal.Where(TED.Interpreter.Goal[])">
+            <summary>
+            Synonym for If().  This reads better on Table.Initially.Where(...) declarations
+            than .If(...)
+            </summary>
+            <param name="subgoals"></param>
+        </member>
         <member name="M:TED.Interpreter.TableGoal.Fact">
             <summary>
             Add a "fact" (rule with no subgoals) to the predicate
@@ -2563,6 +2570,16 @@
         <member name="M:TED.ValueCell`1.Match(`0@)">
             <summary>
             Test of the cell holds the specified value
+            </summary>
+        </member>
+        <member name="T:TED.InvalidProgramException">
+            <summary>
+            Exception indicating a TED program is somehow malformed.
+            </summary>
+        </member>
+        <member name="M:TED.InvalidProgramException.#ctor(System.String)">
+            <summary>
+            Exception indicating a TED program is somehow malformed.
             </summary>
         </member>
         <member name="T:TED.Language">
@@ -5001,6 +5018,11 @@
             </summary>
             <param name="table">Table to remove</param>
         </member>
+        <member name="M:TED.Program.FindDependents">
+            <summary>
+            Build dependent lists for all tables in the program.
+            </summary>
+        </member>
         <member name="M:TED.Repl.Parser.SymbolTable.GetVariable(System.String,TED.Term)">
             <summary>
             Get the variable with this name, if one has already been made.  Otherwise, make one of the same type as defaultArg.
@@ -5088,6 +5110,14 @@
             Make a simulation with the specified name
             </summary>
         </member>
+        <member name="M:TED.Simulation.EndPredicates">
+            <inheritdoc />
+        </member>
+        <member name="F:TED.Simulation.DynamicTables">
+            <summary>
+            The tables in the simulation that vary from tick to tick
+            </summary>
+        </member>
         <member name="P:TED.Simulation.RuleExecutionTime">
             <summary>
             Average combined execution time for all the rules in the simulation
@@ -5106,7 +5136,7 @@
             Forcibly recompute all the predicates
             </summary>
         </member>
-        <member name="M:TED.Simulation.UpdateTableColumns">
+        <member name="M:TED.Simulation.UpdateDynamicBaseTables">
             <summary>
             Run any column updates defined using the Set() method.
             </summary>
@@ -5141,6 +5171,16 @@
         <member name="F:TED.TablePredicate.Program">
             <summary>
             The Program or Simulation to which this predicate belongs
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate.IsDynamic">
+            <summary>
+            True if this is a table in a simulation that needs to be updated dynamically
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate.IsStatic">
+            <summary>
+            True if this table doesn't change during a simulation.
             </summary>
         </member>
         <member name="P:TED.TablePredicate.Unique">
@@ -5277,6 +5317,22 @@
             Add a rule that concludes the default arguments of this predicate
             </summary>
         </member>
+        <member name="P:TED.TablePredicate.RuleDependencies">
+            <summary>
+            All TablePredicates that are used in rules for this TablePredicate, if any.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate.ImperativeDependencies">
+            <summary>
+            The tables that are used to update base tables, through .Accumulates(), .Add, or .Set()
+            </summary>
+        </member>
+        <member name="F:TED.TablePredicate.Dependents">
+            <summary>
+            Tables that use this table as input
+            This is computed by Program.FindDependents().
+            </summary>
+        </member>
         <member name="M:TED.TablePredicate.Stringify``1(``0@)">
             <summary>
             Null-tolerant version of ToString.
@@ -5317,6 +5373,12 @@
         <member name="P:TED.TablePredicate.Inputs">
             <summary>
             Table predicates that this table predicate accumulates, if any.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate.InitialValueTable">
+            <summary>
+            The table that provides initial values to this table, if any.
+            This is untyped, so you probably want to be using Initially instead.
             </summary>
         </member>
         <member name="M:TED.TablePredicate.op_Implicit(TED.TablePredicate)~TED.Interpreter.Goal">
@@ -5363,6 +5425,11 @@
         <member name="E:TED.TablePredicate.OnUpdateColumns">
             <summary>
             List of procedures to call when the table is updated.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate.ColumnUpdateTables">
+            <summary>
+            Tables that drive updates of columns of this table
             </summary>
         </member>
         <member name="M:TED.TablePredicate.Set``2(TED.Var{``0},TED.Var{``1})">
@@ -5422,6 +5489,13 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`1.If(TED.Interpreter.Goal[])">
+            <summary>
+            Add a rule to the predicate, using its default arguments as the head
+            </summary>
+            <param name="body">Antecedents for the rule</param>
+            <returns>The original predicate (so these can be chained)</returns>
+        </member>
+        <member name="M:TED.TablePredicate`1.Where(TED.Interpreter.Goal[])">
             <summary>
             Add a rule to the predicate, using its default arguments as the head
             </summary>
@@ -5499,6 +5573,14 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`1.Initially">
+            <summary>
+            A predicate that is automatically appended to this predicate on every update.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate`1.InitialValueTable">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`1.GetEnumerator">
             <inheritdoc />
@@ -5588,6 +5670,13 @@
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`2.Where(TED.Interpreter.Goal[])">
+            <summary>
+            Add a rule to the predicate, using its default arguments as the head
+            </summary>
+            <param name="body">Antecedents for the rule</param>
+            <returns>The original predicate (so these can be chained)</returns>
+        </member>
         <member name="P:TED.TablePredicate`2.Inputs">
             <inheritdoc />
         </member>
@@ -5602,6 +5691,14 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`2.Initially">
+            <summary>
+            A predicate that is automatically appended to this predicate on every update.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate`2.InitialValueTable">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`2.KeyIndex``1(TED.Var{``0})">
             <summary>
@@ -5740,6 +5837,13 @@
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`3.Where(TED.Interpreter.Goal[])">
+            <summary>
+            Add a rule to the predicate, using its default arguments as the head
+            </summary>
+            <param name="body">Antecedents for the rule</param>
+            <returns>The original predicate (so these can be chained)</returns>
+        </member>
         <member name="P:TED.TablePredicate`3.Inputs">
             <inheritdoc />
         </member>
@@ -5754,6 +5858,14 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`3.Initially">
+            <summary>
+            A predicate that is automatically appended to this predicate on every update.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate`3.InitialValueTable">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`3.GetEnumerator">
             <inheritdoc />
@@ -5878,6 +5990,13 @@
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`4.Where(TED.Interpreter.Goal[])">
+            <summary>
+            Add a rule to the predicate, using its default arguments as the head
+            </summary>
+            <param name="body">Antecedents for the rule</param>
+            <returns>The original predicate (so these can be chained)</returns>
+        </member>
         <member name="P:TED.TablePredicate`4.Inputs">
             <inheritdoc />
         </member>
@@ -5892,6 +6011,14 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`4.Initially">
+            <summary>
+            A predicate that is automatically appended to this predicate on every update.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate`4.InitialValueTable">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`4.GetEnumerator">
             <inheritdoc />
@@ -6020,6 +6147,13 @@
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`5.Where(TED.Interpreter.Goal[])">
+            <summary>
+            Add a rule to the predicate, using its default arguments as the head
+            </summary>
+            <param name="body">Antecedents for the rule</param>
+            <returns>The original predicate (so these can be chained)</returns>
+        </member>
         <member name="P:TED.TablePredicate`5.Inputs">
             <inheritdoc />
         </member>
@@ -6034,6 +6168,14 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`5.Initially">
+            <summary>
+            A predicate that is automatically appended to this predicate on every update.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate`5.InitialValueTable">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`5.GetEnumerator">
             <inheritdoc />
@@ -6166,6 +6308,13 @@
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`6.Where(TED.Interpreter.Goal[])">
+            <summary>
+            Add a rule to the predicate, using its default arguments as the head
+            </summary>
+            <param name="body">Antecedents for the rule</param>
+            <returns>The original predicate (so these can be chained)</returns>
+        </member>
         <member name="P:TED.TablePredicate`6.Inputs">
             <inheritdoc />
         </member>
@@ -6180,6 +6329,14 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`6.Initially">
+            <summary>
+            A predicate that is automatically appended to this predicate on every update.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate`6.InitialValueTable">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`6.GetEnumerator">
             <inheritdoc />
@@ -6316,6 +6473,13 @@
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`7.Where(TED.Interpreter.Goal[])">
+            <summary>
+            Add a rule to the predicate, using its default arguments as the head
+            </summary>
+            <param name="body">Antecedents for the rule</param>
+            <returns>The original predicate (so these can be chained)</returns>
+        </member>
         <member name="P:TED.TablePredicate`7.Inputs">
             <inheritdoc />
         </member>
@@ -6330,6 +6494,14 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`7.Initially">
+            <summary>
+            A predicate that is automatically appended to this predicate on every update.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate`7.InitialValueTable">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`7.GetEnumerator">
             <inheritdoc />
@@ -6470,6 +6642,13 @@
             <param name="body">subgoals</param>
             <returns>the original predicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`8.Where(TED.Interpreter.Goal[])">
+            <summary>
+            Add a rule to the predicate, using its default arguments as the head
+            </summary>
+            <param name="body">Antecedents for the rule</param>
+            <returns>The original predicate (so these can be chained)</returns>
+        </member>
         <member name="P:TED.TablePredicate`8.Inputs">
             <inheritdoc />
         </member>
@@ -6484,6 +6663,14 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`8.Initially">
+            <summary>
+            A predicate that is automatically appended to this predicate on every update.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate`8.InitialValueTable">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`8.GetEnumerator">
             <inheritdoc />
@@ -7430,6 +7617,11 @@
             <param name="name">Name to give to the cluster</param>
             <param name="parent">Cluster inside of which to render this cluster, or null</param>
             <returns></returns>
+        </member>
+        <member name="P:TED.Utilities.GraphViz`1.Diameter">
+            <summary>
+            Distance between the two most distant nodes that are still connected.
+            </summary>
         </member>
         <member name="T:TED.Utilities.Random">
             <summary>

@@ -84,8 +84,7 @@ public class UnityComponent : MonoBehaviour {
     internal Vector2Int TileToLot(Vector3Int tile) => (Vector2Int)tile - TownCenter;
     internal bool TrySelectTile(out Vector3Int tile) {
         tile = Tilemap.WorldToCell(Camera.main.ScreenToWorldPoint(mousePosition));
-        return Tilemap.HasTile(tile);
-    }
+        return Tilemap.HasTile(tile); }
     internal LocationRow GetLocationInfo(Vector3Int selectedTile) =>
         TalkOfTheTown.LocationsPositionIndex[TileToLot(selectedTile)];
     #endregion
