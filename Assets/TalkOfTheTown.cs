@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TED;
+using TED.Interpreter;
 using TED.Tables;
 using TED.Utilities;
 using UnityEngine;
@@ -184,7 +185,7 @@ public class TalkOfTheTown {
         Aptitude.Initially[person, job, SByteBellCurve].Where(PrimordialBeings, Jobs);
         #endregion
 
-        // TODO : implement primordial couples
+        // TODO : Implement primordial couples
         #region Couples (for procreation)
         var Men = Predicate("Men", person).If(
             Agents[person, age, dateOfBirth, Sex.Male, sexuality, VitalStatus.Alive], age >= 18);
@@ -326,6 +327,7 @@ public class TalkOfTheTown {
         // TODO : Incorporate Distance from housing...
         #region Daily Movements
         WhereTheyAt = Predicate("WhereTheyAt", person.Key, location.Indexed);
+        WhereTheyAt.Unique = true;
         WhereTheyAtLocationIndex = (GeneralIndex<(Person, Location), Location>)WhereTheyAt.IndexFor(location, false);
 
         var GetLocationType = Function<Location, LocationType>("GetLocationType", l => l.Type);
@@ -334,18 +336,21 @@ public class TalkOfTheTown {
         var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
             locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
 
-        var Accessible = Definition("Accessible", person, location);
-        Accessible[person, location].If(locationType == GetLocationType[location],  // public is always true...
-            LocationInformation[locationType, locationCategory, Accessibility.Public, operation, schedule],
-            Alive); // Only need alive to make sure rules are fully bound
-        Accessible[person, location].If(locationType == GetLocationType[location], // private needs to live there OR be 'invited'
-            LocationInformation[locationType, locationCategory, Accessibility.Private, operation, schedule],
-            Homes[person, location] | (Homes[occupant, location] & IsFamily[person, occupant]));
-        Accessible[person, location].If(locationType == GetLocationType[location], // NoTrespass related to employment
-            LocationInformation[locationType, locationCategory, Accessibility.NoTrespass, operation, schedule],
-            OnShift);
-        
-        WhereTheyAt.If(Alive, RandomElement(OpenForBusiness, location), Accessible);
+        var IsAccessible = Definition("IsAccessible", person, location)
+            .Is(locationType == GetLocationType[location], LocationInformation, accessibility == Accessibility.Public |
+                (accessibility == Accessibility.Private & 
+                    (Homes[person, location] | (Homes[occupant, location] & IsFamily[person, occupant]))) |
+                (accessibility == Accessibility.NoTrespass & OnShift));
+
+        //var AccessibleLocations = Predicate("AccessibleLocations", person.Indexed, location.Indexed)
+        //    .If(Alive, OpenForBusiness, IsAccessible);
+        //var AccessibleLocationsIndex = (GeneralIndex<(Person, Location), Person>)AccessibleLocations.IndexFor(person, false);
+        //var RandomAccessibleLocation = Function<Person, Location>("RandomAccessibleLocation", 
+        //    p => AccessibleLocationsIndex.RowsMatching(p).Select(r => r.Item2).ToList().RandomElement());
+
+        //WhereTheyAt.If(IsNotFirstTick, Alive, age >= 0, location == RandomAccessibleLocation[person]);
+
+        WhereTheyAt.If(Alive, RandomElement(OpenForBusiness, location), IsAccessible);
         #endregion
 
         // ReSharper restore InconsistentNaming

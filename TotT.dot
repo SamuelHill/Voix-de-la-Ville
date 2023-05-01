@@ -57,6 +57,7 @@ v39 [ label = "Vocations" fillcolor="greenyellow" shape="diamond"];
 v40 [ label = "OnShift" fillcolor="greenyellow" shape="diamond"];
 v41 [ label = "WhereTheyAt"];
 v42 [ label = "OpenForBusiness"];
+v43 [ label = "AccessibleLocations"];
 v5 -> v4 [ color="green" ]
 v6 -> v5 [ constraint="false" ]
 v7 -> v6
@@ -107,13 +108,14 @@ v37 -> v36 [ constraint="false" ]
 v29 -> v37
 v13 -> v36 [ constraint="false" ]
 v10 -> v30
-v42 -> v41
+v10 -> v41
 v32 -> v42
 v23 -> v42
-v10 -> v41
-v23 -> v41
-v34 -> v41
-v7 -> v41
-v21 -> v41
-v40 -> v41
+v10 -> v43
+v42 -> v43
+v23 -> v43
+v34 -> v43
+v7 -> v43
+v21 -> v43
+v40 -> v43
 }
