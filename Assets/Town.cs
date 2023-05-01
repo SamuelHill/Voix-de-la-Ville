@@ -36,11 +36,6 @@ public static class Town {
 
     public static Location NewLocation(string name, LocationType type) => new(Utils.Title(name), type);
 
-    public static bool IsAccessible(Accessibility modifier, bool liveAtOrInvited, bool employedAt) => 
-        modifier is Accessibility.Public ||
-        (modifier is Accessibility.Private && liveAtOrInvited) ||
-        (modifier is Accessibility.NoTrespass && employedAt);
-
     public static bool IsLocationType(Location location, LocationType locationType) =>
         location.IsLocationType(locationType);
 }
@@ -48,6 +43,7 @@ public static class Town {
 public class Location {
     private readonly Guid _id;
     public string Name;
+    // TODO : Move the LocationType out of Location and just have a column for type in Location table
     public readonly LocationType Type;
 
     public Location(string name, LocationType type) {

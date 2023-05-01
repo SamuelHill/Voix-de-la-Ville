@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TED;
-using TED.Interpreter;
 using TED.Tables;
 using TED.Utilities;
 using UnityEngine;
 using static TED.Language;
 
 using AgentRow = System.ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
+using ColorUtility = UnityEngine.ColorUtility;
 
 public class TalkOfTheTown {
     public static Simulation Simulation = null!;
@@ -184,10 +184,11 @@ public class TalkOfTheTown {
         Aptitude.Initially[person, job, SByteBellCurve].Where(PrimordialBeings, Jobs);
         #endregion
 
+        // TODO : implement primordial couples
         #region Couples (for procreation)
-        var Man = Predicate("Man", person).If(
+        var Men = Predicate("Men", person).If(
             Agents[person, age, dateOfBirth, Sex.Male, sexuality, VitalStatus.Alive], age >= 18);
-        var Woman = Predicate("Woman", person).If(
+        var Women = Predicate("Women", person).If(
             Agents[person, age, dateOfBirth, Sex.Female, sexuality, VitalStatus.Alive], age >= 18);
 
         Couples = Predicate("Couples", person, partner);
@@ -198,7 +199,7 @@ public class TalkOfTheTown {
         // TODO: Improve NewCouple logic. Use IsAttracted... Unless you want to have couples having kids with differing attractions
         var IsAttracted = Test<Sexuality, Sex>("IsAttracted", (se, s) => se.IsAttracted(s));
 
-        NewCouples.If(Woman[person], RandomElement(Man, partner), Prob[0.5f], !Couples[person, man], !Couples[woman, partner]);
+        NewCouples.If(Women[person], RandomElement(Men, partner), Prob[0.5f], !Couples[person, man], !Couples[woman, partner]);
         Couples.Accumulates(NewCouples);
         #endregion
 
@@ -265,7 +266,7 @@ public class TalkOfTheTown {
         // These tables are used for adding and removing tiles from the tilemap in unity efficiently -
         // by not having to check over all Locations. VacatedLocations is currently UNUSED
         PrimordialLocations = FromCsv("PrimordialLocations", Csv("locations"), 
-            location.Key, position.Key, founded, opening);
+            location, position, founded, opening);
         NewLocations = Predicate("NewLocations", location, position, founded, opening);
         VacatedLocations = Predicate("VacatedLocations", location, position, founded, opening);
 
@@ -279,12 +280,13 @@ public class TalkOfTheTown {
         #region Housing:
         Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
-        // !Homes[person, home] does nothing here...
-        Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality],
-            PrimordialLocations, IsLocationType[location, LocationType.House], !Homes[person, location]);
-        // | !Homes[person, location] here means babies fall back on moving into an empty house if their parents are homeless...
-        Homes.Add.If(BirthTo[man, woman, sex, occupant], Locations, IsLocationType[location, LocationType.House],
-            (Homes[person, location] & IsFamily[person, occupant]) | !Homes[person, location]);
+        // Using this to randomly assign one house per person...
+        var PrimordialHouses = Predicate("PrimordialHouses", location)
+            .If(PrimordialLocations, IsLocationType[location, LocationType.House]);
+        // Ideally this would involve some more complex assignment logic that would fill houses based on some Goal
+        // e.g. Initialize Homes first based on primordial couples, then on all single agents
+        Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality], RandomElement(PrimordialHouses, location));
+        Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
         #endregion
 
         #region New Location Logic:
@@ -302,16 +304,14 @@ public class TalkOfTheTown {
 
         // IsNotFirstTick is meant to prevent the addition of locations on the first tick as tiles are only
         // added to the tilemap from PrimordialLocations on the first tick... Also to prevent attempting to bind
-        // with Count(Homes) before Homes is initialized??
+        // with Count(Homes) before Homes is initialized - not a problem if Homes comes before this
         var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
 
-        // TODO : HousedPopulation could be a Count(...) that accumulates the housed population that is alive
-        var HousedPopulation = IntLength("HousedPopulation", Homes);
-
-        // Location creation logic: (new houses as of now)
+        // Location creation logic: (new houses as of now - and this should only happen if a drifter comes in)
         NewLocations[location, position, GetYear, GetDate].If(IsNotFirstTick,
-            HousedPopulation < Count(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]),
-            Prob[Time.PerWeek(0.8f)], FreeLot, location == NewLocation["Test", LocationType.House]);
+            Count(Homes[person, location] & Alive[person]) < Count(Alive),
+            Prob[Time.PerWeek(0.5f)],  // Also, construction isn't instantaneous
+            FreeLot, location == NewLocation["Test", LocationType.House]);
         #endregion
 
         // TODO : Give people jobs (need to start adding more location types in the NewLocation logic)
@@ -323,9 +323,7 @@ public class TalkOfTheTown {
 
         // ********************************** Movement: *********************************
 
-        // TODO : Incorporate OpenForBusiness in WhereTheyAt logic
         // TODO : Incorporate Distance from housing...
-        // TODO : Incorporate IsAccessible...
         #region Daily Movements
         WhereTheyAt = Predicate("WhereTheyAt", person.Key, location.Indexed);
         WhereTheyAtLocationIndex = (GeneralIndex<(Person, Location), Location>)WhereTheyAt.IndexFor(location, false);
@@ -336,12 +334,18 @@ public class TalkOfTheTown {
         var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
             locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
 
-        // TODO : Hook this up to a Definition that handles the liveAtOrInvited and employedAt booleans
-        var IsAccessible = TestMethod<Accessibility, bool, bool>(Town.IsAccessible);
-
-        var Homebodies = Predicate("Homebodies", person).If(Agents, Alive);
-        var AllPlaces = Predicate("AllPlaces", location).If(Locations);
-        WhereTheyAt.If(Homebodies, RandomElement(AllPlaces, location));
+        var Accessible = Definition("Accessible", person, location);
+        Accessible[person, location].If( // public is always true...
+            LocationInformation[GetLocationType[location], locationCategory, Accessibility.Public, operation, schedule],
+            Alive); // Only need alive to make sure rules are fully bound
+        Accessible[person, location].If( // private needs to live there OR be 'invited'
+            LocationInformation[GetLocationType[location], locationCategory, Accessibility.Private, operation, schedule],
+            Homes[person, location] | (Homes[occupant, location] & IsFamily[person, occupant]));
+        Accessible[person, location].If( // NoTrespass related to employment
+            LocationInformation[GetLocationType[location], locationCategory, Accessibility.NoTrespass, operation, schedule],
+            OnShift);
+        
+        WhereTheyAt.If(Alive, RandomElement(OpenForBusiness, location), Accessible);
         #endregion
 
         // ReSharper restore InconsistentNaming

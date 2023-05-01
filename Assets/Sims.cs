@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using static Randomize;
@@ -24,6 +23,7 @@ public static class Sims {
     public static Sex RandomSex() => (Sex)BooleanInt();
 
     #region Fertility Calculation Notes
+    // ReSharper disable once UnusedMember.Global
     public static void FertilityCurve(float t) {
         // https://www.desmos.com/calculator/cahqdxeshd
         if (t is < 0 or > 1) return; // for t between 0 and 1,

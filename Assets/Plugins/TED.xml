@@ -3110,6 +3110,14 @@
             <param name="predicate">Table to get the Length of</param>
             <returns></returns>
         </member>
+        <member name="M:TED.Language.IntLength(System.String,TED.TablePredicate)">
+            <summary>
+            Make a function that returns predicate.Length as an int
+            </summary>
+            <param name="name">Name of the Function, for debugging purposes</param>
+            <param name="predicate">Table to get the Length of</param>
+            <returns></returns>
+        </member>
         <member name="M:TED.Language.Predicate``1(System.String,TED.Interpreter.IColumnSpec{``0})">
             <summary>
             Make a new table predicate
@@ -5455,6 +5463,9 @@
             <summary>
             Run any column updates for this table
             </summary>
+        </member>
+        <member name="M:TED.TablePredicate.ToString">
+            <inheritdoc />
         </member>
         <member name="F:TED.TablePredicate.Property">
             <summary>

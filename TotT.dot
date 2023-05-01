@@ -29,9 +29,9 @@ v32 [ label = "Locations" fillcolor="greenyellow"];
 v33 [ label = "Initially" shape="diamond"];
 }
 subgraph "cluster_Homes"{
-v35 [ label = "Homes" fillcolor="greenyellow"];
-v36 [ label = "Add"];
-v37 [ label = "Initially"];
+v34 [ label = "Homes" fillcolor="greenyellow"];
+v35 [ label = "Add"];
+v36 [ label = "Initially" shape="diamond"];
 }
 v0 [ label = "MaleNames" fillcolor="greenyellow" shape="diamond"];
 v1 [ label = "FemaleNames" fillcolor="greenyellow" shape="diamond"];
@@ -40,9 +40,9 @@ v3 [ label = "Facets" fillcolor="greenyellow" shape="diamond"];
 v6 [ label = "Birth"];
 v7 [ label = "Couples" fillcolor="greenyellow"];
 v8 [ label = "NewCouples"];
-v9 [ label = "Man"];
+v9 [ label = "Men"];
 v13 [ label = "PrimordialBeings" fillcolor="greenyellow" shape="diamond"];
-v15 [ label = "Woman"];
+v15 [ label = "Women"];
 v17 [ label = "Jobs" fillcolor="greenyellow" shape="diamond"];
 v23 [ label = "LocationInformation" fillcolor="greenyellow" shape="diamond"];
 v24 [ label = "VocationLocations" fillcolor="greenyellow" shape="diamond"];
@@ -51,13 +51,12 @@ v26 [ label = "CategoryColors" fillcolor="greenyellow" shape="diamond"];
 v29 [ label = "PrimordialLocations" fillcolor="greenyellow" shape="diamond"];
 v30 [ label = "NewLocations"];
 v31 [ label = "UsedLots"];
-v34 [ label = "VacatedLocations" fillcolor="greenyellow" shape="diamond"];
-v38 [ label = "Vocations" fillcolor="greenyellow" shape="diamond"];
-v39 [ label = "OnShift" fillcolor="greenyellow" shape="diamond"];
-v40 [ label = "WhereTheyAt"];
-v41 [ label = "AllPlaces"];
-v42 [ label = "Homebodies"];
-v43 [ label = "OpenForBusiness"];
+v37 [ label = "PrimordialHouses" shape="diamond"];
+v38 [ label = "VacatedLocations" fillcolor="greenyellow" shape="diamond"];
+v39 [ label = "Vocations" fillcolor="greenyellow" shape="diamond"];
+v40 [ label = "OnShift" fillcolor="greenyellow" shape="diamond"];
+v41 [ label = "WhereTheyAt"];
+v42 [ label = "OpenForBusiness"];
 v5 -> v4 [ color="green" ]
 v6 -> v5 [ constraint="false" ]
 v7 -> v6
@@ -99,22 +98,22 @@ v32 -> v31
 v30 -> v32 [ color="green" ]
 v33 -> v32 [ color="blue" ]
 v29 -> v33 [ constraint="false" ]
+v34 -> v30
+v35 -> v34 [ color="green" ]
+v6 -> v35 [ constraint="false" ]
+v34 -> v35 [ constraint="false" ]
+v36 -> v34 [ color="blue" ]
+v37 -> v36 [ constraint="false" ]
+v29 -> v37
+v13 -> v36 [ constraint="false" ]
 v10 -> v30
-v36 -> v35 [ color="green" ]
-v6 -> v36 [ constraint="false" ]
-v32 -> v36 [ constraint="false" ]
-v35 -> v36 [ constraint="false" ]
-v7 -> v36 [ constraint="false" ]
-v21 -> v36 [ constraint="false" ]
-v10 -> v36 [ constraint="false" ]
-v37 -> v35 [ color="blue" ]
-v35 -> v37 [ constraint="false" ]
-v13 -> v37 [ constraint="false" ]
-v29 -> v37 [ constraint="false" ]
-v41 -> v40
-v32 -> v41
-v42 -> v40
-v10 -> v42
-v32 -> v43
-v23 -> v43
+v42 -> v41
+v32 -> v42
+v23 -> v42
+v10 -> v41
+v23 -> v41
+v34 -> v41
+v7 -> v41
+v21 -> v41
+v40 -> v41
 }
