@@ -335,14 +335,14 @@ public class TalkOfTheTown {
             locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
 
         var Accessible = Definition("Accessible", person, location);
-        Accessible[person, location].If( // public is always true...
-            LocationInformation[GetLocationType[location], locationCategory, Accessibility.Public, operation, schedule],
+        Accessible[person, location].If(locationType == GetLocationType[location],  // public is always true...
+            LocationInformation[locationType, locationCategory, Accessibility.Public, operation, schedule],
             Alive); // Only need alive to make sure rules are fully bound
-        Accessible[person, location].If( // private needs to live there OR be 'invited'
-            LocationInformation[GetLocationType[location], locationCategory, Accessibility.Private, operation, schedule],
+        Accessible[person, location].If(locationType == GetLocationType[location], // private needs to live there OR be 'invited'
+            LocationInformation[locationType, locationCategory, Accessibility.Private, operation, schedule],
             Homes[person, location] | (Homes[occupant, location] & IsFamily[person, occupant]));
-        Accessible[person, location].If( // NoTrespass related to employment
-            LocationInformation[GetLocationType[location], locationCategory, Accessibility.NoTrespass, operation, schedule],
+        Accessible[person, location].If(locationType == GetLocationType[location], // NoTrespass related to employment
+            LocationInformation[locationType, locationCategory, Accessibility.NoTrespass, operation, schedule],
             OnShift);
         
         WhereTheyAt.If(Alive, RandomElement(OpenForBusiness, location), Accessible);
