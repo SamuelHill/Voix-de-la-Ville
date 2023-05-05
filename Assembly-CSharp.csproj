@@ -64,6 +64,7 @@
     <Compile Include="Assets\TalkOfTheTown.cs" />
     <Compile Include="Assets\Randomize.cs" />
     <Compile Include="Assets\Town.cs" />
+    <Compile Include="Assets\ActionSelection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

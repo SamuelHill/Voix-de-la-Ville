@@ -1,63 +1,63 @@
 digraph {
 node [ style="filled"]
 subgraph "cluster_Agents"{
-v10 [ label = "Agents" fillcolor="greenyellow"];
+v10 [ label = "Agents" fillcolor="limegreen"];
 v11 [ label = "Add"];
-v12 [ label = "Initially" shape="diamond"];
+v12 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 v14 [ label = "set vitalStatus"];
 }
 subgraph "cluster_Personality"{
-v4 [ label = "Personality" fillcolor="greenyellow"];
+v4 [ label = "Personality" fillcolor="limegreen"];
 v5 [ label = "Add"];
-v16 [ label = "Initially" shape="diamond"];
+v16 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Aptitude"{
-v18 [ label = "Aptitude" fillcolor="greenyellow"];
+v18 [ label = "Aptitude" fillcolor="limegreen"];
 v19 [ label = "Add"];
-v20 [ label = "Initially" shape="diamond"];
+v20 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Parents"{
-v21 [ label = "Parents" fillcolor="greenyellow"];
+v21 [ label = "Parents" fillcolor="limegreen"];
 v22 [ label = "Add"];
 }
 subgraph "cluster_LocationColors"{
-v27 [ label = "LocationColors" fillcolor="greenyellow" shape="diamond"];
-v28 [ label = "Initially" shape="diamond"];
+v27 [ label = "LocationColors" fillcolor="gold" shape="diamond"];
+v28 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Locations"{
-v32 [ label = "Locations" fillcolor="greenyellow"];
-v33 [ label = "Initially" shape="diamond"];
+v32 [ label = "Locations" fillcolor="limegreen"];
+v33 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Homes"{
-v34 [ label = "Homes" fillcolor="greenyellow"];
+v34 [ label = "Homes" fillcolor="limegreen"];
 v35 [ label = "Add"];
-v36 [ label = "Initially" shape="diamond"];
+v36 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
-v0 [ label = "MaleNames" fillcolor="greenyellow" shape="diamond"];
-v1 [ label = "FemaleNames" fillcolor="greenyellow" shape="diamond"];
-v2 [ label = "Surnames" fillcolor="greenyellow" shape="diamond"];
-v3 [ label = "Facets" fillcolor="greenyellow" shape="diamond"];
+v0 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
+v1 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
+v2 [ label = "Surnames" fillcolor="gold" shape="diamond"];
+v3 [ label = "Facets" fillcolor="gold" shape="diamond"];
 v6 [ label = "Birth"];
-v7 [ label = "Couples" fillcolor="greenyellow"];
+v7 [ label = "Couples" fillcolor="limegreen"];
 v8 [ label = "NewCouples"];
 v9 [ label = "Men"];
-v13 [ label = "PrimordialBeings" fillcolor="greenyellow" shape="diamond"];
+v13 [ label = "PrimordialBeings" fillcolor="gold" shape="diamond"];
 v15 [ label = "Women"];
-v17 [ label = "Jobs" fillcolor="greenyellow" shape="diamond"];
-v23 [ label = "LocationInformation" fillcolor="greenyellow" shape="diamond"];
-v24 [ label = "VocationLocations" fillcolor="greenyellow" shape="diamond"];
-v25 [ label = "PositionsPerJob" fillcolor="greenyellow" shape="diamond"];
-v26 [ label = "CategoryColors" fillcolor="greenyellow" shape="diamond"];
-v29 [ label = "PrimordialLocations" fillcolor="greenyellow" shape="diamond"];
+v17 [ label = "Jobs" fillcolor="gold" shape="diamond"];
+v23 [ label = "LocationInformation" fillcolor="gold" shape="diamond"];
+v24 [ label = "VocationLocations" fillcolor="gold" shape="diamond"];
+v25 [ label = "PositionsPerJob" fillcolor="gold" shape="diamond"];
+v26 [ label = "CategoryColors" fillcolor="gold" shape="diamond"];
+v29 [ label = "PrimordialLocations" fillcolor="gold" shape="diamond"];
 v30 [ label = "NewLocations"];
 v31 [ label = "UsedLots"];
-v37 [ label = "PrimordialHouses" shape="diamond"];
-v38 [ label = "VacatedLocations" fillcolor="greenyellow" shape="diamond"];
-v39 [ label = "Vocations" fillcolor="greenyellow" shape="diamond"];
-v40 [ label = "OnShift" fillcolor="greenyellow" shape="diamond"];
-v41 [ label = "WhereTheyAt"];
-v42 [ label = "OpenForBusiness"];
-v43 [ label = "AccessibleLocations"];
+v37 [ label = "PrimordialHouses" fillcolor="deepskyblue" shape="diamond"];
+v38 [ label = "LocationsOfType"];
+v39 [ label = "VacatedLocations" fillcolor="gold" shape="diamond"];
+v40 [ label = "Vocations" fillcolor="gold" shape="diamond"];
+v41 [ label = "OnShift" fillcolor="gold" shape="diamond"];
+v42 [ label = "WhereTheyAt"];
+v43 [ label = "OpenForBusiness"];
 v5 -> v4 [ color="green" ]
 v6 -> v5 [ constraint="false" ]
 v7 -> v6
@@ -108,14 +108,15 @@ v37 -> v36 [ constraint="false" ]
 v29 -> v37
 v13 -> v36 [ constraint="false" ]
 v10 -> v30
-v10 -> v41
-v32 -> v42
-v23 -> v42
-v10 -> v43
-v42 -> v43
+v38 -> v30
+v32 -> v38
+v43 -> v42
+v32 -> v43
 v23 -> v43
-v34 -> v43
-v7 -> v43
-v21 -> v43
-v40 -> v43
+v10 -> v42
+v23 -> v42
+v34 -> v42
+v7 -> v42
+v21 -> v42
+v41 -> v42
 }

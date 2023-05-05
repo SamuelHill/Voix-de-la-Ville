@@ -128,6 +128,7 @@ public class TalkOfTheTown {
         var opening          = (Var<Date>)"opening";
 
         var location         = (Var<Location>)"location";
+        var otherLocation    = (Var<Location>)"otherLocation";
         var position         = (Var<Vector2Int>)"position";
         var locationType     = (Var<LocationType>)"locationType";
         var locationCategory = (Var<LocationCategories>)"locationCategory";
@@ -240,7 +241,7 @@ public class TalkOfTheTown {
         var RandomDate = Function("RandomDate", Date.Random);
         var RandomAdultAge = Method(Sims.RandomAdultAge);
         Agents.Add[person, RandomAdultAge, RandomDate, RandomSex, sexuality, VitalStatus.Alive]
-            .If(Prob[Time.PerYear(0.00001f)],
+            .If(Prob[Time.PerYear(0.001f)],
                 RandomPerson, sexuality == RandomSexuality[sex]);
         #endregion
 
@@ -300,7 +301,8 @@ public class TalkOfTheTown {
         var RandomLot = Method<uint, Vector2Int>(Town.RandomLot);
         var NumLots = Length("NumLots", UsedLots);
         var IsVacant = Definition("IsVacant", position).Is(!UsedLots[position]);
-        var FreeLot = Definition("FreeLot", position).Is(position == RandomLot[NumLots], IsVacant[position]);
+        var FreeLot = Definition("FreeLot", position)
+            .Is(position == RandomLot[NumLots], IsVacant[position]);
         var NewLocation = Method<string, LocationType, Location>(Town.NewLocation);
 
         // IsNotFirstTick is meant to prevent the addition of locations on the first tick as tiles are only
@@ -313,6 +315,19 @@ public class TalkOfTheTown {
             Count(Homes[person, location] & Alive[person]) < Count(Alive),
             Prob[Time.PerWeek(0.5f)],  // Also, construction isn't instantaneous
             FreeLot, location == NewLocation["Test", LocationType.House]);
+
+        var GetLocationType = Function<Location, LocationType>("GetLocationType", l => l.Type);
+
+        var LocationsOfType = Predicate("LocationsOfType", location, locationType).If(
+            Locations, locationType == GetLocationType[location]);
+
+        NewLocations[location, position, GetYear, GetDate].If(IsNotFirstTick,
+            Count(LocationsOfType[otherLocation, LocationType.Hospital]) < 1,
+            // logic about if there is a doctor in town
+            FreeLot, location == NewLocation["hopitile", LocationType.Hospital]);
+
+
+
         #endregion
 
         // TODO : Give people jobs (need to start adding more location types in the NewLocation logic)
@@ -330,17 +345,29 @@ public class TalkOfTheTown {
         WhereTheyAt.Unique = true;
         WhereTheyAtLocationIndex = (GeneralIndex<(Person, Location), Location>)WhereTheyAt.IndexFor(location, false);
 
-        var GetLocationType = Function<Location, LocationType>("GetLocationType", l => l.Type);
         var InOperation = TestMethod<DailyOperation>(Time.InOperation);
         var IsOpen = TestMethod<Schedule>(Time.IsOpen);
         var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
             locationType == GetLocationType[location], LocationInformation, InOperation[operation], IsOpen[schedule]);
 
-        var IsAccessible = Definition("IsAccessible", person, location)
-            .Is(locationType == GetLocationType[location], LocationInformation, accessibility == Accessibility.Public |
-                (accessibility == Accessibility.Private & 
-                    (Homes[person, location] | (Homes[occupant, location] & IsFamily[person, occupant]))) |
-                (accessibility == Accessibility.NoTrespass & OnShift));
+        //var IsAccessible = Definition("IsAccessible", person, location)
+        //    .Is(locationType == GetLocationType[location], LocationInformation, accessibility == Accessibility.Public |
+        //        (accessibility == Accessibility.Private & 
+        //            (Homes[person, location] | (Homes[occupant, location] & IsFamily[person, occupant]))) |
+        //        (accessibility == Accessibility.NoTrespass & OnShift));
+
+        var Accessible = Definition("Accessible", person, location);
+        Accessible[person, location].If( // public is always true...
+            LocationInformation[GetLocationType[location], locationCategory, Accessibility.Public, operation, schedule],
+            Alive); // Only need alive to make sure rules are fully bound
+        Accessible[person, location].If( // private needs to live there OR be 'invited'
+            LocationInformation[GetLocationType[location], locationCategory, Accessibility.Private, operation, schedule],
+            Homes[person, location] | (Homes[occupant, location] & IsFamily[person, occupant]));
+        Accessible[person, location].If( // NoTrespass related to employment
+            LocationInformation[GetLocationType[location], locationCategory, Accessibility.NoTrespass, operation, schedule],
+           OnShift);
+
+        WhereTheyAt.If(Alive, RandomElement(OpenForBusiness, location), Accessible);
 
         //var AccessibleLocations = Predicate("AccessibleLocations", person.Indexed, location.Indexed)
         //    .If(Alive, OpenForBusiness, IsAccessible);
@@ -350,7 +377,7 @@ public class TalkOfTheTown {
 
         //WhereTheyAt.If(IsNotFirstTick, Alive, age >= 0, location == RandomAccessibleLocation[person]);
 
-        WhereTheyAt.If(Alive, RandomElement(OpenForBusiness, location), IsAccessible);
+        //WhereTheyAt.If(Alive, RandomElement(OpenForBusiness, location), IsAccessible);
         #endregion
 
         // ReSharper restore InconsistentNaming
@@ -370,7 +397,8 @@ public class TalkOfTheTown {
     public void UpdateRows() {
         // Age a person on the first tick of a given date
         if (Time.IsAM) {
-            Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, Sex __, Sexuality ___, VitalStatus ____) agent) => {
+            Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, 
+                Sex __, Sexuality ___, VitalStatus ____) agent) => {
                 if (Time.IsDate(agent.dateOfBirth) && agent.age >= 0) agent.age++;
             });
         }
