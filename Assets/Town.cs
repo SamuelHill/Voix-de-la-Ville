@@ -17,7 +17,6 @@ public enum Vocation {
     Millworker, Mortician, Nurse, Optometrist, Painter, Pharmacist, Plumber, PoliceChief,
     PoliceOfficer, PostalWorker, Principal, Puddler, Quarryman, Seamstress, Secretary, Shoemaker,
     Stocker, Stonecutter, Surgeon, Tailor, TattooArtist, Teacher, Turner, Waiter, Woodworker, }
-public enum Accessibility { Public, Private, NoTrespass }
 
 public static class Town {
     public static Vector2Int Max = new(10, 10);
@@ -34,34 +33,21 @@ public static class Town {
     private static int EuclideanSquare(int x1, int y1, int x2, int y2) => (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
     public static int Distance(Vector2Int loc1, Vector2Int loc2) => EuclideanSquare(loc1.x, loc1.y, loc2.x, loc2.y);
 
-    public static Location NewLocation(string name, LocationType type) => new(Utils.Title(name), type);
-
-    public static bool IsLocationType(Location location, LocationType locationType) =>
-        location.IsLocationType(locationType);
+    public static Location NewLocation(string name) => new(name);
 }
 
 public class Location {
     private readonly Guid _id;
     public string Name;
-    // TODO : Move the LocationType out of Location and just have a column for type in Location table
-    public readonly LocationType Type;
 
-    public Location(string name, LocationType type) {
-        _id = Guid.NewGuid();
-        Name = name; 
-        Type = type; }
-
-    public bool IsLocationType(LocationType locationType) => locationType == Type;
+    internal Location() => _id = Guid.NewGuid();
+    public Location(string name) : this() => Name = Utils.Title(name);
 
     public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
     public override int GetHashCode() => _id.GetHashCode();
     public static bool operator ==(Location l, string potentialName) => l != null && l.Name == potentialName;
     public static bool operator !=(Location l, string potentialName) => !(l == potentialName);
 
-    public override string ToString() => $"{Name} ({Type})";
-
-    public static Location FromString(string locationString) {
-        var location = locationString.Split(',');
-        Enum.TryParse(location[1], out LocationType type);
-        return new Location(location[0], type); }
+    public override string ToString() => Name;
+    public static Location FromString(string locationString) => new(locationString);
 }

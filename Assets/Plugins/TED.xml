@@ -105,7 +105,7 @@
         </member>
         <member name="M:TED.Definition.DefinitionGoal.If(TED.Interpreter.Goal[])">
             <summary>
-            Add a new to the definition
+            Add a new goal to the definition rules
             </summary>
             <param name="body"></param>
         </member>
@@ -143,6 +143,12 @@
             <param name="body">Goals to substitute for the definition</param>
             <returns>The definition object</returns>
             <exception cref="T:System.InvalidOperationException">If a body has already been specified</exception>
+        </member>
+        <member name="M:TED.Definition`1.If(TED.Interpreter.Goal[])">
+            <summary>
+            Default argument If
+            </summary>
+            <param name="body"></param>
         </member>
         <member name="T:TED.Definition`1.Goal">
             <inheritdoc />
@@ -184,6 +190,12 @@
             <param name="body">Goals to substitute for the definition</param>
             <returns>The definition object</returns>
             <exception cref="T:System.InvalidOperationException">If a body has already been specified</exception>
+        </member>
+        <member name="M:TED.Definition`2.If(TED.Interpreter.Goal[])">
+            <summary>
+            Default argument If
+            </summary>
+            <param name="body"></param>
         </member>
         <member name="T:TED.Definition`2.Goal">
             <summary>
@@ -245,6 +257,15 @@
             <param name="body">Goals to substitute for the definition</param>
             <returns>The definition object</returns>
             <exception cref="T:System.InvalidOperationException">If a body has already been specified</exception>
+        </member>
+        <member name="M:TED.Definition`3.If(TED.Interpreter.Goal[])">
+            <summary>
+            Default argument If
+            </summary>
+            <param name="body"></param>
+        </member>
+        <member name="T:TED.Definition`3.Goal">
+            <inheritdoc />
         </member>
         <member name="F:TED.Definition`3.Goal.arg1">
             <summary>
@@ -311,6 +332,15 @@
             <param name="body">Goals to substitute for the definition</param>
             <returns>The definition object</returns>
             <exception cref="T:System.InvalidOperationException">If a body has already been specified</exception>
+        </member>
+        <member name="M:TED.Definition`4.If(TED.Interpreter.Goal[])">
+            <summary>
+            Default argument If
+            </summary>
+            <param name="body"></param>
+        </member>
+        <member name="T:TED.Definition`4.Goal">
+            <inheritdoc />
         </member>
         <member name="F:TED.Definition`4.Goal.arg1">
             <summary>
@@ -387,6 +417,15 @@
             <param name="body">Goals to substitute for the definition</param>
             <returns>The definition object</returns>
             <exception cref="T:System.InvalidOperationException">If a body has already been specified</exception>
+        </member>
+        <member name="M:TED.Definition`5.If(TED.Interpreter.Goal[])">
+            <summary>
+            Default argument If
+            </summary>
+            <param name="body"></param>
+        </member>
+        <member name="T:TED.Definition`5.Goal">
+            <inheritdoc />
         </member>
         <member name="F:TED.Definition`5.Goal.arg1">
             <summary>
@@ -470,6 +509,15 @@
             <param name="body">Goals to substitute for the definition</param>
             <returns>The definition object</returns>
             <exception cref="T:System.InvalidOperationException">If a body has already been specified</exception>
+        </member>
+        <member name="M:TED.Definition`6.If(TED.Interpreter.Goal[])">
+            <summary>
+            Default argument If
+            </summary>
+            <param name="body"></param>
+        </member>
+        <member name="T:TED.Definition`6.Goal">
+            <inheritdoc />
         </member>
         <member name="F:TED.Definition`6.Goal.arg1">
             <summary>

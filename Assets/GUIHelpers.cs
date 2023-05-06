@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TED;
 using UnityEngine;
+using UnityEngine.Analytics;
 using static UnityEngine.Input;
 
 // ReSharper disable InconsistentNaming
@@ -45,7 +46,7 @@ public static class GUIManager {
                          select new GUIContent(available)).ToArray(); }
     public static void SetActiveTables(string[] activeTables) => ActiveTables = activeTables;
     public static void AddSelectedTileInfo(Func<string> tileString) =>
-        guiStrings.Add(new GUIString(tileString, SelectedTileInfoRect));
+        guiStrings.Add(new GUIString(tileString, SelectedTileInfoRect, false));
     public static void AddPopulationInfo(Func<string> populationString) =>
         guiStrings.Add(new GUIString(populationString, BottomRightRect));
 
@@ -226,9 +227,18 @@ public class GUIString {
         this.displayString = displayString;
         staticStringCalcOnce = true; }
 
+    public GUIString(Func<string> getStringFunc, Func<int, int, Rect> displayFunc, bool centered) : 
+        this(getStringFunc, displayFunc) => this.centered = centered;
+
+    internal bool centered = true;
+
     public void OnGUI() {
         UpdateString();
-        if (displayString is not null) GUI.Box(DisplayFunc(width, height), displayString); }
+        if (displayString is null) return;
+        if (!centered) GUI.skin.box.alignment = TextAnchor.MiddleLeft;
+        GUI.Box(DisplayFunc(width, height), displayString);
+        if (!centered) GUI.skin.box.alignment = TextAnchor.MiddleCenter;
+    }
 
     internal void UpdateString() {
         if (GetStringFunc is not null) {

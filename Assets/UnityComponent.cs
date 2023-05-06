@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using static UnityEngine.Input;
 
-using LocationRow = System.ValueTuple<Location, UnityEngine.Vector2Int, int, Date>;
+using LocationRow = System.ValueTuple<Location, LocationType, UnityEngine.Vector2Int, int, Date>;
 
 internal class GridComparer : EqualityComparer<Vector2Int> {
     public override bool Equals(Vector2Int x, Vector2Int y) => x == y;
@@ -45,10 +45,12 @@ public class UnityComponent : MonoBehaviour {
             TalkOfTheTown.LocationInformation,
             TalkOfTheTown.NewLocations,
             TalkOfTheTown.VacatedLocations,
-            TalkOfTheTown.UsedLots,
             TalkOfTheTown.Aptitude,
             TalkOfTheTown.Personality,
             TalkOfTheTown.WhereTheyAt,
+            TalkOfTheTown.LocationsOfCategory,
+            TalkOfTheTown.RandomActionAssign,
+            TalkOfTheTown.LocationByActionAssign,
             //TalkOfTheTown.REPL
         });
         GUIManager.SetActiveTables(new[] { "Agents", "Couples", "Parents", "Homes" });
@@ -104,13 +106,13 @@ public class UnityComponent : MonoBehaviour {
         foreach (var newTile in newTiles) 
             SetTileColor(newTile.Item1, newTile.Item2);
         if (newTiles.Length + vacated.Length > 0) Tilemap.RefreshAllTiles(); }
-    internal (Vector3Int, Location)[] LocationsToTiles(IEnumerable<LocationRow> locations) =>
+    internal (Vector3Int, LocationType)[] LocationsToTiles(IEnumerable<LocationRow> locations) =>
         (from location in locations 
-            select (LotToTile(location.Item2), location.Item1)).ToArray();
-    internal Color GetLocationColor(Location location) =>
-        TalkOfTheTown.LocationColorsIndex[location.Type].Item2;
-    internal void SetTileColor(Vector3Int tile, Location location) =>
-        Tilemap.SetColor(tile, GetLocationColor(location));
+            select (LotToTile(location.Item3), location.Item2)).ToArray();
+    internal Color GetLocationColor(LocationType locationType) =>
+        TalkOfTheTown.LocationColorsIndex[locationType].Item2;
+    internal void SetTileColor(Vector3Int tile, LocationType locationType) =>
+        Tilemap.SetColor(tile, GetLocationColor(locationType));
     internal void SetTiles(Vector3Int[] tiles, TileBase tileToSet) => 
         Tilemap.SetTiles(tiles, Enumerable.Repeat(tileToSet, tiles.Length).ToArray());
     internal void DeleteTiles(Vector3Int[] tiles) => SetTiles(tiles, null);
@@ -124,8 +126,8 @@ public class UnityComponent : MonoBehaviour {
     internal string LocationRowToString(LocationRow locationRow) => 
         LocationInfo(locationRow) + "\n" + PeopleAtLocation(locationRow.Item1);
     internal string LocationInfo(LocationRow row) =>
-        $"{row.Item1} located at x: {row.Item2.x}, y: {row.Item2.y}\nFounded on {row.Item4}, {row.Item3} ({LocationAge(row)} years ago)";
-    internal int LocationAge(LocationRow row) => TalkOfTheTown.Time.YearsSince(row.Item4, row.Item3);
+        $"{row.Item1} ({row.Item2}) located at x: {row.Item3.x}, y: {row.Item3.y}\nFounded on {row.Item5}, {row.Item4} ({LocationAge(row)} years ago)";
+    internal int LocationAge(LocationRow row) => TalkOfTheTown.Time.YearsSince(row.Item5, row.Item4);
     internal string PeopleAtLocation(Location l) {
         var atLocation = TalkOfTheTown.WhereTheyAtLocationIndex.RowsMatching(l).Select(p => p.Item1.FullName).ToArray();
         return atLocation.Length != 0 ? $"People at location: {GroupUp(atLocation, 3)}" : "Nobody is here right now"; }
