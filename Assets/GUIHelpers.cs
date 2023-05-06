@@ -109,6 +109,8 @@ public static class GUIManager {
     #endregion
 }
 
+// TODO : add update logic for dynamic extensional tables - refresh every month or so
+// TODO : add scroll events to labels in table for the assoc. scrollbar
 public class GUITable {
     #region Table display constants
     internal const int ColumnPadding = 5;

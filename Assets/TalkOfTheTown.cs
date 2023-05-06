@@ -75,7 +75,8 @@ public class TalkOfTheTown {
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> VacatedLocations;
 
     // Jobs:
-    public TablePredicate<Vocation, Person, Location> Vocations;
+    public TablePredicate<Vocation, Person, Location, TimeOfDay> Vocations;
+    public TablePredicate<Location, Vocation> JobsToFill;
 
     // Actions:
     public TablePredicate<Person, ActionType, Location> WhereTheyAt;
@@ -108,6 +109,7 @@ public class TalkOfTheTown {
         var Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
         var GetYear = Time.GetProperty<int>(nameof(Time.Year));
         var GetDate = Time.GetProperty<Date>(nameof(Time.Date));
+        var GetTimeOfDay = Time.GetProperty<TimeOfDay>(nameof(Time.TimeOfDay));
         var IsSunday = Time.TestProperty(nameof(Time.IsSunday));
         var IsDate = TestMethod<Date>(Time.IsDate);
         #endregion
@@ -133,6 +135,7 @@ public class TalkOfTheTown {
         var facet            = (Var<Facet>)"facet";
         var personality      = (Var<sbyte>)"personality";
         var job              = (Var<Vocation>)"job";
+        var otherJob         = (Var<Vocation>)"otherJob";
         var aptitude         = (Var<sbyte>)"aptitude";
 
         var age              = (Var<int>)"age";
@@ -150,9 +153,11 @@ public class TalkOfTheTown {
         var otherLocType     = (Var<LocationType>)"otherLocType";
         var locationCategory = (Var<LocationCategories>)"locationCategory";
         var operation        = (Var<DailyOperation>)"operation";
+        var timeOfDay        = (Var<TimeOfDay>)"timeOfDay";
         var schedule         = (Var<Schedule>)"schedule";
         var color            = (Var<Color>)"color";
         var positions        = (Var<int>)"positions";
+        var locationName     = (Var<string>)"locationName";
 
         var actionType       = (Var<ActionType>)"actionType";
         var distance         = (Var<int>)"distance";
@@ -186,6 +191,7 @@ public class TalkOfTheTown {
         Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
         #endregion
 
+        // TODO : Use set to age agents, might need function that uses KeyIndex to get age and increment
         #region Agents setup and Death (Set) logic:
         Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
         AgentsVitalStatusIndex = (GeneralIndex<AgentRow, VitalStatus>)Agents.IndexFor(vitalStatus, false);
@@ -214,6 +220,7 @@ public class TalkOfTheTown {
         #endregion
 
         // TODO : Implement primordial couples
+        // TODO : Improve NewCouple logic. Use IsAttracted.
         #region Couples (for procreation):
         var Men = Predicate("Men", person).If(
             Agents[person, age, dateOfBirth, Sex.Male, sexuality, VitalStatus.Alive], age >= 18);
@@ -225,7 +232,6 @@ public class TalkOfTheTown {
         var NewCouples = Predicate("NewCouples", person, partner);
         NewCouples.Unique = true;
 
-        // TODO: Improve NewCouple logic. Use IsAttracted... Unless you want to have couples having kids with differing attractions
         var IsAttracted = Test<Sexuality, Sex>("IsAttracted", (se, s) => se.IsAttracted(s));
 
         NewCouples.If(Women[person], RandomElement(Men, partner), Prob[0.5f], !Couples[person, man], !Couples[woman, partner]);
@@ -306,6 +312,7 @@ public class TalkOfTheTown {
         var AnyInCategory = Definition("AnyInCategory", locationCategory).Is(Count(LocationsOfCategory) > 0);
         #endregion
 
+        // TODO : Include ApartmentComplex locations in Housing logic
         #region Housing:
         Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
@@ -345,18 +352,36 @@ public class TalkOfTheTown {
         var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
         #endregion
 
+        // TODO : Add more new locations for each location type
         #region New Location Logic:
-        // New Houses: (currently this only happens with drifters - everyone starts housed)
-        NewLocations[location, LocationType.House, position, GetYear, GetDate].If(IsNotFirstTick,
-            FreeLot, Prob[Time.PerWeek(0.5f)], // Needs the random lot to be available & 'construction' isn't instantaneous
-            Count(Homes[person, location] & Alive[person]) < Count(Alive),
-            location == NewLocation["Test"]);
+        // Base case - useful mainly for testing/rapid development (you only need one string/generating a list of names can come second)
+        void AddNewNamedLocation(LocationType locType, Goal readyToAdd, string name) =>
+            NewLocations[location, locType, position, GetYear, GetDate].If(IsNotFirstTick,
+                FreeLot, Prob[Time.PerWeek(0.5f)], // Needs the random lot to be available & 'construction' isn't instantaneous
+                readyToAdd, location == NewLocation[name]); // otherwise, check the readyToAdd Goal and if it passes add a NewLocation
 
-        NewLocations[location, LocationType.Hospital, position, GetYear, GetDate].If(IsNotFirstTick,
-            FreeLot, Prob[Time.PerWeek(0.5f)], 
-            Count(Locations[otherLocation, LocationType.Hospital, otherPosition, founded2, opening2]) < 1,
-            Count(Aptitude[person, Vocation.Doctor, aptitude] & (aptitude > 15) & Age & (age > 21)) > 0,
-            location == NewLocation["St. Asmodeus"]);
+        // This is the more realistic use case with a list of names for a give type to choose from.
+        void AddNewLocation(LocationType locType, Goal readyToAdd, TablePredicate<string> names) =>
+            NewLocations[location, locType, position, GetYear, GetDate].If(IsNotFirstTick,
+                FreeLot, Prob[Time.PerWeek(0.5f)], readyToAdd, 
+                RandomElement(names, locationName), location == NewLocation[locationName]);
+
+        AddNewNamedLocation(LocationType.House, // currently this only happens with drifters - everyone starts housed
+            Count(Homes[person, location] & Alive[person]) < Count(Alive), 
+            "Tumbleweed Ranch"); // need more house names...
+
+        AddNewNamedLocation(LocationType.Hospital, // TODO : enhance Goal writing - more default support/comma unpacking
+            (Count(Locations[otherLocation, LocationType.Hospital, otherPosition, founded2, opening2]) < 1) &
+            (Count(Aptitude[person, Vocation.Doctor, aptitude] & (aptitude > 15) & Age & (age > 21)) > 0), 
+            "St. Asmodeus"); // the ready to add logic is limiting a town to 1 hospital so a single name is fine
+
+        AddNewNamedLocation(LocationType.DayCare, 
+            (Count(Locations[otherLocation, LocationType.DayCare, otherPosition, founded2, opening2]) < 1) &
+            (Count(Age & (age < 6)) > 5), "Pumpkin Preschool");
+
+        AddNewNamedLocation(LocationType.School,
+            (Count(Locations[otherLocation, LocationType.School, otherPosition, founded2, opening2]) < 1) &
+            (Count(Age & (age >= 5) & (age < 18)) > 5), "Talk of the Township High");
         #endregion
 
         // ********************************* Vocations: *********************************
@@ -365,14 +390,27 @@ public class TalkOfTheTown {
         var VocationLocations = FromCsv("VocationLocations",
             Csv("vocationLocations"), job.Indexed, locationType.Indexed);
         var PositionsPerJob = FromCsv("PositionsPerJob",
-            Csv("positionsPerJob"), job.Key, positions);
+            Csv("positionsPerJob"), job.Key, positions); // positions is per time of day
+        var OperatingTimes = FromCsv("OperatingTimes", 
+            Csv("operatingTimes"), timeOfDay, operation);
+
+        var VocationShifts = Predicate("VocationShifts", 
+                locationType.Indexed, job.Indexed, timeOfDay).Initially.Where(
+            VocationLocations, LocationInformation, OperatingTimes);
         #endregion
 
-        // TODO : Give people jobs (need to start adding more location types in the NewLocation logic)
         #region Vocations:
-        Vocations = Predicate("Vocations", job, employee, location);
-        var BestForJob = Definition("BestForJob", person, job).Is(Maximal(person, aptitude, Aptitude));
-        var OnShift = Predicate("OnShift", person, job, location); // add TimeOfDay to this..
+        Vocations = Predicate("Vocations", job, employee, location, timeOfDay);
+
+        JobsToFill = Predicate("JobsToFill", location, job)
+            .If(timeOfDay == GetTimeOfDay, Locations, VocationShifts,
+                PositionsPerJob, Count(Vocations) < positions);
+
+        var Candidates = Predicate("Candidates", person, job, location)
+            .If(JobsToFill, Maximal(person, aptitude, 
+                Alive[person] & !Vocations[otherJob, person, otherLocation, timeOfDay] & Age & (age > 18) & Aptitude));
+
+        Vocations.Add[job, person, location, GetTimeOfDay].If(IsNotFirstTick, Candidates);
         #endregion
 
         // ********************************** Movement: *********************************
@@ -399,29 +437,37 @@ public class TalkOfTheTown {
         var NeedsDayCare = Predicate("NeedsDayCare", person).If(Kids, !NeedsSchooling[person]);
 
         var GoingToSchool = Predicate("GoingToSchool", person, location).If(
-            AnyInCategory[LocationCategories.ChildCare],
+            AvailableActions[ActionType.GoingToSchool],
             Locations[location, LocationType.School, position, founded, opening], // only expecting one location...
             OpenForBusiness, NeedsSchooling);
         var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
-            AnyInCategory[LocationCategories.ChildCare],
+            AvailableActions[ActionType.GoingToSchool],
             Locations[location, LocationType.DayCare, position, founded, opening], // only expecting one location...
             OpenForBusiness, NeedsDayCare);
         #endregion
 
+        #region Working:
+        var OnShift = Definition("OnShift", person, job, location)
+            .Is(Vocations[job, person, location, GetTimeOfDay]);
+        var GoingToWork = Predicate("GoingToWork", person, location)
+            .If(OnShift, OpenForBusiness); // each person should only have one job on a given time/day
+        #endregion
+
+        // TODO : Couple movements
+        // TODO : Babies not in daycare follow mom
         #region Daily Movements:
         WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType, location.Indexed);
         WhereTheyAt.Unique = true;
         WhereTheyAtLocationIndex = (GeneralIndex<(Person, ActionType, Location), Location>)WhereTheyAt.IndexFor(location, false);
 
-        var GoingToWork = Predicate("GoingToWork", person, location).If(Vocations[job, person, location],
-            OpenForBusiness, OnShift); // each person should only have one job on a given time/day
-
+        var AdultActions = Predicate("AdultActions", actionType)
+            .If(AvailableActions, actionType != ActionType.GoingToSchool);
         var NeedsActionAssignment = Predicate("NeedsActionAssignment", person).If(Alive,
             !GoingToWork[person, location],
             !GoingToDayCare[person, location],
             !GoingToSchool[person, location]);
         RandomActionAssign = Predicate("RandomActionAssign", person, actionType).If(NeedsActionAssignment,
-            RandomElement(AvailableActions, actionType));
+            RandomElement(AdultActions, actionType));
 
         LocationByActionAssign = Predicate("LocationByActionAssign", person, location);
         LocationByActionAssign.If(RandomActionAssign[person, ActionType.StayingIn], Homes[person, location]);

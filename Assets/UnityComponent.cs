@@ -39,18 +39,15 @@ public class UnityComponent : MonoBehaviour {
             TalkOfTheTown.Couples,
             TalkOfTheTown.Parents,
             TalkOfTheTown.Locations,
-            TalkOfTheTown.Vocations,
+            TalkOfTheTown.NewLocations,
+            TalkOfTheTown.JobsToFill,
             TalkOfTheTown.Homes,
             TalkOfTheTown.LocationColors,
             TalkOfTheTown.LocationInformation,
-            TalkOfTheTown.NewLocations,
-            TalkOfTheTown.VacatedLocations,
+            TalkOfTheTown.Vocations,
             TalkOfTheTown.Aptitude,
             TalkOfTheTown.Personality,
             TalkOfTheTown.WhereTheyAt,
-            TalkOfTheTown.LocationsOfCategory,
-            TalkOfTheTown.RandomActionAssign,
-            TalkOfTheTown.LocationByActionAssign,
             //TalkOfTheTown.REPL
         });
         GUIManager.SetActiveTables(new[] { "Agents", "Couples", "Parents", "Homes" });
