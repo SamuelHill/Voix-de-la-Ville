@@ -162,7 +162,7 @@ public class TalkOfTheTown {
 
         // *********************************** Agents: **********************************
 
-        #region Names and new Person helpers
+        #region Names and new Person helpers:
         var MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);
         var FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
         var Surnames = FromCsv("Surnames", Csv("english_surnames"), lastName);
@@ -176,7 +176,7 @@ public class TalkOfTheTown {
         RandomPerson.Is(RandomFirstName, RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
         #endregion
 
-        #region Person traits - Personality and Aptitude
+        #region Person traits - Personality and Aptitude:
         var Facets = Predicate("Facets", facet);
         Facets.AddRows(Enum.GetValues(typeof(Facet)).Cast<Facet>());
         Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
@@ -186,7 +186,7 @@ public class TalkOfTheTown {
         Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
         #endregion
 
-        #region Agents setup and Death (Set) logic
+        #region Agents setup and Death (Set) logic:
         Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
         AgentsVitalStatusIndex = (GeneralIndex<AgentRow, VitalStatus>)Agents.IndexFor(vitalStatus, false);
 
@@ -204,7 +204,7 @@ public class TalkOfTheTown {
             .Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]);
         #endregion
 
-        #region Primordial Beings initialize
+        #region Primordial Beings initialize:
         var PrimordialBeings = FromCsv("PrimordialBeings",
             Csv("agents"), person, age, dateOfBirth, sex, sexuality);
 
@@ -214,7 +214,7 @@ public class TalkOfTheTown {
         #endregion
 
         // TODO : Implement primordial couples
-        #region Couples (for procreation)
+        #region Couples (for procreation):
         var Men = Predicate("Men", person).If(
             Agents[person, age, dateOfBirth, Sex.Male, sexuality, VitalStatus.Alive], age >= 18);
         var Women = Predicate("Women", person).If(
@@ -232,7 +232,7 @@ public class TalkOfTheTown {
         Couples.Accumulates(NewCouples);
         #endregion
 
-        #region Birth
+        #region Birth:
         var FertilityRate = Method<int, float>(Sims.FertilityRate);
         var RandomSex = Method(Sims.RandomSex);
         // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
@@ -252,7 +252,7 @@ public class TalkOfTheTown {
         Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[man, woman, sex, person], Jobs);
         #endregion
 
-        #region Family
+        #region Family:
         Parents = Predicate("Parents", parent, child);
         Parents.Add.If(BirthTo[parent, person, sex, child]);
         Parents.Add.If(BirthTo[person, parent, sex, child]);
@@ -263,7 +263,7 @@ public class TalkOfTheTown {
             (Parents[otherPerson, person] & Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive] & age <= 18));
         #endregion
 
-        #region Drifters - adults moving to town
+        #region Drifters - adults moving to town:
         // Using a Definition to wrap RandomPerson and RandomSexuality
         var RandomDate = Function("RandomDate", Date.Random);
         var RandomAdultAge = Method(Sims.RandomAdultAge);
@@ -327,7 +327,7 @@ public class TalkOfTheTown {
                 distance == Distance[position, otherPosition]);
         #endregion
 
-        #region New Location helper functions and :
+        #region New Location helper functions and definitions:
         // Title case string and make a Location object
         var NewLocation = Method<string, Location>(Town.NewLocation);
         
@@ -408,7 +408,7 @@ public class TalkOfTheTown {
             OpenForBusiness, NeedsDayCare);
         #endregion
 
-        #region Daily Movements
+        #region Daily Movements:
         WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType, location.Indexed);
         WhereTheyAt.Unique = true;
         WhereTheyAtLocationIndex = (GeneralIndex<(Person, ActionType, Location), Location>)WhereTheyAt.IndexFor(location, false);
