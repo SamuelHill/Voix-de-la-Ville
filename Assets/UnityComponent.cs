@@ -21,7 +21,7 @@ public class UnityComponent : MonoBehaviour {
     // for the tile to be able to change color: https://github.com/Unity-Technologies/2d-extras/issues/96
     public Tile OccupiedLot;
 
-    internal bool SimulationRunning = false;
+    internal bool SimulationRunning = true;
     internal bool SimulationSingleStep;
     internal bool DebugRuleExecutionTime;
     // ReSharper disable once InconsistentNaming
@@ -36,22 +36,25 @@ public class UnityComponent : MonoBehaviour {
         //TalkOfTheTown.SetREPL("Agents");
         GUIManager.SetAvailableTables(new List<TablePredicate> {
             TalkOfTheTown.Agents,
-            TalkOfTheTown.Couples,
-            TalkOfTheTown.Parents,
-            TalkOfTheTown.Locations,
-            TalkOfTheTown.NewLocations,
-            TalkOfTheTown.JobsToFill,
-            TalkOfTheTown.Homes,
-            TalkOfTheTown.LocationColors,
-            TalkOfTheTown.LocationInformation,
-            TalkOfTheTown.Vocations,
             TalkOfTheTown.Aptitude,
             TalkOfTheTown.Personality,
+            TalkOfTheTown.Couples,
+            TalkOfTheTown.Parents,
+
+            TalkOfTheTown.Locations,
+            TalkOfTheTown.NewLocations,
+            TalkOfTheTown.Homes,
+            TalkOfTheTown.Vocations,
             TalkOfTheTown.WhereTheyAt,
-            TalkOfTheTown.OpenForBusiness
+
+            TalkOfTheTown.LocationInformation,
+            TalkOfTheTown.VocationShifts,
+            TalkOfTheTown.PositionsPerJob,
+            TalkOfTheTown.ActionToCategory,
+
             //TalkOfTheTown.REPL
         });
-        GUIManager.SetActiveTables(new[] { "Agents", "Couples", "Parents", "Homes" });
+        GUIManager.SetActiveTables(new[] { "Agents", "Parents", "Vocations", "WhereTheyAt" });
         GUIManager.AddSelectedTileInfo(SelectedLocation);
         GUIManager.AddPopulationInfo(Population); }
 

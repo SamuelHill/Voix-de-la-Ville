@@ -133,6 +133,7 @@ public class GUITable {
     internal bool usingScroll;
     internal float scrollPosition;
     internal float oldScroll;
+    internal Month lastMonth;
 
     internal string Name => predicate.Name;
     internal int NumColumns => headings.Length;
@@ -141,6 +142,15 @@ public class GUITable {
     internal uint ScrollRow => (uint)Math.Floor(scrollPosition);
     internal int LongestRow => longestStrings.Sum() + longestStrings.Length * ColumnPadding;
     internal int TableWidth => RowCount == 0 ? noEntriesWidth : LongestRow;
+
+    internal bool UpdateEveryTick => predicate.IsDynamic && predicate.IsIntensional;
+    internal bool UpdateMonthly => predicate.IsDynamic && predicate.IsExtensional;
+
+    internal bool SetLastMonth() { 
+        lastMonth = TalkOfTheTown.Time.Month;
+        return true; }
+    internal bool TrySetLastMonth() => lastMonth != TalkOfTheTown.Time.Month && SetLastMonth();
+    internal bool MonthlyUpdate() => UpdateMonthly && TrySetLastMonth();
 
     public GUITable(TablePredicate predicate) {
         this.predicate = predicate;
@@ -157,6 +167,7 @@ public class GUITable {
             noEntries = new GUIContent($"No entries in table {Name}");
             noEntriesWidth = (int)GUI.skin.label.CalcSize(noEntries).x;
             noEntriesWidth = Math.Max(noEntriesWidth, LongestRow); }
+        if (UpdateMonthly) lastMonth = TalkOfTheTown.Time.Month;
         Update(); }
     public void Update() {
         bufferedRows = predicate.RowRangeToStrings(ScrollRow, buffer);
@@ -200,7 +211,7 @@ public class GUITable {
         if (RowCount != 0 && RowCount >= numRowsToDisplay) {
             scrollPosition = GUILayout.VerticalScrollbar(scrollPosition,
                 numRowsToDisplay - 0.1f, 0f, RowCount, ScrollHeight);
-            if (Scrolled || !usingScroll) {
+            if (Scrolled || !usingScroll || UpdateEveryTick || MonthlyUpdate()) {
                 Update();
                 oldScroll = scrollPosition; }
             if (!usingScroll) usingScroll = true;

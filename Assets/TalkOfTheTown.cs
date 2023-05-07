@@ -55,7 +55,7 @@ public class TalkOfTheTown {
     public TalkOfTheTown(int year, ushort tick) : this() => Time = new Time(year, tick);
     #endregion
 
-    #region public Tables
+    #region public Tables - for GUI
     // People stuff:
     public TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> Agents;
     public TablePredicate<Person, Vocation, sbyte> Aptitude;
@@ -63,28 +63,20 @@ public class TalkOfTheTown {
     public TablePredicate<Person, Location> Homes;
     public TablePredicate<Person, Person> Couples;
     public TablePredicate<Person, Person> Parents;
-
     // Locations and related info:
-    public TablePredicate<LocationType, LocationCategories, DailyOperation, Schedule> LocationInformation;
-    public TablePredicate<LocationCategories, Color> CategoryColors;
-    public TablePredicate<LocationType, Color> LocationColors;
-    public TablePredicate<Location, LocationCategories> LocationsOfCategory;
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> PrimordialLocations;
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> Locations;
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> NewLocations;
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> VacatedLocations;
-
-    public TablePredicate<Location> OpenForBusiness;
-
+    public TablePredicate<LocationType, LocationCategories, DailyOperation, Schedule> LocationInformation;
+    public TablePredicate<LocationType, Color> LocationColors;
     // Jobs:
     public TablePredicate<Vocation, Person, Location, TimeOfDay> Vocations;
-    public TablePredicate<Location, Vocation> JobsToFill;
-
+    public TablePredicate<LocationType, Vocation, TimeOfDay> VocationShifts;
+    public TablePredicate<Vocation, int> PositionsPerJob;
     // Actions:
     public TablePredicate<Person, ActionType, Location> WhereTheyAt;
-    public TablePredicate<Person, ActionType> RandomActionAssign;
-    public TablePredicate<Person, Location> LocationByActionAssign;
-
+    public TablePredicate<ActionType, LocationCategories> ActionToCategory;
     // REPL..
     public TablePredicate REPL;
     #endregion
@@ -288,7 +280,8 @@ public class TalkOfTheTown {
             locationType.Key, locationCategory.Indexed, operation, schedule);
 
         // Location Colors:
-        CategoryColors = FromCsv("CategoryColors", Csv("locationColors"), locationCategory.Key, color);
+        var CategoryColors = FromCsv("CategoryColors", 
+            Csv("locationColors"), locationCategory.Key, color);
         LocationColors = Predicate("LocationColors", locationType.Key, color);
         LocationColors.Unique = true;
         LocationColors.Initially.Where(LocationInformation, CategoryColors);
@@ -310,8 +303,10 @@ public class TalkOfTheTown {
         LocationsPositionIndex = Locations.KeyIndex(position);
 
         // Locations Information tables and definitions:
-        LocationsOfCategory = Predicate("LocationsOfCategory", location, locationCategory).If(LocationInformation, Locations);
-        var AnyInCategory = Definition("AnyInCategory", locationCategory).Is(Count(LocationsOfCategory) > 0);
+        var LocationsOfCategory = Predicate("LocationsOfCategory", 
+            location, locationCategory).If(LocationInformation, Locations);
+        var AnyInCategory = Definition("AnyInCategory", locationCategory)
+            .Is(Count(LocationsOfCategory) > 0);
         #endregion
 
         // TODO : Include ApartmentComplex locations in Housing logic
@@ -391,20 +386,20 @@ public class TalkOfTheTown {
         #region Vocation Info:
         var VocationLocations = FromCsv("VocationLocations",
             Csv("vocationLocations"), job.Indexed, locationType.Indexed);
-        var PositionsPerJob = FromCsv("PositionsPerJob",
-            Csv("positionsPerJob"), job.Key, positions); // positions is per time of day
+        
+        PositionsPerJob = FromCsv("PositionsPerJob", // positions is per time of day
+            Csv("positionsPerJob"), job.Key, positions);
         var OperatingTimes = FromCsv("OperatingTimes", 
             Csv("operatingTimes"), timeOfDay, operation);
 
-        var VocationShifts = Predicate("VocationShifts", 
-                locationType.Indexed, job.Indexed, timeOfDay).Initially.Where(
-            VocationLocations, LocationInformation, OperatingTimes);
+        VocationShifts = Predicate("VocationShifts", locationType.Indexed, job.Indexed, timeOfDay)
+            .Initially.Where(VocationLocations, LocationInformation, OperatingTimes);
         #endregion
 
         #region Vocations:
         Vocations = Predicate("Vocations", job, employee, location, timeOfDay);
 
-        JobsToFill = Predicate("JobsToFill", location, job)
+        var JobsToFill = Predicate("JobsToFill", location, job)
             .If(timeOfDay == GetTimeOfDay, Locations, VocationShifts,
                 PositionsPerJob, Count(Vocations) < positions);
 
@@ -418,7 +413,7 @@ public class TalkOfTheTown {
         // ********************************** Movement: *********************************
 
         #region Action Info:
-        var ActionToCategory = FromCsv("ActionToCategory",
+        ActionToCategory = FromCsv("ActionToCategory",
             Csv("actionCategories"), actionType, locationCategory);
         var AvailableActions = Predicate("AvailableActions", actionType)
             .If(ActionToCategory, AnyInCategory);
@@ -427,7 +422,7 @@ public class TalkOfTheTown {
         #region Operation and Open logic:
         var InOperation = TestMethod<DailyOperation>(Time.InOperation);
         var IsOpen = TestMethod<Schedule>(Time.IsOpen);
-        OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
+        var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
             LocationInformation, InOperation[operation], IsOpen[schedule]);
         var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
             .If(ActionToCategory, LocationsOfCategory, OpenForBusiness);
@@ -450,7 +445,7 @@ public class TalkOfTheTown {
 
         #region Working:
         var GoingToWork = Predicate("GoingToWork", person, location)
-            .If(Vocations[job, person, location, GetTimeOfDay], OpenForBusiness); // each person should only have one job on a given time/day
+            .If(Vocations[job, person, location, GetTimeOfDay], OpenForBusiness);
         #endregion
 
         // TODO : Couple movements
@@ -466,10 +461,10 @@ public class TalkOfTheTown {
             !GoingToWork[person, location],
             !GoingToDayCare[person, location],
             !GoingToSchool[person, location]);
-        RandomActionAssign = Predicate("RandomActionAssign", person, actionType).If(NeedsActionAssignment,
+        var RandomActionAssign = Predicate("RandomActionAssign", person, actionType).If(NeedsActionAssignment,
             RandomElement(AdultActions, actionType));
 
-        LocationByActionAssign = Predicate("LocationByActionAssign", person, location);
+        var LocationByActionAssign = Predicate("LocationByActionAssign", person, location);
         LocationByActionAssign.If(RandomActionAssign[person, ActionType.StayingIn], Homes[person, location]);
         LocationByActionAssign.If(RandomActionAssign[person, ActionType.Visiting], Homes[person, location]);
         LocationByActionAssign.If(RandomActionAssign, actionType != ActionType.StayingIn, actionType != ActionType.Visiting,

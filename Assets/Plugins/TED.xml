@@ -5502,7 +5502,7 @@
             given a key for the row to update.
             </summary>
         </member>
-        <member name="M:TED.TablePredicate.Set``2(TED.Var{``0},TED.Var{``1},``1)">
+        <member name="M:TED.TablePredicate.Set``2(TED.Var{``0},TED.Var{``1},TED.Term{``1})">
             <summary>
             Sets the conditions for resetting the specified column to the specified value
             </summary>
