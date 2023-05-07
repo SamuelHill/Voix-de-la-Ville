@@ -74,6 +74,8 @@ public class TalkOfTheTown {
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> NewLocations;
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> VacatedLocations;
 
+    public TablePredicate<Location> OpenForBusiness;
+
     // Jobs:
     public TablePredicate<Vocation, Person, Location, TimeOfDay> Vocations;
     public TablePredicate<Location, Vocation> JobsToFill;
@@ -425,7 +427,7 @@ public class TalkOfTheTown {
         #region Operation and Open logic:
         var InOperation = TestMethod<DailyOperation>(Time.InOperation);
         var IsOpen = TestMethod<Schedule>(Time.IsOpen);
-        var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
+        OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
             LocationInformation, InOperation[operation], IsOpen[schedule]);
         var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
             .If(ActionToCategory, LocationsOfCategory, OpenForBusiness);
@@ -437,20 +439,18 @@ public class TalkOfTheTown {
         var NeedsDayCare = Predicate("NeedsDayCare", person).If(Kids, !NeedsSchooling[person]);
 
         var GoingToSchool = Predicate("GoingToSchool", person, location).If(
-            AvailableActions[ActionType.GoingToSchool],
+            AvailableActions[ActionType.GoingToSchool], OpenForBusiness,
             Locations[location, LocationType.School, position, founded, opening], // only expecting one location...
-            OpenForBusiness, NeedsSchooling);
+            NeedsSchooling);
         var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
-            AvailableActions[ActionType.GoingToSchool],
+            AvailableActions[ActionType.GoingToSchool], OpenForBusiness,
             Locations[location, LocationType.DayCare, position, founded, opening], // only expecting one location...
-            OpenForBusiness, NeedsDayCare);
+            NeedsDayCare);
         #endregion
 
         #region Working:
-        var OnShift = Definition("OnShift", person, job, location)
-            .Is(Vocations[job, person, location, GetTimeOfDay]);
         var GoingToWork = Predicate("GoingToWork", person, location)
-            .If(OnShift, OpenForBusiness); // each person should only have one job on a given time/day
+            .If(Vocations[job, person, location, GetTimeOfDay], OpenForBusiness); // each person should only have one job on a given time/day
         #endregion
 
         // TODO : Couple movements
@@ -486,13 +486,12 @@ public class TalkOfTheTown {
         DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
         Simulation.Update();
         _firstTick = false;
-        Time.Tick();
     }
 
     public void UpdateSimulator() {
+        Time.Tick();
         Simulation.Update();
         UpdateRows();
-        Time.Tick();
     }
 
     public void UpdateRows() {

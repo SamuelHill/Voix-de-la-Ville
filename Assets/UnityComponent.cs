@@ -21,7 +21,7 @@ public class UnityComponent : MonoBehaviour {
     // for the tile to be able to change color: https://github.com/Unity-Technologies/2d-extras/issues/96
     public Tile OccupiedLot;
 
-    internal bool SimulationRunning = true;
+    internal bool SimulationRunning = false;
     internal bool SimulationSingleStep;
     internal bool DebugRuleExecutionTime;
     // ReSharper disable once InconsistentNaming
@@ -48,6 +48,7 @@ public class UnityComponent : MonoBehaviour {
             TalkOfTheTown.Aptitude,
             TalkOfTheTown.Personality,
             TalkOfTheTown.WhereTheyAt,
+            TalkOfTheTown.OpenForBusiness
             //TalkOfTheTown.REPL
         });
         GUIManager.SetActiveTables(new[] { "Agents", "Couples", "Parents", "Homes" });
