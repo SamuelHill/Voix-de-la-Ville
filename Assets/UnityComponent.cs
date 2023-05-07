@@ -33,27 +33,16 @@ public class UnityComponent : MonoBehaviour {
         TalkOfTheTown = new TalkOfTheTown(StartYear);
         TalkOfTheTown.InitSimulator();
         ProcessInitialLocations();
-        //TalkOfTheTown.SetREPL("Agents");
-        GUIManager.SetAvailableTables(new List<TablePredicate> {
-            TalkOfTheTown.Agents,
-            TalkOfTheTown.Aptitude,
-            TalkOfTheTown.Personality,
-            TalkOfTheTown.Couples,
-            TalkOfTheTown.Parents,
-
-            TalkOfTheTown.Locations,
-            TalkOfTheTown.NewLocations,
-            TalkOfTheTown.Homes,
-            TalkOfTheTown.Vocations,
-            TalkOfTheTown.WhereTheyAt,
-
-            TalkOfTheTown.LocationInformation,
-            TalkOfTheTown.VocationShifts,
-            TalkOfTheTown.PositionsPerJob,
-            TalkOfTheTown.ActionToCategory,
-
-            //TalkOfTheTown.REPL
-        });
+        #if DEBUG
+        GUIManager.SetAvailableTables(TalkOfTheTown.Simulation.Tables.ToList());
+        #else
+        var tableNames = new[] {
+            "Agents", "Aptitude", "Personality", "Couples", "Parents", 
+            "Locations", "NewLocations", "Homes", "Vocations", "WhereTheyAt", 
+            "LocationInformation", "VocationShifts", "PositionsPerJob", "ActionToCategory" };
+        GUIManager.SetAvailableTables(TalkOfTheTown.Simulation.Tables
+            .Where(t => tableNames.Any(n => n == t.Name)).ToList());
+        #endif
         GUIManager.SetActiveTables(new[] { "Agents", "Parents", "Vocations", "WhereTheyAt" });
         GUIManager.AddSelectedTileInfo(SelectedLocation);
         GUIManager.AddPopulationInfo(Population); }
@@ -63,12 +52,15 @@ public class UnityComponent : MonoBehaviour {
         if (!SimulationRunning && GetKeyDown(KeyCode.Space)) SimulationSingleStep = true;
         if (GetKeyDown(KeyCode.BackQuote)) DebugRuleExecutionTime = !DebugRuleExecutionTime;
         if (SimulationRunning || SimulationSingleStep) {
-            TalkOfTheTown.UpdateSimulator();
+            try { TalkOfTheTown.UpdateSimulator(); }
+            catch {
+                #if DEBUG 
+                SimulationRunning = false; // only pause in debug mode...
+                #endif
+                throw; } // still throw the errors though
             ProcessLots();
             SimulationSingleStep = false; }
-        SelectedLocationTile = TrySelectTile(out var tile) ? tile : null;
-        //TalkOfTheTown.SetREPL("Agents");
-    }
+        SelectedLocationTile = TrySelectTile(out var tile) ? tile : null; }
 
     internal void OnGUI() {
         if (!GUIRunOnce) {

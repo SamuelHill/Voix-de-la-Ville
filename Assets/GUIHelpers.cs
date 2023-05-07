@@ -28,7 +28,7 @@ public static class GUIManager {
     internal const int LabelBorders = 10;
     internal const int TopMiddleRectHeight = 30; // allows for TopMiddleRectStacks
     internal const int TableToolbarWidth = 250;
-    internal const int MaxToolbarSize = 650;
+    internal const int MaxToolbarSize = 700;
     internal const int TileSize = 16;
     #endregion
 
@@ -109,14 +109,14 @@ public static class GUIManager {
     #endregion
 }
 
-// TODO : add update logic for dynamic extensional tables - refresh every month or so
 // TODO : add scroll events to labels in table for the assoc. scrollbar
+// - "Labels have no user interaction, do not catch mouse clicks and are always rendered in normal style."
 public class GUITable {
     #region Table display constants
     internal const int ColumnPadding = 5;
     internal const int LabelHeight = 21; // calculated once via:
     // (int)GUI.skin.label.CalcSize(new GUIContent("Any string here will do")).y
-    internal const int TableHeight = 260;
+    internal const int TableHeight = 260; // 270 * 4 = 1080...
     internal const int TablePadding = 10;
     internal const int TableWidthOffset = 50;
     internal const int numRowsToDisplay = (TableHeight - TablePadding) / LabelHeight - 2;  // 9, but ~flexible~
@@ -145,7 +145,6 @@ public class GUITable {
 
     internal bool UpdateEveryTick => predicate.IsDynamic && predicate.IsIntensional;
     internal bool UpdateMonthly => predicate.IsDynamic && predicate.IsExtensional;
-
     internal bool SetLastMonth() { 
         lastMonth = TalkOfTheTown.Time.Month;
         return true; }
@@ -206,7 +205,9 @@ public class GUITable {
         GUILayout.BeginHorizontal();
         GUILayout.BeginVertical();
         if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
+        
         else { foreach (var row in buffer) LayoutRow(row); }
+
         GUILayout.EndVertical();
         if (RowCount != 0 && RowCount >= numRowsToDisplay) {
             scrollPosition = GUILayout.VerticalScrollbar(scrollPosition,
