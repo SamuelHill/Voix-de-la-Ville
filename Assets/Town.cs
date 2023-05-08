@@ -24,10 +24,10 @@ public static class Town {
 
     private static int GridSpaces() => (Math.Abs(Min.x) + Max.x) * (Math.Abs(Min.y) + Max.y);
     private static void ExpandAllSides() { Min.x--; Max.x++; Min.y--; Max.y++; }
-    private static Vector2Int RandomLot() => new(Randomize.Integer(Min.x, Max.x), Randomize.Integer(Min.y, Max.y));
+    private static Vector2Int RandomLot() => 
+        new(Randomize.Integer(Min.x, Max.x), Randomize.Integer(Min.y, Max.y));
     public static Vector2Int RandomLot(uint lotCount) {
-        if (lotCount * 2 >= GridSpaces())
-            ExpandAllSides();
+        if (lotCount * 2 >= GridSpaces()) ExpandAllSides();
         return RandomLot(); }
 
     private static int EuclideanSquare(int x1, int y1, int x2, int y2) => (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);

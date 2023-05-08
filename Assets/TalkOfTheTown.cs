@@ -364,16 +364,16 @@ public class TalkOfTheTown {
         AddNewNamedLocation(LocationType.House, "Tumbleweed Ranch", // currently this only happens with drifters - everyone starts housed
             Count(Homes[person, location] & Alive[person]) < Count(Alive)); // need more house names...
 
-        AddNewNamedLocation(LocationType.House, "Ian's place", !!WantToMove[person]);
+        AddNewNamedLocation(LocationType.House, "Ian's place", !!WantToMove[person]); // need more house names...
 
         // TODO : enhance Goal writing - more default support/comma unpacking
         AddOneLocation(LocationType.Hospital, "St. Asmodeus",
-            Aptitude[person, Vocation.Doctor, aptitude] & (aptitude > 15) & Age & (age > 21));
+            !!(Aptitude[person, Vocation.Doctor, aptitude] & (aptitude > 15) & Age & (age > 21)));
 
         AddOneLocation(LocationType.DayCare, "Pumpkin Preschool",
             Count(Age & (age < 6)) > 5);
 
-        AddNewNamedLocation(LocationType.School, "Talk of the Township High",
+        AddOneLocation(LocationType.School, "Talk of the Township High",
             Count(Age & (age >= 5) & (age < 18)) > 5);
         #endregion
 
@@ -382,7 +382,6 @@ public class TalkOfTheTown {
         #region Vocation Info:
         var VocationLocations = FromCsv("VocationLocations",
             Csv("vocationLocations"), job.Indexed, locationType.Indexed);
-        
         var PositionsPerJob = FromCsv("PositionsPerJob", // positions is per time of day
             Csv("positionsPerJob"), job.Key, positions);
         var OperatingTimes = FromCsv("OperatingTimes", 
