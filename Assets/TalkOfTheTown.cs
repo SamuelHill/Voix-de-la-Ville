@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TED;
 using TED.Interpreter;
-using TED.Primitives;
 using TED.Tables;
 using TED.Utilities;
 using UnityEngine;
@@ -88,10 +87,8 @@ public class TalkOfTheTown {
         var GetYear = Time.GetProperty<int>(nameof(Time.Year));
         var GetDate = Time.GetProperty<Date>(nameof(Time.Date));
         var GetTimeOfDay = Time.GetProperty<TimeOfDay>(nameof(Time.TimeOfDay));
-        var IsSunday = Time.TestProperty(nameof(Time.IsSunday));
-        var IsDate = TestMethod<Date>(Time.IsDate);
         var IsAM = Time.TestProperty(nameof(Time.IsAM));
-        var IsPM = Time.TestProperty(nameof(Time.IsPM));
+        var IsDate = TestMethod<Date>(Time.IsDate);
         #endregion
 
         #region Variables
@@ -150,6 +147,7 @@ public class TalkOfTheTown {
 
         // *********************************** Agents: **********************************
 
+        // TODO : Use set logic to allow for renaming of married couples
         #region Names and new Person helpers:
         var MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);
         var FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
@@ -223,6 +221,7 @@ public class TalkOfTheTown {
         Couples.Accumulates(NewCouples);
         #endregion
 
+        // TODO : Add gestation table - prevents more gestation/copulation until birth
         #region Birth and aging:
         var FertilityRate = Method<int, float>(Sims.FertilityRate);
         var RandomSex = Method(Sims.RandomSex);
@@ -306,6 +305,7 @@ public class TalkOfTheTown {
         #endregion
 
         // TODO : Include ApartmentComplex locations in Housing logic
+        // TODO : Separate out the dead into a new table... involve removal ?
         #region Housing:
         var Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
@@ -317,12 +317,10 @@ public class TalkOfTheTown {
         // e.g. Initialize Homes first based on primordial couples, then on all single agents
         Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality], RandomElement(PrimordialHouses, location));
         
-        Homes.Add.If(BirthTo[man, woman, sex, occupant],
-            Homes[woman, location]); // Move in with mom
+        Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
 
         Homes.Set(occupant, location).If(JustDied[occupant],
             Locations[location, LocationType.Cemetery, __, __, __]);
-
         var BuriedAt = Predicate("BuriedAt", occupant, location)
             .If(Locations[location, LocationType.Cemetery, __, __, __], Homes);
         // with only the one cemetery for now, the follow will suffice for the GUI
@@ -337,6 +335,7 @@ public class TalkOfTheTown {
                 distance == Distance[position, otherPosition]);
         #endregion
 
+        // TODO : More "logic" behind who moves in and out of houses
         #region Moving houses:
         var Occupancy = Predicate("Occupancy", location, count)
             .If(Locations[location, LocationType.House, position, founded, opening], count == Count(Homes));
@@ -500,7 +499,7 @@ public class TalkOfTheTown {
         // ReSharper restore InconsistentNaming
         Simulation.EndPredicates();
         DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
-        Simulation.Update(); }
+        Simulation.Update(); } // optional, not necessary to call Update after EndPredicates
 
     public void UpdateSimulator() {
         Time.Tick();
