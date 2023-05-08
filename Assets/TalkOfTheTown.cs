@@ -173,8 +173,7 @@ public class TalkOfTheTown {
         Jobs.AddRows(Enum.GetValues(typeof(Vocation)).Cast<Vocation>());
         var Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
         #endregion
-
-        // TODO : Use set to age agents, might need function that uses KeyIndex to get age and increment
+        
         #region Agents setup and Death (Set) logic:
         Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
         AgentsVitalStatusIndex = (GeneralIndex<AgentRow, VitalStatus>)Agents.IndexFor(vitalStatus, false);
@@ -224,7 +223,7 @@ public class TalkOfTheTown {
         Couples.Accumulates(NewCouples);
         #endregion
 
-        #region Birth:
+        #region Birth and aging:
         var FertilityRate = Method<int, float>(Sims.FertilityRate);
         var RandomSex = Method(Sims.RandomSex);
         // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
@@ -239,11 +238,10 @@ public class TalkOfTheTown {
         Agents.Add[person, 0, GetDate, sex, sexuality, VitalStatus.Alive].If(
             BirthTo[man, woman, sex, person], sexuality == RandomSexuality[sex]);
 
+        // Increment age once per birthday (in the AM, if you weren't just born)
         var Increment = Function<int, int>("Increment", i => i + 1);
-        Agents.Set(person, age).If(
-            Agents[person, previousAge, dateOfBirth, __, __, VitalStatus.Alive],
-            IsAM, IsDate[dateOfBirth], !BirthTo[__, __, __, person], 
-            previousAge >= 0, age == Increment[previousAge]);
+        Agents.Set(person, age).If(Agents[person, previousAge, dateOfBirth, __, __, VitalStatus.Alive],
+            IsAM, IsDate[dateOfBirth], !BirthTo[__, __, __, person], age == Increment[previousAge]);
 
         // And add anything else that is needed for a new agent:
         Personality.Add[person, facet, SByteBellCurve].If(BirthTo[man, woman, sex, person], Facets);
@@ -502,28 +500,9 @@ public class TalkOfTheTown {
         // ReSharper restore InconsistentNaming
         Simulation.EndPredicates();
         DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
-        Simulation.Update();
-    }
+        Simulation.Update(); }
 
     public void UpdateSimulator() {
         Time.Tick();
-        Simulation.Update();
-        //UpdateRows();
-    }
-
-    public void UpdateRows() {
-        // Age a person on the first tick of a given date
-        if (Time.IsAM) {
-            Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, 
-                Sex __, Sexuality ___, VitalStatus vitals) agent) => {
-                if (Time.IsDate(agent.dateOfBirth) && agent is { age: >= 0, vitals: VitalStatus.Alive }) agent.age++;
-            });
-        }
-        // However, if they were born on today's date (as denoted with the age -1), set the age to 0 in the last tick of the given date
-        else if (Time.IsPM) {
-            Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, Sex __, Sexuality ___, VitalStatus ____) agent) => {
-                if (Time.IsDate(agent.dateOfBirth) && agent.age < 0) agent.age = 0;
-            });
-        }
-    }
+        Simulation.Update(); }
 }
