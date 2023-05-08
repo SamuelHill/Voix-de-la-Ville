@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using TED;
 using UnityEngine;
-using UnityEngine.Analytics;
 using static UnityEngine.Input;
 
 // ReSharper disable InconsistentNaming
 public static class GUIManager {
+    #region Fields - Table display and interactive state
     internal static Dictionary<string, GUITable> Tables = new();
     internal static string[] TableNames;
     internal static GUIContent[] GUITableNames;
@@ -19,6 +19,7 @@ public static class GUIManager {
     internal static bool ChangeTable;
     // set with a call to GetTableToolbarSize, only called once in the OnGUI function via SetupGUI
     internal static int TableToolbarSize;
+    #endregion
 
     #region Display Constants
     internal const string ShowHideTables = "Show/hide tables?";
@@ -32,30 +33,34 @@ public static class GUIManager {
     internal const int TileSize = 16;
     #endregion
 
+    #region GUIStrings
     // Some GUIStrings will always be displayed - these can just go in the list. Others,
     // like pause need to be addressed with external logic so its easiest to keep separate
     internal static GUIString paused = new("Simulation is paused", CenteredRect);
     internal static List<GUIString> guiStrings = new() {
         new GUIString(TalkOfTheTown.Time.ToString, TopRightRect), };
+    #endregion
 
-    // Called once each in Start 
+    #region Called once each in Start
     public static void SetAvailableTables(List<TablePredicate> tables) {
         foreach (var table in tables) Tables[table.Name] = new GUITable(table);
         TableNames = Tables.Keys.ToArray();
-        GUITableNames = (from available in TableNames 
-                         select new GUIContent(available)).ToArray(); }
+        GUITableNames = (from available in TableNames
+            select new GUIContent(available)).ToArray(); }
     public static void SetActiveTables(string[] activeTables) => ActiveTables = activeTables;
     public static void AddSelectedTileInfo(Func<string> tileString) =>
         guiStrings.Add(new GUIString(tileString, SelectedTileInfoRect, false));
     public static void AddPopulationInfo(Func<string> populationString) =>
         guiStrings.Add(new GUIString(populationString, BottomRightRect));
+    #endregion
 
-    // Called once each in SetupGUI
+    #region Called once each in SetupGUI
     public static void GetTableToolbarSize() => TableToolbarSize = 
         (from content in GUITableNames select (int)GUI.skin.button.CalcSize(content).x).Sum();
     public static void InitAllTables() { foreach (var table in Tables.Values) table.Initialize(); }
+    #endregion
 
-    // Called in OnGUI
+    #region Called in OnGUI
     public static void ShowPaused() => paused.OnGUI();
     public static void ShowStrings() { foreach (var guiString in guiStrings) guiString.OnGUI(); }
     public static void ShowActiveTables() {
@@ -80,14 +85,15 @@ public static class GUIManager {
             ChangeTableSelector, GUITableNames, GUI.skin.button, GUI.ToolbarButtonSize.FitToContents);
         // update the active table to change with the selected table
         ActiveTables[TableToChange] = TableNames[ChangeTableSelector]; }
-
     public static void RuleExecutionTimes() => GUI.Label(CenteredRect(400, 400), 
         string.Concat(from table in TalkOfTheTown.Simulation.Tables
                            where table.RuleExecutionTime > 0
                            orderby -table.RuleExecutionTime
                            select $"{table.Name} {table.RuleExecutionTime}\n"));
+    #endregion
 
-    #region Rects
+    #region Rects - display containers
+    // Special Top Middle Rects
     internal static Rect ChangeTablesRect = new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
     internal static Rect ShowTablesRect = new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
     internal static Rect TopMiddleRectStack(int width, int num = 1) => TopMiddleRectStack(width, TopMiddleRectHeight, num);
@@ -95,6 +101,7 @@ public static class GUIManager {
     internal static Rect TopMiddleRectStack(int width, int height, int num) =>
         new(Screen.width / 2 - width / 2, (LabelBorders * num) + (TopMiddleRectHeight * (num - 1)), width, height);
 
+    // Generic Rects
     internal static Rect CenteredRect(int width, int height) =>
         new(Screen.width / 2 - width / 2, Screen.height / 2 - height / 2, width, height);
     internal static Rect TopRightRect(int width, int height) =>
@@ -104,13 +111,12 @@ public static class GUIManager {
     internal static Rect BottomRightRect(int width, int height) => 
         new(Screen.width - (width + LabelBorders), Screen.height - (height + LabelBorders), width, height);
 
+    // Mouse following Rect
     internal static Rect SelectedTileInfoRect(int width, int height) =>
         new(mousePosition.x + TileSize, (Screen.height - mousePosition.y) + TileSize, width, height);
     #endregion
 }
 
-// TODO : add scroll events to labels in table for the assoc. scrollbar
-// - "Labels have no user interaction, do not catch mouse clicks and are always rendered in normal style."
 public class GUITable {
     #region Table display constants
     internal const int ColumnPadding = 5;
@@ -120,8 +126,10 @@ public class GUITable {
     internal const int TablePadding = 10;
     internal const int TableWidthOffset = 50;
     internal const int numRowsToDisplay = (TableHeight - TablePadding) / LabelHeight - 2;  // 9, but ~flexible~
+    // - 2 from the possible display rows, one for the header row and one to not get cutoff/crowd the space
     #endregion
 
+    #region Fields
     internal TablePredicate predicate;
     internal string[][] buffer;
     internal string[] headings;
@@ -134,7 +142,9 @@ public class GUITable {
     internal float scrollPosition;
     internal float oldScroll;
     internal Month lastMonth;
+    #endregion
 
+    #region Properties & property helper functions
     internal string Name => predicate.Name;
     internal int NumColumns => headings.Length;
     internal uint RowCount => predicate.Length;
@@ -150,6 +160,7 @@ public class GUITable {
         return true; }
     internal bool TrySetLastMonth() => lastMonth != TalkOfTheTown.Time.Month && SetLastMonth();
     internal bool MonthlyUpdate() => UpdateMonthly && TrySetLastMonth();
+    #endregion
 
     public GUITable(TablePredicate predicate) {
         this.predicate = predicate;
@@ -160,6 +171,7 @@ public class GUITable {
             buffer[i] = new string[NumColumns];
         longestStrings = new int[NumColumns]; }
 
+    #region Table Updates
     public void Initialize() {
         UpdateLongestStrings(headings);
         if (RowCount == 0 || predicate.IsIntensional) {
@@ -179,13 +191,17 @@ public class GUITable {
         if (previousRowCount == RowCount) return false;
         previousRowCount = RowCount;
         return true; }
+    #endregion
 
+    #region GUILayout helper functions
     internal Rect TableRect(int x, int y) => new(x, y, TableWidth + TableWidthOffset, TableHeight);
     internal Rect LeftSideTables(int tableNum) => TableRect(TablePadding, tableNum * (TableHeight + TablePadding) + TablePadding);
 
     internal GUILayoutOption ScrollHeight = GUILayout.Height((numRowsToDisplay + 1) * LabelHeight);
     internal GUILayoutOption ColumnWidth(int i) => GUILayout.Width(longestStrings[i] + ColumnPadding);
+    #endregion
 
+    #region Table Layout
     internal void LayoutRow(string[] strings, bool header = false) {
         if (header) GUI.skin.label.fontStyle = FontStyle.Bold;
         GUILayout.BeginHorizontal();
@@ -194,19 +210,17 @@ public class GUITable {
         GUILayout.EndHorizontal();
         if (header) GUI.skin.label.fontStyle = FontStyle.Normal; }
 
-    public void OnGUI(int tableNum) => OnGUI(LeftSideTables(tableNum));
-    public void OnGUI(int x, int y) => OnGUI(TableRect(x, y));
-
-    // The ScrollHeight and numRowsToDisplay are const based so a
-    // table must be of a certain size with this implementation
     internal void OnGUI(Rect screenRect) {
         GUILayout.BeginArea(screenRect);
         LayoutRow(headings, true);
         GUILayout.BeginHorizontal();
         GUILayout.BeginVertical();
         if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
-        
+
+        // TODO : add scroll events to labels in table for the assoc. scrollbar
+        // - "Labels have no user interaction, do not catch mouse clicks and are always rendered in normal style."
         else { foreach (var row in buffer) LayoutRow(row); }
+        // wrap this in an invisible box to detect scroll events?
 
         GUILayout.EndVertical();
         if (RowCount != 0 && RowCount >= numRowsToDisplay) {
@@ -214,11 +228,18 @@ public class GUITable {
                 numRowsToDisplay - 0.1f, 0f, RowCount, ScrollHeight);
             if (Scrolled || !usingScroll || UpdateEveryTick || MonthlyUpdate()) {
                 Update();
-                oldScroll = scrollPosition; }
+                oldScroll = scrollPosition;
+            }
             if (!usingScroll) usingScroll = true;
         } else if (!usingScroll && UpdateRowCount()) Update();
         GUILayout.EndHorizontal();
         GUILayout.EndArea(); }
+    #endregion
+
+    public void OnGUI(int tableNum) => OnGUI(LeftSideTables(tableNum));
+    // public void OnGUI(int x, int y) => OnGUI(TableRect(x, y));
+    // The ScrollHeight and numRowsToDisplay are const based in the base version of OnGUI,
+    // so the display Rect must be of a certain size with this implementation...
 }
 
 public class GUIString {
@@ -231,28 +252,26 @@ public class GUIString {
     internal int width;
     internal int height;
     internal Func<int, int, Rect> DisplayFunc;
+    internal bool centered = true;
 
     public GUIString(Func<string> getStringFunc, Func<int, int, Rect> displayFunc) {
         DisplayFunc = displayFunc;
         GetStringFunc = getStringFunc; }
+    public GUIString(Func<string> getStringFunc, Func<int, int, Rect> displayFunc, bool centered) :
+        this(getStringFunc, displayFunc) => this.centered = centered;
     public GUIString(string displayString, Func<int, int, Rect> displayFunc) {
         DisplayFunc = displayFunc;
         GetStringFunc = null;
         this.displayString = displayString;
         staticStringCalcOnce = true; }
 
-    public GUIString(Func<string> getStringFunc, Func<int, int, Rect> displayFunc, bool centered) : 
-        this(getStringFunc, displayFunc) => this.centered = centered;
-
-    internal bool centered = true;
-
     public void OnGUI() {
         UpdateString();
         if (displayString is null) return;
+        // MiddleLeft doesn't allow fo LabelWidthOffset/2 padding on the left
         if (!centered) GUI.skin.box.alignment = TextAnchor.MiddleLeft;
         GUI.Box(DisplayFunc(width, height), displayString);
-        if (!centered) GUI.skin.box.alignment = TextAnchor.MiddleCenter;
-    }
+        if (!centered) GUI.skin.box.alignment = TextAnchor.MiddleCenter; }
 
     internal void UpdateString() {
         if (GetStringFunc is not null) {

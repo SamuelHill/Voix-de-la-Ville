@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TED;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using static UnityEngine.Input;
-
+using AgentRow = System.ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
 using LocationRow = System.ValueTuple<Location, LocationType, UnityEngine.Vector2Int, int, Date>;
 
 internal class GridComparer : EqualityComparer<Vector2Int> {
@@ -44,8 +43,8 @@ public class UnityComponent : MonoBehaviour {
             .Where(t => tableNames.Any(n => n == t.Name)).ToList());
         #endif
         GUIManager.SetActiveTables(new[] { "Agents", "Parents", "Vocations", "WhereTheyAt" });
-        GUIManager.AddSelectedTileInfo(SelectedLocation);
-        GUIManager.AddPopulationInfo(Population); }
+        GUIManager.AddPopulationInfo(() => $"Population of {Population}");
+        GUIManager.AddSelectedTileInfo(SelectedLocation); }
 
     internal void Update() {
         if (GetKeyDown(KeyCode.Escape)) SimulationRunning = !SimulationRunning;
@@ -60,7 +59,7 @@ public class UnityComponent : MonoBehaviour {
                 throw; } // still throw the errors though
             ProcessLots();
             SimulationSingleStep = false; }
-        SelectedLocationTile = TrySelectTile(out var tile) ? tile : null; }
+        UpdateSelectedLocation(); }
 
     internal void OnGUI() {
         if (!GUIRunOnce) {
@@ -74,64 +73,80 @@ public class UnityComponent : MonoBehaviour {
         if (DebugRuleExecutionTime) GUIManager.RuleExecutionTimes();
         if (!SimulationRunning) GUIManager.ShowPaused(); }
 
-    #region Tilemap helpers
+    #region Tilemap Coordinates to/from Simulation Coordinates
     internal Vector3Int LotToTile(Vector2Int lot) => (Vector3Int)(TownCenter + lot);
     internal Vector2Int TileToLot(Vector3Int tile) => (Vector2Int)tile - TownCenter;
-    internal bool TrySelectTile(out Vector3Int tile) {
-        tile = Tilemap.WorldToCell(Camera.main.ScreenToWorldPoint(mousePosition));
-        return Tilemap.HasTile(tile); }
+    #endregion
+
+    #region Location Info Indexer Wrappers
+    internal Color GetLocationColor(LocationType locationType) =>
+        TalkOfTheTown.LocationColorsIndex[locationType].Item2;
     internal LocationRow GetLocationInfo(Vector3Int selectedTile) =>
         TalkOfTheTown.LocationsPositionIndex[TileToLot(selectedTile)];
+    internal IEnumerable<AgentRow> LivingPeople() =>
+        TalkOfTheTown.AgentsVitalStatusIndex.RowsMatching(VitalStatus.Alive);
+    internal int Population => LivingPeople().ToArray().Length;
     #endregion
 
     #region Process Location Tiles
+    internal void SetTiles(Vector3Int[] tiles, TileBase tileToSet) =>
+        Tilemap.SetTiles(tiles, Enumerable.Repeat(tileToSet, tiles.Length).ToArray());
+    internal void DeleteTiles((Vector3Int, Color)[] tilesToDelete) =>
+        SetTiles(tilesToDelete.Select(t => t.Item1).ToArray(), null);
+    internal void OccupyTiles((Vector3Int, Color)[] tilesToOccupy) {
+        SetTiles(tilesToOccupy.Select(t => t.Item1).ToArray(), OccupiedLot);
+        foreach (var newTile in tilesToOccupy)
+            Tilemap.SetColor(newTile.Item1, newTile.Item2); }
+    
+    internal bool SetIfLocations(IEnumerable<LocationRow> locations, Action<(Vector3Int, Color)[]> setFunc) {
+        var tilesToSet = (from location in locations
+            select (LotToTile(location.Item3), GetLocationColor(location.Item2))).ToArray(); ;
+        if (tilesToSet.Length == 0) return false;
+        setFunc(tilesToSet);
+        return true; }
+    internal bool DeleteTiles(IEnumerable<LocationRow> locations) => SetIfLocations(locations, DeleteTiles);
+    internal bool OccupyTiles(IEnumerable<LocationRow> locations) => SetIfLocations(locations, OccupyTiles);
+
     internal void ProcessInitialLocations() {
-        var newTiles = LocationsToTiles(TalkOfTheTown.PrimordialLocations);
-        OccupyTiles(newTiles.Select(t => t.Item1).ToArray());
-        foreach (var newTile in newTiles)
-            SetTileColor(newTile.Item1, newTile.Item2);
+        OccupyTiles(TalkOfTheTown.PrimordialLocations);
+        OccupyTiles(TalkOfTheTown.NewLocations);
         Tilemap.RefreshAllTiles(); }
     internal void ProcessLots() {
-        var vacated = LocationsToTiles(TalkOfTheTown.VacatedLocations);
-        if (vacated.Length > 0) DeleteTiles(vacated.Select(v => v.Item1).ToArray());
-        var newTiles = LocationsToTiles(TalkOfTheTown.NewLocations);
-        if (newTiles.Length > 0) OccupyTiles(newTiles.Select(t => t.Item1).ToArray());
-        foreach (var newTile in newTiles) 
-            SetTileColor(newTile.Item1, newTile.Item2);
-        if (newTiles.Length + vacated.Length > 0) Tilemap.RefreshAllTiles(); }
-    internal (Vector3Int, LocationType)[] LocationsToTiles(IEnumerable<LocationRow> locations) =>
-        (from location in locations 
-            select (LotToTile(location.Item3), location.Item2)).ToArray();
-    internal Color GetLocationColor(LocationType locationType) =>
-        TalkOfTheTown.LocationColorsIndex[locationType].Item2;
-    internal void SetTileColor(Vector3Int tile, LocationType locationType) =>
-        Tilemap.SetColor(tile, GetLocationColor(locationType));
-    internal void SetTiles(Vector3Int[] tiles, TileBase tileToSet) => 
-        Tilemap.SetTiles(tiles, Enumerable.Repeat(tileToSet, tiles.Length).ToArray());
-    internal void DeleteTiles(Vector3Int[] tiles) => SetTiles(tiles, null);
-    internal void OccupyTiles(Vector3Int[] tiles) => SetTiles(tiles, OccupiedLot);
+        if (OccupyTiles(TalkOfTheTown.NewLocations) ||
+            DeleteTiles(TalkOfTheTown.VacatedLocations)) 
+            Tilemap.RefreshAllTiles(); }
     #endregion
 
-    #region String processing
-    internal string SelectedLocation() => 
-        SelectedLocationTile is null ? null : 
+    #region Selected Location: screen to tiles & GUIString getStringFunc
+    internal bool TrySelectTile(out Vector3Int tile) {
+        tile = Tilemap.WorldToCell(Camera.main.ScreenToWorldPoint(mousePosition));
+        return Tilemap.HasTile(tile); }
+    internal void UpdateSelectedLocation() =>
+        SelectedLocationTile = TrySelectTile(out var tile) ? tile : null;
+    internal string SelectedLocation() =>
+        SelectedLocationTile is null ? null :
             LocationRowToString(GetLocationInfo((Vector3Int)SelectedLocationTile));
+    #endregion
+
+    #region Selected location string processing helpers
     internal string LocationRowToString(LocationRow locationRow) => 
-        LocationInfo(locationRow) + "\n" + PeopleAtLocation(locationRow.Item1);
+        LocationInfo(locationRow) + PeopleAtLocation(locationRow.Item1);
     internal string LocationInfo(LocationRow row) =>
-        $"{row.Item1} ({row.Item2}) located at x: {row.Item3.x}, y: {row.Item3.y}\nFounded on {row.Item5}, {row.Item4} ({LocationAge(row)} years ago)";
+        $"{row.Item1} ({row.Item2}) located at x: {row.Item3.x}, y: {row.Item3.y}\n" +
+        $"Founded on {row.Item5}, {row.Item4} ({LocationAge(row)} years ago)\n";
     internal int LocationAge(LocationRow row) => TalkOfTheTown.Time.YearsSince(row.Item5, row.Item4);
     internal string PeopleAtLocation(Location l) {
-        var atLocation = TalkOfTheTown.WhereTheyAtLocationIndex.RowsMatching(l).Select(p => p.Item1.FullName).ToArray();
-        return atLocation.Length != 0 ? $"People at location: {GroupUp(atLocation, 3)}" : "Nobody is here right now"; }
+        var peopleAtLocation = TalkOfTheTown.WhereTheyAtLocationIndex
+            .RowsMatching(l).Select(p => p.Item1.FullName).ToArray();
+        return peopleAtLocation.Length != 0 ? 
+            $"People at location: {GroupUp(peopleAtLocation, 3)}" : 
+            "Nobody is here right now"; }
     internal string GroupUp(string[] strings, int itemsPerGroup) =>
-        // Concat an empty string to the beginning - the starting line includes "People at location: "
+        // Concat an empty string to the beginning, takes place of "People at location: "
         string.Join(",\n", new[] { "" }.Concat(strings).ToList().Select(
             (s, i) => new { s, i }).ToLookup(
             str => str.i / itemsPerGroup, str => str.s).Select(
-            // remove the extra ", " that gets joined on the empty string in the first row
+            // remove the extra ", " that gets joined on the empty string
             row => string.Join(", ", row)))[2..];
-
-    internal string Population() => $"Population of {TalkOfTheTown.AgentsVitalStatusIndex.RowsMatching(VitalStatus.Alive).ToArray().Length}";
     #endregion
 }

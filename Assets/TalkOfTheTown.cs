@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using TED;
 using TED.Interpreter;
+using TED.Primitives;
 using TED.Tables;
 using TED.Utilities;
 using UnityEngine;
@@ -15,7 +15,11 @@ using ColorUtility = UnityEngine.ColorUtility;
 public class TalkOfTheTown {
     public static Simulation Simulation = null!;
     public static Time Time;
-    private bool _firstTick;
+
+    // TODO : Move these to TED
+    public static Goal NonZero(Goal goal) => !!goal;
+    public static Goal Goals(params Goal[] goals) =>
+        goals.Length == 0 ? null : goals.Aggregate((current, goal) => current & goal);
 
     #region CSV/TXT file helpers and CSV parsing functions
     private const string DataPath = "../TalkOfTheTown/Assets/Data/";
@@ -71,7 +75,6 @@ public class TalkOfTheTown {
 
     public void InitSimulator() {
         Simulation = new Simulation("Talk of the Town");
-        _firstTick = true;  // only used to prevent new buildings on the first tick as of now
 
         // ReSharper disable InconsistentNaming
         // variables just so happen to follow c# var name norms, still disabling InconsistentNaming because
@@ -176,9 +179,12 @@ public class TalkOfTheTown {
             .Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Dead]);
         var Alive = Definition("Alive", person)
             .Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]);
+
         // Set Dead condition:
         Agents.Set(person, vitalStatus, VitalStatus.Dead)
             .If(Alive, Agents, age > 60, Prob[Time.PerMonth(0.01f)]);
+        var JustDied = Predicate("JustDied", person)
+            .If(Agents.Set(person, vitalStatus));
 
         // Agent helper definitions
         var Age = Definition("Age", person, age)
@@ -301,7 +307,12 @@ public class TalkOfTheTown {
         // Ideally this would involve some more complex assignment logic that would fill houses based on some Goal
         // e.g. Initialize Homes first based on primordial couples, then on all single agents
         Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality], RandomElement(PrimordialHouses, location));
-        Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
+        
+        Homes.Add.If(BirthTo[man, woman, sex, occupant],
+            Homes[woman, location]); // Move in with mom
+
+        Homes.Set(occupant, location).If(JustDied[occupant],
+            Locations[location, LocationType.Cemetery, __, __, __]);
 
         // Distance per person makes most sense when measured from either where the person is,
         // or where they live. This handles the latter:
@@ -335,18 +346,13 @@ public class TalkOfTheTown {
             .Is(!Locations[location, locationType, position, founded, opening]);
         var FreeLot = Definition("FreeLot", position)
             .Is(position == RandomLot[NumLots], IsVacant[position]);
-
-        // IsNotFirstTick is meant to prevent the addition of locations on the first tick as tiles are only
-        // added to the tilemap from PrimordialLocations on the first tick... Also to prevent attempting to bind
-        // with Count(Homes) before Homes is initialized - not a problem if Homes comes before this
-        var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
         #endregion
 
         #region New Location helper functions (meta-sub-expressions):
         // Base case - useful mainly for testing/rapid development (you only need one string/generating a list of names can come second)
         void AddNewNamedLocation(LocationType locType, string name, Goal readyToAdd) =>
-            NewLocations[location, locType, position, GetYear, GetDate].If(IsNotFirstTick,
-                FreeLot, Prob[Time.PerWeek(0.5f)], // Needs the random lot to be available & 'construction' isn't instantaneous
+            NewLocations[location, locType, position, GetYear, GetDate]
+                .If(FreeLot, Prob[Time.PerWeek(0.5f)], // Needs the random lot to be available & 'construction' isn't instantaneous
                 readyToAdd, location == NewLocation[name]); // otherwise, check the readyToAdd Goal and if it passes add a NewLocation
 
         // If you are only planning on adding a single location of the given type, this adds the check that
@@ -356,8 +362,8 @@ public class TalkOfTheTown {
 
         // This is the more realistic use case with a list of names for a give type to choose from.
         void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
-            NewLocations[location, locType, position, GetYear, GetDate].If(IsNotFirstTick,
-                FreeLot, Prob[Time.PerWeek(0.5f)], readyToAdd, 
+            NewLocations[location, locType, position, GetYear, GetDate]
+                .If(FreeLot, Prob[Time.PerWeek(0.5f)], readyToAdd,
                 RandomElement(names, locationName), location == NewLocation[locationName]);
         #endregion
 
@@ -368,10 +374,13 @@ public class TalkOfTheTown {
         // Currently the following only happens with drifters - everyone starts housed
         AddNewLocation(LocationType.House, HouseNames, 
             Count(Homes[person, location] & Alive[person]) < Count(Alive));
-
-        // TODO : enhance Goal writing - comma unpacking?
+        
         AddOneLocation(LocationType.Hospital, "St. Asmodeus",
-            !!(Aptitude[person, Vocation.Doctor, aptitude] & (aptitude > 15) & Age & (age > 21)));
+            NonZero(Goals(Aptitude[person, Vocation.Doctor, aptitude], 
+                aptitude > 15, Age, age > 21)));
+
+        AddOneLocation(LocationType.Cemetery, "The Old Cemetery", 
+            NonZero(Goals(Alive, Age, age >= 60)));
 
         AddOneLocation(LocationType.DayCare, "Pumpkin Preschool",
             Count(Age & (age < 6)) > 5);
@@ -405,7 +414,7 @@ public class TalkOfTheTown {
             .If(JobsToFill, Maximal(person, aptitude, 
                 Alive[person] & !Vocations[otherJob, person, otherLocation, timeOfDay] & Age & (age > 18) & Aptitude));
 
-        Vocations.Add[job, person, location, GetTimeOfDay].If(IsNotFirstTick, Candidates);
+        Vocations.Add[job, person, location, GetTimeOfDay].If(Candidates);
         #endregion
 
         // ********************************** Movement: *********************************
@@ -478,7 +487,6 @@ public class TalkOfTheTown {
         Simulation.EndPredicates();
         DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
         Simulation.Update();
-        _firstTick = false;
     }
 
     public void UpdateSimulator() {
@@ -491,8 +499,8 @@ public class TalkOfTheTown {
         // Age a person on the first tick of a given date
         if (Time.IsAM) {
             Agents.UpdateRows((ref (Person _, int age, Date dateOfBirth, 
-                Sex __, Sexuality ___, VitalStatus ____) agent) => {
-                if (Time.IsDate(agent.dateOfBirth) && agent.age >= 0) agent.age++;
+                Sex __, Sexuality ___, VitalStatus vitals) agent) => {
+                if (Time.IsDate(agent.dateOfBirth) && agent is { age: >= 0, vitals: VitalStatus.Alive }) agent.age++;
             });
         }
         // However, if they were born on today's date (as denoted with the age -1), set the age to 0 in the last tick of the given date
