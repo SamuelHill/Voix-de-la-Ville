@@ -5,7 +5,7 @@ public enum LocationCategories {
     Accommodation, Administration, Amenity, ChildCare, Commerce, Eatery, Food, Health, Industry, Personal }
 public enum LocationType {
     ApartmentComplex, Bakery, Bank, Bar, Barbershop, Brewery, ButcherShop, CandyShop, CarpentryCompany,
-    CityHall, ClothingStore, CommunityCenter, Dairy, DayCare, DentistOffice, DepartmentStore, Diner,
+    Cemetery, CityHall, ClothingStore, CommunityCenter, Dairy, DayCare, DentistOffice, DepartmentStore, Diner,
     Distillery, DoctorOffice, Farm, FireStation, Foundry, FurnitureStore, GeneralStore, GroceryStore,
     HardwareStore, Hospital, House, Inn, JewelryShop, LumberMill, OptometryClinic, Orchard, Park, Pharmacy,
     PoliceStation, PostOffice, Quarry, Restaurant, School, ShoemakerShop, TailorShop, TattooParlor, }

@@ -324,7 +324,7 @@ public class TalkOfTheTown {
         Homes.Set(occupant, location).If(MovingIn[occupant, location]);
         #endregion
 
-        #region New Location helper functions and definitions:
+        #region New Location helper Functions and Definitions:
         // Title case string and make a Location object
         var NewLocation = Method<string, Location>(Town.NewLocation);
         
@@ -342,8 +342,7 @@ public class TalkOfTheTown {
         var IsNotFirstTick = Test("IsNotFirstTick", () => !_firstTick);
         #endregion
 
-        // TODO : Add more new locations for each location type
-        #region New Location Logic:
+        #region New Location helper functions (meta-sub-expressions):
         // Base case - useful mainly for testing/rapid development (you only need one string/generating a list of names can come second)
         void AddNewNamedLocation(LocationType locType, string name, Goal readyToAdd) =>
             NewLocations[location, locType, position, GetYear, GetDate].If(IsNotFirstTick,
@@ -360,13 +359,17 @@ public class TalkOfTheTown {
             NewLocations[location, locType, position, GetYear, GetDate].If(IsNotFirstTick,
                 FreeLot, Prob[Time.PerWeek(0.5f)], readyToAdd, 
                 RandomElement(names, locationName), location == NewLocation[locationName]);
+        #endregion
 
-        AddNewNamedLocation(LocationType.House, "Tumbleweed Ranch", // currently this only happens with drifters - everyone starts housed
-            Count(Homes[person, location] & Alive[person]) < Count(Alive)); // need more house names...
+        // TODO : Add more new locations for each location type
+        #region New Location Logic:
+        var HouseNames = FromCsv("HouseNames", Csv("house_names"), locationName);
+        AddNewLocation(LocationType.House, HouseNames, !!WantToMove[person]);
+        // Currently the following only happens with drifters - everyone starts housed
+        AddNewLocation(LocationType.House, HouseNames, 
+            Count(Homes[person, location] & Alive[person]) < Count(Alive));
 
-        AddNewNamedLocation(LocationType.House, "Ian's place", !!WantToMove[person]); // need more house names...
-
-        // TODO : enhance Goal writing - more default support/comma unpacking
+        // TODO : enhance Goal writing - comma unpacking?
         AddOneLocation(LocationType.Hospital, "St. Asmodeus",
             !!(Aptitude[person, Vocation.Doctor, aptitude] & (aptitude > 15) & Age & (age > 21)));
 

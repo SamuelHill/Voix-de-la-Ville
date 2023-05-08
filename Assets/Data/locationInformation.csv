@@ -9,6 +9,7 @@ PostOffice,Administration,Morning,ClosedSunday
 FireStation,Administration,AllDay,Everyday
 PoliceStation,Administration,AllDay,Everyday
 Park,Amenity,AllDay,Everyday
+Cemetery,Amenity,AllDay,Everyday
 DayCare,ChildCare,Morning,Weekdays
 School,ChildCare,Morning,Weekdays
 CarpentryCompany,Commerce,Morning,Weekdays

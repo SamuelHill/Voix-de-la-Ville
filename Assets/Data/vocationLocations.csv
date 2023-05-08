@@ -12,6 +12,7 @@ PostalWorker,PostOffice
 FireChief,FireStation
 Firefighter,FireStation
 Groundskeeper,Park
+Groundskeeper,Cemetery
 DaycareProvider,DayCare
 Principal,School
 Teacher,School
