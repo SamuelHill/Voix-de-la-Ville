@@ -130,7 +130,7 @@ public class UnityComponent : MonoBehaviour {
 
     #region Selected location string processing helpers
     internal string LocationRowToString(LocationRow locationRow) => 
-        LocationInfo(locationRow) + PeopleAtLocation(locationRow.Item1);
+        LocationInfo(locationRow) + EveryoneAtLocation(locationRow);
     internal string LocationInfo(LocationRow row) =>
         $"{row.Item1} ({row.Item2}) located at x: {row.Item3.x}, y: {row.Item3.y}\n" +
         $"Founded on {row.Item5}, {row.Item4} ({LocationAge(row)} years ago)\n";
@@ -141,6 +141,15 @@ public class UnityComponent : MonoBehaviour {
         return peopleAtLocation.Length != 0 ? 
             $"People at location: {GroupUp(peopleAtLocation, 3)}" : 
             "Nobody is here right now"; }
+
+    internal string EveryoneAtLocation(LocationRow row) {
+        var str = PeopleAtLocation(row.Item1);
+        if (row.Item2 == LocationType.Cemetery && TalkOfTheTown.Buried.Length > 0) 
+            str += BuriedAtCemetery();
+        return str; }
+    internal string BuriedAtCemetery() => 
+        $"\nBuried at location: {GroupUp(TalkOfTheTown.Buried.Select(p => p.FullName).ToArray(), 3)}";
+
     internal string GroupUp(string[] strings, int itemsPerGroup) =>
         // Concat an empty string to the beginning, takes place of "People at location: "
         string.Join(",\n", new[] { "" }.Concat(strings).ToList().Select(

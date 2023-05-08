@@ -67,6 +67,8 @@ public class TalkOfTheTown {
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> VacatedLocations;
     public TablePredicate<LocationType, LocationCategories, DailyOperation, Schedule> LocationInformation;
     public TablePredicate<LocationType, Color> LocationColors;
+    public TablePredicate<Person> Buried;
+
     public GeneralIndex<AgentRow, VitalStatus> AgentsVitalStatusIndex;
     public KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
     public KeyIndex<(Location, LocationType, Vector2Int, int, Date), Vector2Int> LocationsPositionIndex;
@@ -88,6 +90,8 @@ public class TalkOfTheTown {
         var GetTimeOfDay = Time.GetProperty<TimeOfDay>(nameof(Time.TimeOfDay));
         var IsSunday = Time.TestProperty(nameof(Time.IsSunday));
         var IsDate = TestMethod<Date>(Time.IsDate);
+        var IsAM = Time.TestProperty(nameof(Time.IsAM));
+        var IsPM = Time.TestProperty(nameof(Time.IsPM));
         #endregion
 
         #region Variables
@@ -115,6 +119,7 @@ public class TalkOfTheTown {
         var aptitude         = (Var<sbyte>)"aptitude";
 
         var age              = (Var<int>)"age";
+        var previousAge      = (Var<int>)"previousAge";
         var founded          = (Var<int>)"founded";
         var founded2         = (Var<int>)"founded2";
         var dateOfBirth      = (Var<Date>)"dateOfBirth";
@@ -231,8 +236,14 @@ public class TalkOfTheTown {
         // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
         // determine the child's sexuality in BirthTo, a child has the sexuality established when they are added to Agents
         var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
-        Agents.Add[person, -1, GetDate, sex, sexuality, VitalStatus.Alive].If(
+        Agents.Add[person, 0, GetDate, sex, sexuality, VitalStatus.Alive].If(
             BirthTo[man, woman, sex, person], sexuality == RandomSexuality[sex]);
+
+        var Increment = Function<int, int>("Increment", i => i + 1);
+        Agents.Set(person, age).If(
+            Agents[person, previousAge, dateOfBirth, __, __, VitalStatus.Alive],
+            IsAM, IsDate[dateOfBirth], !BirthTo[__, __, __, person], 
+            previousAge >= 0, age == Increment[previousAge]);
 
         // And add anything else that is needed for a new agent:
         Personality.Add[person, facet, SByteBellCurve].If(BirthTo[man, woman, sex, person], Facets);
@@ -313,6 +324,11 @@ public class TalkOfTheTown {
 
         Homes.Set(occupant, location).If(JustDied[occupant],
             Locations[location, LocationType.Cemetery, __, __, __]);
+
+        var BuriedAt = Predicate("BuriedAt", occupant, location)
+            .If(Locations[location, LocationType.Cemetery, __, __, __], Homes);
+        // with only the one cemetery for now, the follow will suffice for the GUI
+        Buried = Predicate("Buried", person).If(BuriedAt[person, __]);
 
         // Distance per person makes most sense when measured from either where the person is,
         // or where they live. This handles the latter:
@@ -492,7 +508,7 @@ public class TalkOfTheTown {
     public void UpdateSimulator() {
         Time.Tick();
         Simulation.Update();
-        UpdateRows();
+        //UpdateRows();
     }
 
     public void UpdateRows() {
