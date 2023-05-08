@@ -142,11 +142,10 @@ public class UnityComponent : MonoBehaviour {
             $"People at location: {GroupUp(peopleAtLocation, 3)}" : 
             "Nobody is here right now"; }
 
-    internal string EveryoneAtLocation(LocationRow row) {
-        var str = PeopleAtLocation(row.Item1);
-        if (row.Item2 == LocationType.Cemetery && TalkOfTheTown.Buried.Length > 0) 
-            str += BuriedAtCemetery();
-        return str; }
+    internal string EveryoneAtLocation(LocationRow row) => 
+        PeopleAtLocation(row.Item1) + BuriedAtCemetery(row.Item2);
+    internal string BuriedAtCemetery(LocationType locationType) => 
+        locationType == LocationType.Cemetery && TalkOfTheTown.Buried.Length > 0 ? BuriedAtCemetery() : "";
     internal string BuriedAtCemetery() => 
         $"\nBuried at location: {GroupUp(TalkOfTheTown.Buried.Select(p => p.FullName).ToArray(), 3)}";
 
