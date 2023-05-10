@@ -255,7 +255,7 @@ public class TalkOfTheTown {
         // event in the same tick the system would have to be designed such that only one pair of woman and man
         // have sex on a given tick.
         var Gestation = Predicate("Gestation", 
-            woman.Key, man, sex, child, conception, state.Indexed);
+            woman.Indexed, man, sex, child, conception, state.Indexed);
         var Pregnant = Predicate("Pregnant", woman)
             .If(Gestation[woman, __, __, __, __, true]);
 
