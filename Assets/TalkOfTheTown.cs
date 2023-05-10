@@ -115,7 +115,6 @@ public class TalkOfTheTown {
         var facet            = (Var<Facet>)"facet";
         var personality      = (Var<sbyte>)"personality";
         var job              = (Var<Vocation>)"job";
-        var otherJob         = (Var<Vocation>)"otherJob";
         var aptitude         = (Var<sbyte>)"aptitude";
 
         var age              = (Var<int>)"age";
@@ -132,7 +131,6 @@ public class TalkOfTheTown {
         var position         = (Var<Vector2Int>)"position";
         var otherPosition    = (Var<Vector2Int>)"otherPosition";
         var locationType     = (Var<LocationType>)"locationType";
-        var otherLocType     = (Var<LocationType>)"otherLocType";
         var locationCategory = (Var<LocationCategories>)"locationCategory";
         var operation        = (Var<DailyOperation>)"operation";
         var timeOfDay        = (Var<TimeOfDay>)"timeOfDay";
@@ -182,15 +180,14 @@ public class TalkOfTheTown {
 
         // Dead and Alive definitions:
         var Dead = Definition("Dead", person)
-            .Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Dead]);
+            .Is(Agents[person, __, __, __, __, VitalStatus.Dead]);
         var Alive = Definition("Alive", person)
-            .Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]);
+            .Is(Agents[person, __, __, __, __, VitalStatus.Alive]);
 
         // Set Dead condition:
         Agents.Set(person, vitalStatus, VitalStatus.Dead)
             .If(Alive, Agents, age > 60, Prob[Time.PerMonth(0.003f)]);
-        var JustDied = Predicate("JustDied", person)
-            .If(Agents.Set(person, vitalStatus));
+        var JustDied = Predicate("JustDied", person).If(Agents.Set(person, vitalStatus));
 
         // Agent helper definitions
         var Age = Definition("Age", person, age)
@@ -220,7 +217,7 @@ public class TalkOfTheTown {
 
         // TODO : Better util for couples - facet likeness or score based on facet logic (> X, score + 100)
         // TODO : Use set logic to allow for renaming of married couples - or something similar...
-        //  set name is complicated by the Person object storing first and last name...
+        //        set name is complicated by the Person object storing first and last name...
         #region Couples (for procreation):
         var Men = Predicate("Men", man).If(
             Agents[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
@@ -320,10 +317,10 @@ public class TalkOfTheTown {
         // determine the child's sexuality in BirthTo, a child has the sexuality established when they are added to Agents
         var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
         Agents.Add[person, 0, GetDate, sex, sexuality, VitalStatus.Alive].If(
-            BirthTo[man, woman, sex, person], sexuality == RandomSexuality[sex]);
+            BirthTo[__, __, sex, person], sexuality == RandomSexuality[sex]);
 
-        Parents.Add.If(BirthTo[parent, person, sex, child]);
-        Parents.Add.If(BirthTo[person, parent, sex, child]);
+        Parents.Add.If(BirthTo[parent, __, __, child]);
+        Parents.Add.If(BirthTo[__, parent, __, child]);
 
         // Increment age once per birthday (in the AM, if you weren't just born)
         var Increment = Function<int, int>("Increment", i => i + 1);
@@ -331,8 +328,8 @@ public class TalkOfTheTown {
             IsAM, IsDate[dateOfBirth], !BirthTo[__, __, __, person], age == Increment[previousAge]);
 
         // And add anything else that is needed for a new agent:
-        Personality.Add[person, facet, SByteBellCurve].If(BirthTo[man, woman, sex, person], Facets);
-        Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[man, woman, sex, person], Jobs);
+        Personality.Add[person, facet, SByteBellCurve].If(BirthTo[__, __, __, person], Facets);
+        Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[__, __, __, person], Jobs);
         #endregion
 
         #region Drifters - adults moving to town:
@@ -378,12 +375,12 @@ public class TalkOfTheTown {
         var LocationsOfCategory = Predicate("LocationsOfCategory", 
             location, locationCategory).If(LocationInformation, Locations);
         var AnyInCategory = Definition("AnyInCategory", locationCategory)
-            .Is(!!LocationsOfCategory[location, locationCategory]); // same as Count(X) > 0 ?
+            .Is(NonZero(LocationsOfCategory[__, locationCategory]));
         #endregion
 
-        // TODO : Include ApartmentComplex locations in Housing logic
         // TODO : Separate out the dead into a new table... involve removal ?
-        // Housing is not a good candidate for a bool column status based removal - one entry per person
+        //        Housing is not a good candidate for a bool column status based removal - one entry per person
+        // TODO : Include ApartmentComplex locations in Housing logic
         #region Housing:
         var Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
@@ -407,9 +404,9 @@ public class TalkOfTheTown {
         // Distance per person makes most sense when measured from either where the person is,
         // or where they live. This handles the latter:
         var DistanceFromHome = Definition("DistanceFromHome", person, location, distance)
-            .Is(Locations[location, locationType, position, founded, opening], 
+            .Is(Locations[location, __, position, __, __], 
                 Homes[person, otherLocation],
-                Locations[otherLocation, otherLocType, otherPosition, founded2, opening2], 
+                Locations[otherLocation, __, otherPosition, __, __], 
                 distance == Distance[position, otherPosition]);
         #endregion
 
@@ -434,7 +431,7 @@ public class TalkOfTheTown {
         var RandomLot = Method<uint, Vector2Int>(Town.RandomLot);
         var NumLots = Length("NumLots", Locations);
         var IsVacant = Definition("IsVacant", position)
-            .Is(!Locations[location, locationType, position, founded, opening]);
+            .Is(!Locations[__, __, position, __, __]);
         var FreeLot = Definition("FreeLot", position)
             .Is(position == RandomLot[NumLots], IsVacant[position]);
         #endregion
@@ -502,8 +499,8 @@ public class TalkOfTheTown {
                 PositionsPerJob, Count(Vocations) < positions);
 
         var Candidates = Predicate("Candidates", person, job, location)
-            .If(JobsToFill, Maximal(person, aptitude, 
-                Alive[person] & !Vocations[otherJob, person, otherLocation, timeOfDay] & Age & (age > 18) & Aptitude));
+            .If(JobsToFill, Maximal(person, aptitude, Goals(Alive[person], 
+                !Vocations[__, person, __, __], Age, age > 18, Aptitude)));
 
         Vocations.Add[job, person, location, GetTimeOfDay].If(Candidates);
         #endregion
@@ -533,17 +530,17 @@ public class TalkOfTheTown {
 
         var GoingToSchool = Predicate("GoingToSchool", person, location).If(
             AvailableActions[ActionType.GoingToSchool], OpenForBusiness,
-            Locations[location, LocationType.School, position, founded, opening], // only expecting one location...
+            Locations[location, LocationType.School, __, __, __], // only expecting one location...
             NeedsSchooling);
         var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
             AvailableActions[ActionType.GoingToSchool], OpenForBusiness,
-            Locations[location, LocationType.DayCare, position, founded, opening], // only expecting one location...
+            Locations[location, LocationType.DayCare, __, __, __], // only expecting one location...
             NeedsDayCare);
         #endregion
 
         #region Working:
         var GoingToWork = Predicate("GoingToWork", person, location)
-            .If(Vocations[job, person, location, GetTimeOfDay], OpenForBusiness);
+            .If(Vocations[__, person, location, GetTimeOfDay], OpenForBusiness);
         #endregion
 
         // TODO : Couple movements
@@ -556,11 +553,11 @@ public class TalkOfTheTown {
         var AdultActions = Predicate("AdultActions", actionType)
             .If(AvailableActions, actionType != ActionType.GoingToSchool);
         var NeedsActionAssignment = Predicate("NeedsActionAssignment", person).If(Alive,
-            !GoingToWork[person, location],
-            !GoingToDayCare[person, location],
-            !GoingToSchool[person, location]);
-        var RandomActionAssign = Predicate("RandomActionAssign", person, actionType).If(NeedsActionAssignment,
-            RandomElement(AdultActions, actionType));
+            !GoingToWork[person, __],
+            !GoingToDayCare[person, __],
+            !GoingToSchool[person, __]);
+        var RandomActionAssign = Predicate("RandomActionAssign", person, actionType)
+            .If(NeedsActionAssignment, RandomElement(AdultActions, actionType));
 
         var LocationByActionAssign = Predicate("LocationByActionAssign", person, location);
         LocationByActionAssign.If(RandomActionAssign[person, ActionType.StayingIn], Homes[person, location]);

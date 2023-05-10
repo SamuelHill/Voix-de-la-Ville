@@ -72,16 +72,19 @@ public class Time {
 
     #region Properties & Helper functions
     public int Year => (int)_year + _offset;
+
     #region Month
     internal static Month GetMonth(ushort clock) => (Month)((clock - 1) / TicksPerMonth);
     public Month Month => GetMonth(_clock);
     public byte MonthsSince(Month pastMonth) => Since((byte)(Month + 1), (byte)(pastMonth + 1), Months);
     #endregion
+
     #region Day
     internal static byte GetDay(ushort clock) => (byte)((clock - 1) % TicksPerMonth / TimesOfDay + 1);
     public byte Day => GetDay(_clock);
     public byte DaysSince(byte pastDay) => Since(Day, pastDay, DaysPerMonth);
     #endregion
+
     #region Date(s)
     public Date Date => new(Month, Day);
     public bool IsDate(Date date) => date.Equals(Month, Day);
@@ -90,6 +93,7 @@ public class Time {
     public int DaysSince(Date date) => MonthsSince(date.Month) * DaysPerMonth + DaysSince(date.Day);
     public bool NineMonthsPast(Date date) => DaysSince(date) >= NineMonths;
     #endregion
+
     #region DayOfWeek
     internal static DayOfWeek GetDayOfWeek(ushort clock) => (DayOfWeek)((clock - 1) / TimesOfDay % DaysOfWeek);
     public DayOfWeek DayOfWeek => GetDayOfWeek(_clock);
@@ -102,6 +106,7 @@ public class Time {
     public bool IsSunday => DayOfWeek == DayOfWeek.Sunday;
     public bool IsOpen(Schedule schedule) => schedule.OpenOn[(int)DayOfWeek];
     #endregion
+
     #region TimeOfDay
     internal static TimeOfDay GetTimeOfDay(ushort clock) => (TimeOfDay)((clock + 1) % TimesOfDay);
     public TimeOfDay TimeOfDay => GetTimeOfDay(_clock);
