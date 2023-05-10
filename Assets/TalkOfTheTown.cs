@@ -11,6 +11,7 @@ using static TED.Language;
 using AgentRow = System.ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
 using BirthRow = System.ValueTuple<Person, Person, Sex, Person>;
 using ColorUtility = UnityEngine.ColorUtility;
+using Predicate = TED.Predicate;
 
 public class TalkOfTheTown {
     public static Simulation Simulation = null!;
@@ -229,6 +230,8 @@ public class TalkOfTheTown {
         // TODO : Add gestation table - prevents more gestation/copulation until birth
         #region Birth and aging:
         var FertilityRate = Method<int, float>(Sims.FertilityRate);
+        var DaysSince = Method<Date, int>(Time.DaysSince);
+        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
         var RandomSex = Method(Sims.RandomSex);
         // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
         var Surname = Function<Person, string>("Surname", p => p.LastName);
@@ -253,9 +256,9 @@ public class TalkOfTheTown {
         // copulation and birth. Could have some `pseudo` event (the rules for the gestation table are the
         // copulation event) but this is less robust. E.g. to prevent multiple partners creating a gestation
         // event in the same tick the system would have to be designed such that only one pair of woman and man
-        // have sex on a given tick.
+        // have sex on a given tick. Additionally, to allow for set on this table, one column must be a key
         var Gestation = Predicate("Gestation", 
-            woman.Indexed, man, sex, child, conception, state.Indexed);
+            woman.Indexed, man, sex, child.Key, conception, state.Indexed);
         var Pregnant = Predicate("Pregnant", woman)
             .If(Gestation[woman, __, __, __, __, true]);
 
@@ -272,13 +275,13 @@ public class TalkOfTheTown {
             .If(Count(Copulation[woman, __, __, __]) > 1, 
                 Copulation[woman, __, __, __], GetRandomCopulation);
 
+        var DaysPregnant = Predicate("DaysPregnant", woman, count)
+            .If(Gestation[woman, __, __, __, conception, true], count == DaysSince[conception]);
+
         // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months
         var BirthTo = Predicate("BirthTo", woman, man, sex, child);
-        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
         BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception]);
-
-        // Set requires a key, woman should be an index though for this...
-        Gestation.Set(woman, state, false).If(BirthTo);
+        Gestation.Set(child, state, false).If(BirthTo);
 
         // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
         // determine the child's sexuality in BirthTo, a child has the sexuality established when they are added to Agents

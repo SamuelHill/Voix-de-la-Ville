@@ -231,7 +231,7 @@ public class GUITable {
                 oldScroll = scrollPosition;
             }
             if (!usingScroll) usingScroll = true;
-        } else if (!usingScroll && UpdateRowCount()) Update();
+        } else if ((!usingScroll && UpdateRowCount()) || UpdateEveryTick || MonthlyUpdate()) Update();
         GUILayout.EndHorizontal();
         GUILayout.EndArea(); }
     #endregion

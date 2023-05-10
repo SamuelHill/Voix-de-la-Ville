@@ -42,6 +42,7 @@ public class Time {
     public static readonly byte DaysPerMonth = (byte)(DaysOfWeek * NumWeeksPerMonth); // 28
     public static readonly byte TicksPerMonth = (byte)(DaysPerMonth * TimesOfDay); // 56
     public static readonly ushort NumTicks = (ushort)(Months * TicksPerMonth); // 672
+    public static readonly byte NineMonths = (byte)(9 * DaysPerMonth);
     #endregion
 
     #region Constructors (& tick calc helpers)
@@ -86,8 +87,8 @@ public class Time {
     public bool IsDate(Date date) => date.Equals(Month, Day);
     public bool PastDate(Date date) => (date.Month < Month) || (date.Month == Month && date.Day < Day);
     public int YearsSince(Date date, int year) => Year - year + (PastDate(date) ? 1 : 0);
-    public ushort DaysSince(Date date) => (ushort)(MonthsSince(date.Month) * DaysPerMonth + DaysSince(date.Day));
-    public bool NineMonthsPast(Date date) => DaysSince(date) >= 9 * DaysPerMonth;
+    public int DaysSince(Date date) => MonthsSince(date.Month) * DaysPerMonth + DaysSince(date.Day);
+    public bool NineMonthsPast(Date date) => DaysSince(date) >= NineMonths;
     #endregion
     #region DayOfWeek
     internal static DayOfWeek GetDayOfWeek(ushort clock) => (DayOfWeek)((clock - 1) / TimesOfDay % DaysOfWeek);
