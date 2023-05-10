@@ -284,7 +284,8 @@ public class TalkOfTheTown {
 
         // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months
         var BirthTo = Predicate("BirthTo", woman, man, sex, child);
-        BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception]);
+        BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception], 
+            Prob[0.1f]); // 'Induced labor' - helps hide the NineMonth issue but also adds some birth variation
         Gestation.Set(child, state, false).If(BirthTo);
 
         // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
