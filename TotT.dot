@@ -10,12 +10,12 @@ v19 [ label = "set age"];
 subgraph "cluster_Personality"{
 v4 [ label = "Personality" fillcolor="limegreen"];
 v5 [ label = "Add"];
-v22 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v23 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Aptitude"{
-v24 [ label = "Aptitude" fillcolor="limegreen"];
-v25 [ label = "Add"];
-v26 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v25 [ label = "Aptitude" fillcolor="limegreen"];
+v26 [ label = "Add"];
+v27 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Gestation"{
 v7 [ label = "Gestation" fillcolor="limegreen"];
@@ -60,9 +60,9 @@ v12 [ label = "NewCouples"];
 v13 [ label = "Men"];
 v17 [ label = "PrimordialBeings" fillcolor="gold" shape="diamond"];
 v20 [ label = "Women"];
-v23 [ label = "Jobs" fillcolor="gold" shape="diamond"];
-v27 [ label = "JustDied"];
-v28 [ label = "DaysPregnant"];
+v22 [ label = "DaysPregnant"];
+v24 [ label = "Jobs" fillcolor="gold" shape="diamond"];
+v28 [ label = "JustDied"];
 v31 [ label = "LocationInformation" fillcolor="gold" shape="diamond"];
 v32 [ label = "CategoryColors" fillcolor="gold" shape="diamond"];
 v35 [ label = "PrimordialLocations" fillcolor="gold" shape="diamond"];
@@ -128,18 +128,19 @@ v0 -> v9
 v1 -> v9
 v21 -> v7 [ color="red" ]
 v6 -> v21 [ constraint="false" ]
+v22 -> v6
+v7 -> v22
 v3 -> v5 [ constraint="false" ]
-v22 -> v4 [ color="blue" ]
-v17 -> v22 [ constraint="false" ]
-v3 -> v22 [ constraint="false" ]
-v25 -> v24 [ color="green" ]
-v6 -> v25 [ constraint="false" ]
-v23 -> v25 [ constraint="false" ]
-v26 -> v24 [ color="blue" ]
-v17 -> v26 [ constraint="false" ]
-v23 -> v26 [ constraint="false" ]
-v18 -> v27
-v7 -> v28
+v23 -> v4 [ color="blue" ]
+v17 -> v23 [ constraint="false" ]
+v3 -> v23 [ constraint="false" ]
+v26 -> v25 [ color="green" ]
+v6 -> v26 [ constraint="false" ]
+v24 -> v26 [ constraint="false" ]
+v27 -> v25 [ color="blue" ]
+v17 -> v27 [ constraint="false" ]
+v24 -> v27 [ constraint="false" ]
+v18 -> v28
 v30 -> v29 [ color="green" ]
 v6 -> v30 [ constraint="false" ]
 v34 -> v33 [ color="blue" ]
@@ -160,7 +161,7 @@ v44 -> v43 [ constraint="false" ]
 v35 -> v44
 v17 -> v43 [ constraint="false" ]
 v45 -> v41 [ color="red" ]
-v27 -> v45 [ constraint="false" ]
+v28 -> v45 [ constraint="false" ]
 v37 -> v45 [ constraint="false" ]
 v46 -> v45 [ constraint="false" ]
 v40 -> v46
@@ -171,7 +172,7 @@ v41 -> v48
 v48 -> v40
 v41 -> v36
 v14 -> v36
-v24 -> v36
+v25 -> v36
 v31 -> v50
 v37 -> v50
 v37 -> v51
@@ -190,7 +191,7 @@ v54 -> v61
 v58 -> v61
 v58 -> v60
 v14 -> v60
-v24 -> v60
+v25 -> v60
 v62 -> v63
 v50 -> v63
 v37 -> v64

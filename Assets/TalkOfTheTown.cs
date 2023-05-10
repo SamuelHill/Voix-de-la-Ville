@@ -230,8 +230,6 @@ public class TalkOfTheTown {
         // TODO : Add gestation table - prevents more gestation/copulation until birth
         #region Birth and aging:
         var FertilityRate = Method<int, float>(Sims.FertilityRate);
-        var DaysSince = Method<Date, int>(Time.DaysSince);
-        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
         var RandomSex = Method(Sims.RandomSex);
         // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
         var Surname = Function<Person, string>("Surname", p => p.LastName);
@@ -275,12 +273,15 @@ public class TalkOfTheTown {
             .If(Count(Copulation[woman, __, __, __]) > 1, 
                 Copulation[woman, __, __, __], GetRandomCopulation);
 
+        // DaysSince seems to work, the Days increment as expected but birth still only occurs on the first.
+        var DaysSince = Method<Date, int>(Time.DaysSince);
+        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
         var DaysPregnant = Predicate("DaysPregnant", woman, count)
-            .If(Gestation[woman, __, __, __, conception, true], count == DaysSince[conception]);
+            .If(Pregnant, Gestation, count == DaysSince[conception]);
 
         // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months
         var BirthTo = Predicate("BirthTo", woman, man, sex, child);
-        BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception]);
+        BirthTo.If(Gestation[woman, man, sex, child, conception, true], DaysPregnant, count >= Time.NineMonths);
         Gestation.Set(child, state, false).If(BirthTo);
 
         // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
