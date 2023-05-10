@@ -144,7 +144,7 @@ public class TalkOfTheTown {
         var actionType       = (Var<ActionType>)"actionType";
         var distance         = (Var<int>)"distance";
         var count            = (Var<int>)"count";
-
+        var util             = (Var<int>)"util";
         var state            = (Var<bool>)"state";
 
         #endregion
@@ -196,7 +196,19 @@ public class TalkOfTheTown {
 
         // Agent helper definitions
         var Age = Definition("Age", person, age)
-            .Is(Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]);
+            .Is(Agents[person, age, __, __, __, VitalStatus.Alive]);
+        #endregion
+
+        #region Sexual Attraction:
+        var SexualityAttracted = Test<Sexuality, Sex>("SexualityAttracted",
+            (se, s) => se.IsAttracted(s));
+        var PersonSex = Definition("PersonSex", person, sex)
+            .Is(Agents[person, __, __, sex, __, VitalStatus.Alive]);
+        var PersonSexuality = Definition("PersonSexuality", person, sexuality)
+            .Is(Agents[person, __, __, __, sexuality, VitalStatus.Alive]);
+        var AttractedSexuality = Definition("AttractedSexuality", person, partner)
+            .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], SexualityAttracted[sexuality, sexOfPartner],
+                PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], SexualityAttracted[sexualOfPartner, sex]);
         #endregion
 
         #region Primordial Beings initialize:
@@ -208,26 +220,42 @@ public class TalkOfTheTown {
         Aptitude.Initially[person, job, SByteBellCurve].Where(PrimordialBeings, Jobs);
         #endregion
 
-        // TODO : Implement primordial couples
-        // TODO : Improve NewCouple logic. Use IsAttracted.
+        // TODO : Better util for couples - facet likeness or score based on facet logic (> X, score + 100)
         #region Couples (for procreation):
-        var Men = Predicate("Men", person).If(
-            Agents[person, age, dateOfBirth, Sex.Male, sexuality, VitalStatus.Alive], age >= 18);
-        var Women = Predicate("Women", person).If(
-            Agents[person, age, dateOfBirth, Sex.Female, sexuality, VitalStatus.Alive], age >= 18);
+        var Men = Predicate("Men", man).If(
+            Agents[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
+        var Women = Predicate("Women", woman).If(
+            Agents[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
 
-        var Couples = Predicate("Couples", person, partner);
-        Couples.Unique = true;
-        var NewCouples = Predicate("NewCouples", person, partner);
-        NewCouples.Unique = true;
+        var ProcreativePair = Predicate("ProcreativePair", woman.Indexed, man.Indexed);
+        ProcreativePair.Unique = true;
+        var NewProcreativePair = Predicate("NewProcreativePair", woman, man);
 
-        var IsAttracted = Test<Sexuality, Sex>("IsAttracted", (se, s) => se.IsAttracted(s));
+        var Parents = Predicate("Parents", parent, child);
+        var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
+            .Is(Parents[person, otherPerson] | Parents[otherPerson, person]); // only immediate family
 
-        NewCouples.If(Women[person], RandomElement(Men, partner), Prob[0.5f], !Couples[person, man], !Couples[woman, partner]);
-        Couples.Accumulates(NewCouples);
+        var PotentialPairings = Predicate("PotentialPairings", woman.Indexed, man.Indexed)
+            .If(Women, !ProcreativePair[woman, __], // super limited procreative pairings for performance
+                Men, !ProcreativePair[__, man],
+                AttractedSexuality[woman, man], !FamilialRelation[woman, man]);
+
+        var NormalScore = Method(Randomize.NormalScore);
+        var ScoredPairings = Predicate("ScoredPairings", woman.Indexed, man.Indexed, util)
+            .If(PotentialPairings, util == NormalScore);
+        var BestPairForWomen = Predicate("BestPairForWomen", woman, man, util)
+            .If(Women, Maximal((man, util), util, ScoredPairings));
+        var BestPairForBoth = Predicate("BestPairForBoth", woman, man)
+            .If(BestPairForWomen[__, man, __], Maximal(woman, util, BestPairForWomen));
+
+        // Another approach - less expensive but only adds one pair at a time
+        var PairingBestOnce = Predicate("PairingBestOnce", woman, man)
+            .If(Maximal((woman, man), util, ScoredPairings));
+
+        NewProcreativePair.If(BestPairForBoth, !ProcreativePair[__, man], !ProcreativePair[woman, __]);
+        ProcreativePair.Accumulates(NewProcreativePair);
         #endregion
 
-        // TODO : Add gestation table - prevents more gestation/copulation until birth
         #region Birth and aging:
         var FertilityRate = Method<int, float>(Sims.FertilityRate);
         var RandomSex = Method(Sims.RandomSex);
@@ -262,7 +290,7 @@ public class TalkOfTheTown {
 
         // The point of linking birth to gestation is to not have women getting pregnant again while pregnant,
         // a copulation event is used to do this check (thus !Pregnant)
-        Copulation.If(Couples[woman, man], !Pregnant[woman],
+        Copulation.If(ProcreativePair[woman, man], !Pregnant[woman],
             Agents[woman, age, __, Sex.Female, __, VitalStatus.Alive],
             Agents[man, __, __, Sex.Male, __, VitalStatus.Alive], 
             Prob[FertilityRate[age]],
@@ -294,6 +322,9 @@ public class TalkOfTheTown {
         Agents.Add[person, 0, GetDate, sex, sexuality, VitalStatus.Alive].If(
             BirthTo[man, woman, sex, person], sexuality == RandomSexuality[sex]);
 
+        Parents.Add.If(BirthTo[parent, person, sex, child]);
+        Parents.Add.If(BirthTo[person, parent, sex, child]);
+
         // Increment age once per birthday (in the AM, if you weren't just born)
         var Increment = Function<int, int>("Increment", i => i + 1);
         Agents.Set(person, age).If(Agents[person, previousAge, dateOfBirth, __, __, VitalStatus.Alive],
@@ -305,14 +336,6 @@ public class TalkOfTheTown {
         #endregion
 
         #region Family:
-        var Parents = Predicate("Parents", parent, child);
-        Parents.Add.If(BirthTo[parent, person, sex, child]);
-        Parents.Add.If(BirthTo[person, parent, sex, child]);
-
-        var IsFamily = Definition("IsFamily", person, otherPerson).Is(
-            Couples[person, otherPerson] | Couples[otherPerson, person] |
-            (Parents[person, otherPerson] & Agents[otherPerson, age, dateOfBirth, sex, sexuality, VitalStatus.Alive] & age <= 18) |
-            (Parents[otherPerson, person] & Agents[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive] & age <= 18));
         #endregion
 
         #region Drifters - adults moving to town:

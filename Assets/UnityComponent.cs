@@ -36,7 +36,7 @@ public class UnityComponent : MonoBehaviour {
         GUIManager.SetAvailableTables(TalkOfTheTown.Simulation.Tables.ToList());
         #else
         var tableNames = new[] {
-            "Agents", "Aptitude", "Personality", "Couples", "Parents", 
+            "Agents", "Aptitude", "Personality", "ProcreativePair", "Parents", 
             "Locations", "NewLocations", "Homes", "Vocations", "WhereTheyAt", 
             "LocationInformation", "VocationShifts", "PositionsPerJob", "ActionToCategory" };
         GUIManager.SetAvailableTables(TalkOfTheTown.Simulation.Tables
