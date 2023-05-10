@@ -146,14 +146,12 @@ public class TalkOfTheTown {
         var count            = (Var<int>)"count";
         var util             = (Var<int>)"util";
         var state            = (Var<bool>)"state";
-
         #endregion
 
         Simulation.BeginPredicates();
 
         // *********************************** Agents: **********************************
 
-        // TODO : Use set logic to allow for renaming of married couples
         #region Names and new Person helpers:
         var MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);
         var FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
@@ -190,7 +188,7 @@ public class TalkOfTheTown {
 
         // Set Dead condition:
         Agents.Set(person, vitalStatus, VitalStatus.Dead)
-            .If(Alive, Agents, age > 60, Prob[Time.PerMonth(0.01f)]);
+            .If(Alive, Agents, age > 60, Prob[Time.PerMonth(0.003f)]);
         var JustDied = Predicate("JustDied", person)
             .If(Agents.Set(person, vitalStatus));
 
@@ -221,6 +219,8 @@ public class TalkOfTheTown {
         #endregion
 
         // TODO : Better util for couples - facet likeness or score based on facet logic (> X, score + 100)
+        // TODO : Use set logic to allow for renaming of married couples - or something similar...
+        //  set name is complicated by the Person object storing first and last name...
         #region Couples (for procreation):
         var Men = Predicate("Men", man).If(
             Agents[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
@@ -335,15 +335,12 @@ public class TalkOfTheTown {
         Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[man, woman, sex, person], Jobs);
         #endregion
 
-        #region Family:
-        #endregion
-
         #region Drifters - adults moving to town:
         // Using a Definition to wrap RandomPerson and RandomSexuality
         var RandomDate = Function("RandomDate", Date.Random);
         var RandomAdultAge = Method(Sims.RandomAdultAge);
         Agents.Add[person, RandomAdultAge, RandomDate, RandomSex, sexuality, VitalStatus.Alive]
-            .If(Prob[Time.PerYear(0.001f)],
+            .If(Prob[Time.PerYear(0.05f)],
                 RandomPerson, sexuality == RandomSexuality[sex]);
         #endregion
 
@@ -386,6 +383,7 @@ public class TalkOfTheTown {
 
         // TODO : Include ApartmentComplex locations in Housing logic
         // TODO : Separate out the dead into a new table... involve removal ?
+        // Housing is not a good candidate for a bool column status based removal - one entry per person
         #region Housing:
         var Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;

@@ -19,6 +19,7 @@ public class UnityComponent : MonoBehaviour {
     public Tilemap Tilemap;
     // for the tile to be able to change color: https://github.com/Unity-Technologies/2d-extras/issues/96
     public Tile OccupiedLot;
+    public bool PrettyNamesOnly = true;
 
     internal bool SimulationRunning = true;
     internal bool SimulationSingleStep;
@@ -32,16 +33,9 @@ public class UnityComponent : MonoBehaviour {
         TalkOfTheTown = new TalkOfTheTown(StartYear);
         TalkOfTheTown.InitSimulator();
         ProcessInitialLocations();
-        #if DEBUG
-        GUIManager.SetAvailableTables(TalkOfTheTown.Simulation.Tables.ToList());
-        #else
-        var tableNames = new[] {
-            "Agents", "Aptitude", "Personality", "ProcreativePair", "Parents", 
-            "Locations", "NewLocations", "Homes", "Vocations", "WhereTheyAt", 
-            "LocationInformation", "VocationShifts", "PositionsPerJob", "ActionToCategory" };
-        GUIManager.SetAvailableTables(TalkOfTheTown.Simulation.Tables
-            .Where(t => tableNames.Any(n => n == t.Name)).ToList());
-        #endif
+        GUIManager.SetAvailableTables(PrettyNamesOnly
+            ? TalkOfTheTown.Simulation.Tables.Where(t => !t.Name.Contains("_")).ToList()
+            : TalkOfTheTown.Simulation.Tables.ToList());
         GUIManager.SetActiveTables(new[] { "Agents", "Parents", "Vocations", "WhereTheyAt" });
         GUIManager.AddPopulationInfo(() => $"Population of {Population}");
         GUIManager.AddSelectedTileInfo(SelectedLocation); }
@@ -52,11 +46,7 @@ public class UnityComponent : MonoBehaviour {
         if (GetKeyDown(KeyCode.BackQuote)) DebugRuleExecutionTime = !DebugRuleExecutionTime;
         if (SimulationRunning || SimulationSingleStep) {
             try { TalkOfTheTown.UpdateSimulator(); }
-            catch {
-                #if DEBUG 
-                SimulationRunning = false; // only pause in debug mode...
-                #endif
-                throw; } // still throw the errors though
+            catch { SimulationRunning = false; throw; }
             ProcessLots();
             SimulationSingleStep = false; }
         UpdateSelectedLocation(); }

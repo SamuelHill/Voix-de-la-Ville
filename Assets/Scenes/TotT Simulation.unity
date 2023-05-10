@@ -225,6 +225,7 @@ MonoBehaviour:
   TownCenter: {x: 25, y: 0}
   Tilemap: {fileID: 1000091122}
   OccupiedLot: {fileID: 11400000, guid: d9d4319b8860fe748b914d7823963c6d, type: 2}
+  PrettyNamesOnly: 0
 --- !u!114 &519420034
 MonoBehaviour:
   m_ObjectHideFlags: 0

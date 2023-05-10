@@ -29,8 +29,9 @@ public static class GUIManager {
     internal const int LabelBorders = 10;
     internal const int TopMiddleRectHeight = 30; // allows for TopMiddleRectStacks
     internal const int TableToolbarWidth = 250;
-    internal const int MaxToolbarSize = 700;
+    internal const int MaxToolbarSize = 720;
     internal const int TileSize = 16;
+    internal const int TableNameTrim = 18;
     #endregion
 
     #region GUIStrings
@@ -44,7 +45,8 @@ public static class GUIManager {
     #region Called once each in Start
     public static void SetAvailableTables(List<TablePredicate> tables) {
         foreach (var table in tables) Tables[table.Name] = new GUITable(table);
-        TableNames = Tables.Keys.ToArray();
+        TableNames = Tables.Keys.Select(n => n.Length > TableNameTrim ?
+            n[..TableNameTrim] + "…" : n).ToArray();
         GUITableNames = (from available in TableNames
             select new GUIContent(available)).ToArray(); }
     public static void SetActiveTables(string[] activeTables) => ActiveTables = activeTables;
@@ -160,6 +162,7 @@ public class GUITable {
         return true; }
     internal bool TrySetLastMonth() => lastMonth != TalkOfTheTown.Time.Month && SetLastMonth();
     internal bool MonthlyUpdate() => UpdateMonthly && TrySetLastMonth();
+    internal bool UpdateCheck => UpdateEveryTick || MonthlyUpdate();
     #endregion
 
     public GUITable(TablePredicate predicate) {
@@ -196,6 +199,8 @@ public class GUITable {
     #region GUILayout helper functions
     internal Rect TableRect(int x, int y) => new(x, y, TableWidth + TableWidthOffset, TableHeight);
     internal Rect LeftSideTables(int tableNum) => TableRect(TablePadding, tableNum * (TableHeight + TablePadding) + TablePadding);
+    internal static bool ScrollingInRect(Rect rect) =>
+        rect.Contains(Event.current.mousePosition) && Event.current.type == EventType.ScrollWheel;
 
     internal GUILayoutOption ScrollHeight = GUILayout.Height((numRowsToDisplay + 1) * LabelHeight);
     internal GUILayoutOption ColumnWidth(int i) => GUILayout.Width(longestStrings[i] + ColumnPadding);
@@ -216,24 +221,20 @@ public class GUITable {
         GUILayout.BeginHorizontal();
         GUILayout.BeginVertical();
         if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
-
-        // TODO : add scroll events to labels in table for the assoc. scrollbar
-        // - "Labels have no user interaction, do not catch mouse clicks and are always rendered in normal style."
         else { foreach (var row in buffer) LayoutRow(row); }
-        // wrap this in an invisible box to detect scroll events?
-
         GUILayout.EndVertical();
         if (RowCount != 0 && RowCount >= numRowsToDisplay) {
             scrollPosition = GUILayout.VerticalScrollbar(scrollPosition,
                 numRowsToDisplay - 0.1f, 0f, RowCount, ScrollHeight);
-            if (Scrolled || !usingScroll || UpdateEveryTick || MonthlyUpdate()) {
+            if (ScrollingInRect(screenRect)) scrollPosition += Event.current.delta.y;
+            if (Scrolled || !usingScroll || UpdateCheck) {
                 Update();
-                oldScroll = scrollPosition;
-            }
+                oldScroll = scrollPosition; }
             if (!usingScroll) usingScroll = true;
-        } else if ((!usingScroll && UpdateRowCount()) || UpdateEveryTick || MonthlyUpdate()) Update();
+        } else if ((!usingScroll && UpdateRowCount()) || UpdateCheck) Update();
         GUILayout.EndHorizontal();
-        GUILayout.EndArea(); }
+        GUILayout.EndArea();
+    }
     #endregion
 
     public void OnGUI(int tableNum) => OnGUI(LeftSideTables(tableNum));
