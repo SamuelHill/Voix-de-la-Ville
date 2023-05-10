@@ -275,13 +275,16 @@ public class TalkOfTheTown {
 
         // DaysSince seems to work, the Days increment as expected but birth still only occurs on the first.
         var DaysSince = Method<Date, int>(Time.DaysSince);
-        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
         var DaysPregnant = Predicate("DaysPregnant", woman, count)
             .If(Pregnant, Gestation, count == DaysSince[conception]);
+        var BirthTesting = Predicate("BirthTesting", woman)
+            .If(DaysPregnant, count >= Time.NineMonths);
+        // Should only need this function - the days since logic above is equivalent
+        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
 
         // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months
         var BirthTo = Predicate("BirthTo", woman, man, sex, child);
-        BirthTo.If(Gestation[woman, man, sex, child, conception, true], DaysPregnant, count >= Time.NineMonths);
+        BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception]);
         Gestation.Set(child, state, false).If(BirthTo);
 
         // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
