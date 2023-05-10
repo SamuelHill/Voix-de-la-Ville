@@ -9,6 +9,7 @@ using UnityEngine;
 using static TED.Language;
 
 using AgentRow = System.ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
+using BirthRow = System.ValueTuple<Person, Person, Sex, Person>;
 using ColorUtility = UnityEngine.ColorUtility;
 
 public class TalkOfTheTown {
@@ -16,9 +17,10 @@ public class TalkOfTheTown {
     public static Time Time;
 
     // TODO : Move these to TED
-    public static Goal NonZero(Goal goal) => !!goal;
     public static Goal Goals(params Goal[] goals) =>
         goals.Length == 0 ? null : goals.Aggregate((current, goal) => current & goal);
+    public static Goal NonZero(Goal goal) => !!goal;
+    public static Goal NonZero(params Goal[] goals) => NonZero(Goals(goals));
 
     #region CSV/TXT file helpers and CSV parsing functions
     private const string DataPath = "../TalkOfTheTown/Assets/Data/";
@@ -119,6 +121,7 @@ public class TalkOfTheTown {
         var previousAge      = (Var<int>)"previousAge";
         var founded          = (Var<int>)"founded";
         var founded2         = (Var<int>)"founded2";
+        var conception       = (Var<Date>)"conception";
         var dateOfBirth      = (Var<Date>)"dateOfBirth";
         var opening          = (Var<Date>)"opening";
         var opening2         = (Var<Date>)"opening2";
@@ -136,11 +139,13 @@ public class TalkOfTheTown {
         var color            = (Var<Color>)"color";
         var positions        = (Var<int>)"positions";
         var locationName     = (Var<string>)"locationName";
-        
-        var count            = (Var<int>)"count";
 
         var actionType       = (Var<ActionType>)"actionType";
         var distance         = (Var<int>)"distance";
+        var count            = (Var<int>)"count";
+
+        var state            = (Var<bool>)"state";
+
         #endregion
 
         Simulation.BeginPredicates();
@@ -227,9 +232,53 @@ public class TalkOfTheTown {
         var RandomSex = Method(Sims.RandomSex);
         // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
         var Surname = Function<Person, string>("Surname", p => p.LastName);
-        var BirthTo = Predicate("Birth", woman, man, sex, child).If(
-            Couples[woman, man], sex == RandomSex, Agents[woman, age, dateOfBirth, Sex.Female, sexuality, VitalStatus.Alive],
-            Prob[FertilityRate[age]], RandomFirstName, child == NewPerson[firstName, Surname[man]]);
+
+        // Copulation Indexed by woman allows for multiple partners (in the same tick I guess?)
+        var Copulation = Predicate("Copulation", woman.Indexed, man, sex, child);
+        var CopulationIndex = (GeneralIndex<BirthRow, Person>)Copulation.IndexFor(woman, false);
+        // Random element by indexed column... both Functions and Definitions for this...
+        var RandomCopulation = Function<Person, BirthRow>("RandomCopulation", 
+            p => CopulationIndex.RowsMatching(p).ToList().RandomElement());
+        var GetMan = Function<BirthRow, Person>("GetMan", r => r.Item2);
+        var GetSex = Function<BirthRow, Sex>("GetSex", r => r.Item3);
+        var GetChild = Function<BirthRow, Person>("GetChild", r => r.Item4);
+        var copulationRow = (Var<BirthRow>)"copulationRow";
+        // woman is Var | man, sex, and child are all NonVar
+        var GetRandomCopulation = Definition("GetRandomCopulation", woman, man, sex, child);
+        GetRandomCopulation.Is(copulationRow == RandomCopulation[woman], man == GetMan[copulationRow],
+            sex == GetSex[copulationRow], child == GetChild[copulationRow]);
+
+        // Gestation is that interstitial table between copulation and birth. These are dependent events and
+        // as such they need to both have data dependency but also Event dependency. Two Events are needed -
+        // copulation and birth. Could have some `pseudo` event (the rules for the gestation table are the
+        // copulation event) but this is less robust. E.g. to prevent multiple partners creating a gestation
+        // event in the same tick the system would have to be designed such that only one pair of woman and man
+        // have sex on a given tick.
+        var Gestation = Predicate("Gestation", 
+            woman.Key, man, sex, child, conception, state.Indexed);
+        var Pregnant = Predicate("Pregnant", woman)
+            .If(Gestation[woman, __, __, __, __, true]);
+
+        // The point of linking birth to gestation is to not have women getting pregnant again while pregnant,
+        // a copulation event is used to do this check (thus !Pregnant)
+        Copulation.If(Couples[woman, man], !Pregnant[woman],
+            Agents[woman, age, __, Sex.Female, __, VitalStatus.Alive],
+            Agents[man, __, __, Sex.Male, __, VitalStatus.Alive], 
+            Prob[FertilityRate[age]],
+            sex == RandomSex, RandomFirstName, child == NewPerson[firstName, Surname[man]]);
+        Gestation.Add[woman, man, sex, child, GetDate, true]
+            .If(Count(Copulation[woman, __, __, __]) <= 1, Copulation);
+        Gestation.Add[woman, man, sex, child, GetDate, true]
+            .If(Count(Copulation[woman, __, __, __]) > 1, 
+                Copulation[woman, __, __, __], GetRandomCopulation);
+
+        // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months
+        var BirthTo = Predicate("BirthTo", woman, man, sex, child);
+        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
+        BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception]);
+
+        // Set requires a key, woman should be an index though for this...
+        Gestation.Set(woman, state, false).If(BirthTo);
 
         // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
         // determine the child's sexuality in BirthTo, a child has the sexuality established when they are added to Agents
@@ -389,11 +438,11 @@ public class TalkOfTheTown {
             Count(Homes[person, location] & Alive[person]) < Count(Alive));
         
         AddOneLocation(LocationType.Hospital, "St. Asmodeus",
-            NonZero(Goals(Aptitude[person, Vocation.Doctor, aptitude], 
-                aptitude > 15, Age, age > 21)));
+            NonZero(Aptitude[person, Vocation.Doctor, aptitude], 
+                aptitude > 15, Age, age > 21));
 
         AddOneLocation(LocationType.Cemetery, "The Old Cemetery", 
-            NonZero(Goals(Alive, Age, age >= 60)));
+            NonZero(Alive, Age, age >= 60));
 
         AddOneLocation(LocationType.DayCare, "Pumpkin Preschool",
             Count(Age & (age < 6)) > 5);

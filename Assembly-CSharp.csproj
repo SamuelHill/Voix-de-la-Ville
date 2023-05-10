@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Time.cs" />
+    <Compile Include="Assets\ActionSelection.cs" />
     <Compile Include="Assets\UnityComponent.cs" />
     <Compile Include="Assets\Sims.cs" />
     <Compile Include="Assets\GUIHelpers.cs" />
@@ -64,7 +65,6 @@
     <Compile Include="Assets\TalkOfTheTown.cs" />
     <Compile Include="Assets\Randomize.cs" />
     <Compile Include="Assets\Town.cs" />
-    <Compile Include="Assets\ActionSelection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

@@ -66,21 +66,28 @@ public class Time {
     public Function<T> GetProperty<T>(string property) => GetMember<T>(this, property);
     public PrimitiveTest TestProperty(string property) => TestMember(this, property);
 
+    private static byte Since(byte current, byte past, byte max) => (byte)((current - past + max) % max);
+    // using byte for since because all base calls to since are small enough to just use byte
+
     #region Properties & Helper functions
     public int Year => (int)_year + _offset;
     #region Month
     internal static Month GetMonth(ushort clock) => (Month)((clock - 1) / TicksPerMonth);
     public Month Month => GetMonth(_clock);
+    public byte MonthsSince(Month pastMonth) => Since((byte)(Month + 1), (byte)(pastMonth + 1), Months);
     #endregion
     #region Day
     internal static byte GetDay(ushort clock) => (byte)((clock - 1) % TicksPerMonth / TimesOfDay + 1);
     public byte Day => GetDay(_clock);
+    public byte DaysSince(byte pastDay) => Since(Day, pastDay, DaysPerMonth);
     #endregion
     #region Date(s)
     public Date Date => new(Month, Day);
     public bool IsDate(Date date) => date.Equals(Month, Day);
     public bool PastDate(Date date) => (date.Month < Month) || (date.Month == Month && date.Day < Day);
     public int YearsSince(Date date, int year) => Year - year + (PastDate(date) ? 1 : 0);
+    public ushort DaysSince(Date date) => (ushort)(MonthsSince(date.Month) * DaysPerMonth + DaysSince(date.Day));
+    public bool NineMonthsPast(Date date) => DaysSince(date) >= 9 * DaysPerMonth;
     #endregion
     #region DayOfWeek
     internal static DayOfWeek GetDayOfWeek(ushort clock) => (DayOfWeek)((clock - 1) / TimesOfDay % DaysOfWeek);
