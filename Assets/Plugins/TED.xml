@@ -3145,6 +3145,11 @@
             The nearest integer to x
             </summary>
         </member>
+        <member name="P:TED.Language.__">
+            <summary>
+            No name variable placeholder
+            </summary>
+        </member>
         <member name="M:TED.Language.Constant``1(``0)">
             <summary>
             Coerces a C# constant to a Constant Term for times when C#'s type inference isn't smart enough to figure it out.
@@ -3772,6 +3777,17 @@
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
+        <member name="M:TED.Language.Member``1(System.Object,System.String)">
+            <summary>
+            Makes a Function where the Func T is built from a property on the given type
+            </summary>
+        </member>
+        <member name="M:TED.Language.GetMember``1(System.Object,System.String)">
+            <summary>
+            Makes a Function where the Func T is built from a property on the given type,
+            pre-pending Get to the property for the Function name
+            </summary>
+        </member>
         <member name="M:TED.Language.Function``1(System.String,System.Func{``0})">
             <summary>
             Makes a function that can be placed in functional expressions
@@ -3782,17 +3798,6 @@
         <member name="M:TED.Language.Method``1(System.Func{``0})">
             <summary>
             Makes a Function with the same name as the Func being passed in
-            </summary>
-        </member>
-        <member name="M:TED.Language.Member``1(System.Object,System.String)">
-            <summary>
-            Makes a Function where the Func T is built from a property on the given type
-            </summary>
-        </member>
-        <member name="M:TED.Language.GetMember``1(System.Object,System.String)">
-            <summary>
-            Makes a Function where the Func T is built from a property on the given type,
-            pre-pending Get to the property for the Function name
             </summary>
         </member>
         <member name="M:TED.Language.Function``2(System.String,System.Func{``0,``1})">
@@ -3878,6 +3883,256 @@
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
+        </member>
+        <member name="M:TED.Language.AssignToVar``2(TED.Var{``1},TED.Function{``0,``1},TED.Term{``0})">
+            <summary>
+            Assigns the input variable to the result of calling func with input
+            </summary>
+        </member>
+        <member name="M:TED.Language.AssignToVar``2(TED.Var{``1},TED.Function{``0,``1},TED.Var{``0},System.String)">
+            <summary>
+            Create a definition that assigns the variable var to the output of func with input as input
+            </summary>
+        </member>
+        <member name="M:TED.Language.RowVariable``2(TED.TablePredicate{``0,``1},System.String)">
+            <summary>
+            Create a Var of type ValueTuple with the same types as those in the TablePredicate, using name
+            or predicate.Name + Row of name is left null
+            </summary>
+        </member>
+        <member name="M:TED.Language.RowVariable``3(TED.TablePredicate{``0,``1,``2},System.String)">
+            <inheritdoc cref="M:TED.Language.RowVariable``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.RowVariable``4(TED.TablePredicate{``0,``1,``2,``3},System.String)">
+            <inheritdoc cref="M:TED.Language.RowVariable``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.RowVariable``5(TED.TablePredicate{``0,``1,``2,``3,``4},System.String)">
+            <inheritdoc cref="M:TED.Language.RowVariable``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.RowVariable``6(TED.TablePredicate{``0,``1,``2,``3,``4,``5},System.String)">
+            <inheritdoc cref="M:TED.Language.RowVariable``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.RowVariable``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <inheritdoc cref="M:TED.Language.RowVariable``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.RowVariable``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.RowVariable``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)">
+            <summary>
+            Makes a function that gets `.Item#` from the passed in ValueTuple (where the tuple is the same
+            type as a row in predicate). Can be given better name than Item#
+            </summary>
+        </member>
+        <member name="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})">
+            <summary>
+            Makes a Definition that assigns the value of the .Item# Function called on a row from the predicate to
+            the variable var. Uses default names for the Function, Row Variable, and Definition.
+            </summary>
+        </member>
+        <member name="M:TED.Language.Item1``3(TED.TablePredicate{``0,``1,``2},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item1``3(TED.Var{``0},TED.TablePredicate{``0,``1,``2})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item1``4(TED.TablePredicate{``0,``1,``2,``3},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item1``4(TED.Var{``0},TED.TablePredicate{``0,``1,``2,``3})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item1``5(TED.TablePredicate{``0,``1,``2,``3,``4},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item1``5(TED.Var{``0},TED.TablePredicate{``0,``1,``2,``3,``4})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item1``6(TED.TablePredicate{``0,``1,``2,``3,``4,``5},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item1``6(TED.Var{``0},TED.TablePredicate{``0,``1,``2,``3,``4,``5})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item1``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item1``7(TED.Var{``0},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item1``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item1``8(TED.Var{``0},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item2``2(TED.TablePredicate{``0,``1},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item2``2(TED.Var{``1},TED.TablePredicate{``0,``1})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item2``3(TED.TablePredicate{``0,``1,``2},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item2``3(TED.Var{``1},TED.TablePredicate{``0,``1,``2})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item2``4(TED.TablePredicate{``0,``1,``2,``3},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item2``4(TED.Var{``1},TED.TablePredicate{``0,``1,``2,``3})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item2``5(TED.TablePredicate{``0,``1,``2,``3,``4},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item2``5(TED.Var{``1},TED.TablePredicate{``0,``1,``2,``3,``4})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item2``6(TED.TablePredicate{``0,``1,``2,``3,``4,``5},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item2``6(TED.Var{``1},TED.TablePredicate{``0,``1,``2,``3,``4,``5})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item2``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item2``7(TED.Var{``1},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item2``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item2``8(TED.Var{``1},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item3``3(TED.TablePredicate{``0,``1,``2},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item3``3(TED.Var{``2},TED.TablePredicate{``0,``1,``2})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item3``4(TED.TablePredicate{``0,``1,``2,``3},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item3``4(TED.Var{``2},TED.TablePredicate{``0,``1,``2,``3})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item3``5(TED.TablePredicate{``0,``1,``2,``3,``4},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item3``5(TED.Var{``2},TED.TablePredicate{``0,``1,``2,``3,``4})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item3``6(TED.TablePredicate{``0,``1,``2,``3,``4,``5},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item3``6(TED.Var{``2},TED.TablePredicate{``0,``1,``2,``3,``4,``5})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item3``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item3``7(TED.Var{``2},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item3``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item3``8(TED.Var{``2},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item4``4(TED.TablePredicate{``0,``1,``2,``3},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item4``4(TED.Var{``3},TED.TablePredicate{``0,``1,``2,``3})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item4``5(TED.TablePredicate{``0,``1,``2,``3,``4},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item4``5(TED.Var{``3},TED.TablePredicate{``0,``1,``2,``3,``4})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item4``6(TED.TablePredicate{``0,``1,``2,``3,``4,``5},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item4``6(TED.Var{``3},TED.TablePredicate{``0,``1,``2,``3,``4,``5})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item4``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item4``7(TED.Var{``3},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item4``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item4``8(TED.Var{``3},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item5``5(TED.TablePredicate{``0,``1,``2,``3,``4},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item5``5(TED.Var{``4},TED.TablePredicate{``0,``1,``2,``3,``4})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item5``6(TED.TablePredicate{``0,``1,``2,``3,``4,``5},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item5``6(TED.Var{``4},TED.TablePredicate{``0,``1,``2,``3,``4,``5})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item5``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item5``7(TED.Var{``4},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item5``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item5``8(TED.Var{``4},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item6``6(TED.TablePredicate{``0,``1,``2,``3,``4,``5},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item6``6(TED.Var{``5},TED.TablePredicate{``0,``1,``2,``3,``4,``5})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item6``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item6``7(TED.Var{``5},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item6``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item6``8(TED.Var{``5},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item7``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item7``7(TED.Var{``6},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item7``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item7``8(TED.Var{``6},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
+        </member>
+        <member name="M:TED.Language.Item8``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.TablePredicate{``0,``1},System.String)"/>
+        </member>
+        <member name="M:TED.Language.Item8``8(TED.Var{``7},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
+            <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
         </member>
         <member name="T:TED.Predicate">
             <summary>

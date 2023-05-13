@@ -265,11 +265,15 @@ public class TalkOfTheTown {
         // Random element by indexed column... both Functions and Definitions for this...
         var RandomCopulation = Function<Person, BirthRow>("RandomCopulation", 
             p => CopulationIndex.RowsMatching(p).ToList().RandomElement());
-        var GetMan = Function<BirthRow, Person>("GetMan", r => r.Item2);
-        var GetSex = Function<BirthRow, Sex>("GetSex", r => r.Item3);
-        var GetChild = Function<BirthRow, Person>("GetChild", r => r.Item4);
-        var copulationRow = (Var<BirthRow>)"copulationRow";
-        // woman is Var | man, sex, and child are all NonVar
+        var GetMan = Item2(Copulation, "GetMan");
+        var GetSex = Item3(Copulation, "GetSex");
+        var GetChild = Item4(Copulation, "GetChild");
+        var copulationRow = RowVariable(Copulation);
+
+        var GetManFromCopulation = AssignToVar(man, GetMan, copulationRow, "GetManFromCopulation");
+        var temp = AssignToVar(man, GetMan, copulationRow);
+
+        // woman is NonVar | man, sex, and child are all Var
         var GetRandomCopulation = Definition("GetRandomCopulation", woman, man, sex, child);
         GetRandomCopulation.Is(copulationRow == RandomCopulation[woman], man == GetMan[copulationRow],
             sex == GetSex[copulationRow], child == GetChild[copulationRow]);
