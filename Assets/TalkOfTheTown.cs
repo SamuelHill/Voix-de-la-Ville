@@ -262,21 +262,17 @@ public class TalkOfTheTown {
         // Copulation Indexed by woman allows for multiple partners (in the same tick I guess?)
         var Copulation = Predicate("Copulation", woman.Indexed, man, sex, child);
         var CopulationIndex = (GeneralIndex<BirthRow, Person>)Copulation.IndexFor(woman, false);
-        // Random element by indexed column... both Functions and Definitions for this...
+        // Random element by indexed column...
         var RandomCopulation = Function<Person, BirthRow>("RandomCopulation", 
             p => CopulationIndex.RowsMatching(p).ToList().RandomElement());
-        var GetMan = Item2(Copulation, "GetMan");
-        var GetSex = Item3(Copulation, "GetSex");
-        var GetChild = Item4(Copulation, "GetChild");
+        var GetMan = Item2(man, Copulation);
+        var GetSex = Item3(sex, Copulation);
+        var GetChild = Item4(child, Copulation);
         var copulationRow = RowVariable(Copulation);
-
-        var GetManFromCopulation = AssignToVar(man, GetMan, copulationRow, "GetManFromCopulation");
-        var temp = AssignToVar(man, GetMan, copulationRow);
-
-        // woman is NonVar | man, sex, and child are all Var
-        var GetRandomCopulation = Definition("GetRandomCopulation", woman, man, sex, child);
-        GetRandomCopulation.Is(copulationRow == RandomCopulation[woman], man == GetMan[copulationRow],
-            sex == GetSex[copulationRow], child == GetChild[copulationRow]);
+        // woman should be NonVar | man, sex, and child are all Var
+        var GetRandomCopulation = Definition("GetRandomCopulation", 
+            woman, man, sex, child).Is(copulationRow == RandomCopulation[woman],
+            GetMan[copulationRow, man], GetSex[copulationRow, sex], GetChild[copulationRow, child]);
 
         // Gestation is that interstitial table between copulation and birth. These are dependent events and
         // as such they need to both have data dependency but also Event dependency. Two Events are needed -
