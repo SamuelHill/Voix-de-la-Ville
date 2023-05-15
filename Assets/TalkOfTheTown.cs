@@ -417,6 +417,18 @@ public class TalkOfTheTown {
         var UnderOccupied = Predicate("UnderOccupied", location).If(Occupancy, count < 5);
         var WantToMove = Predicate("WantToMove", person).If(Homes[person, location], Occupancy, count > 5);
 
+
+        var LivingWithFamily = Predicate("LivingWithFamily", person)
+            .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
+        var FamilyHome = Predicate("FamilyHome", location)
+            .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
+
+        var LivingAlone = Predicate("LivingAlone", person)
+            .If(Homes[person, location], !Homes[__, location]);
+
+        var MoveToFamily = Predicate("MoveToFamily", person).If(WantToMove, !LivingWithFamily[person]);
+
+
         var MovingIn = Predicate("MovingIn", person, location).If(!!WantToMove[person], 
             RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
 
