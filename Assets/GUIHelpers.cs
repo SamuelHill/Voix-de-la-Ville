@@ -95,7 +95,7 @@ public static class GUIManager {
         ActiveTables[TableToChange] = DisplayNameToTableName[TableDisplayNames[ChangeTableSelector]]; }
     public static void RuleExecutionTimes() => GUI.Label(CenteredRect(400, 400), 
         string.Concat(from table in TalkOfTheTown.Simulation.Tables
-                           where table.RuleExecutionTime > 0 && !table.Name.Contains("initially")
+                           where table.RuleExecutionTime > 0f && !table.Name.Contains("initially")
                            orderby -table.RuleExecutionTime
                            select $"{table.Name} {table.RuleExecutionTime}\n"));
     #endregion
@@ -236,7 +236,7 @@ public class GUITable {
         tableNum * (DefaultTableHeight + TablePadding) + TablePadding, DefaultTableHeight);
     internal static int NumRowsToHeight(int numRows) => (numRows + 4) * LabelHeight + 2 * TablePadding;
     internal Rect TableRect(int x, int y) => TableRect(x, y, NumRowsToHeight(NumDisplayRows));
-    // Scroll check based on Rects
+    // Scroll check based on Rects (why doesn't Event.current.mousePosition work?)
     internal static bool ScrollingInRect(Rect rect) =>
         rect.Contains(new Vector2(mousePosition.x, Screen.height - mousePosition.y)) && 
         Event.current.type is EventType.ScrollWheel or EventType.MouseDrag;
