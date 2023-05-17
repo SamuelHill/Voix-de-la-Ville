@@ -18,6 +18,5 @@ public enum ActionType /* use present participles */ {
     CommercialShopping,
     MarketShopping,
     PersonalShopping,
-    DateNight
+    DateNight // not in pres. part. form
 }
-

@@ -9,8 +9,9 @@ using static UnityEngine.Input;
 public static class GUIManager {
     #region Fields - Table display and interactive state
     internal static Dictionary<string, GUITable> Tables = new();
-    internal static string[] TableNames;
-    internal static GUIContent[] GUITableNames;
+    internal static Dictionary<string, string> DisplayNameToTableName = new();
+    internal static string[] TableDisplayNames;
+    internal static GUIContent[] GUITableDisplayNames;
     internal static string[] ActiveTables;  // should also be a string[4]
     internal static string[] TableSelector = { "Table 1", "Table 2", "Table 3", "Table 4" };
     internal static int TableToChange;
@@ -29,9 +30,9 @@ public static class GUIManager {
     internal const int LabelBorders = 10;
     internal const int TopMiddleRectHeight = 30; // allows for TopMiddleRectStacks
     internal const int TableToolbarWidth = 250;
-    internal const int MaxToolbarSize = 720;
+    internal const int SelectionGridWidth = 720;
     internal const int TileSize = 16;
-    internal const int TableNameTrim = 18;
+    internal const int TableDisplayNameCutoff = 18;
     #endregion
 
     #region GUIStrings
@@ -45,10 +46,12 @@ public static class GUIManager {
     #region Called once each in Start
     public static void SetAvailableTables(List<TablePredicate> tables) {
         foreach (var table in tables) Tables[table.Name] = new GUITable(table);
-        TableNames = Tables.Keys.Select(n => n.Length > TableNameTrim ?
-            n[..TableNameTrim] + "…" : n).ToArray();
-        GUITableNames = (from available in TableNames
-            select new GUIContent(available)).ToArray(); }
+        TableDisplayNames = Tables.Keys.Select(n => n.Length > TableDisplayNameCutoff ?
+            n[..TableDisplayNameCutoff] + "…" : n).ToArray();
+        GUITableDisplayNames = (from available in TableDisplayNames
+            select new GUIContent(available)).ToArray();
+        DisplayNameToTableName = TableDisplayNames.Zip(Tables.Keys.ToArray(), 
+            (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v); }
     public static void SetActiveTables(string[] activeTables) => ActiveTables = activeTables;
     public static void AddSelectedTileInfo(Func<string> tileString) =>
         guiStrings.Add(new GUIString(tileString, SelectedTileInfoRect, false));
@@ -57,8 +60,14 @@ public static class GUIManager {
     #endregion
 
     #region Called once each in SetupGUI
+    public static void CustomSkins() {
+        GUI.skin.box.alignment = TextAnchor.MiddleCenter;
+        GUI.skin.label.fontSize = 14;
+        GUI.skin.label.padding.top = 0;
+        GUI.skin.label.padding.bottom = 0;
+        GUI.skin.label.fixedHeight = 18f; }
     public static void GetTableToolbarSize() => TableToolbarSize = 
-        (from content in GUITableNames select (int)GUI.skin.button.CalcSize(content).x).Sum();
+        (from content in GUITableDisplayNames select (int)GUI.skin.button.CalcSize(content).x).Sum();
     public static void InitAllTables() { foreach (var table in Tables.Values) table.Initialize(); }
     #endregion
 
@@ -77,19 +86,16 @@ public static class GUIManager {
         if (!ChangeTable || !ShowTables) return;
         // If we are trying to change tables:
         TableToChange = GUI.Toolbar(TopMiddleRectStack(TableToolbarWidth, 2), TableToChange, TableSelector);
-        ChangeTableSelector = Array.IndexOf(TableNames, ActiveTables[TableToChange]);
-        // depending on the length of all table names either use a tool ar or a selection grid
-        if (TableToolbarSize > MaxToolbarSize) {
-            var selectionGridHeight = Mathf.CeilToInt(TableNames.Length / 5f) * TopMiddleRectHeight;
-            var selectionGridRect = TopMiddleRectStack(MaxToolbarSize, selectionGridHeight, 3);
-            ChangeTableSelector = GUI.SelectionGrid(selectionGridRect, ChangeTableSelector, TableNames, 5);
-        } else ChangeTableSelector = GUI.Toolbar(TopMiddleRectStack(TableToolbarSize, 3),
-            ChangeTableSelector, GUITableNames, GUI.skin.button, GUI.ToolbarButtonSize.FitToContents);
+        ChangeTableSelector = Array.IndexOf(Tables.Keys.ToArray(), ActiveTables[TableToChange]);
+        // Build the selection grid:
+        var selectionGridHeight = Mathf.CeilToInt(TableDisplayNames.Length / 5f) * TopMiddleRectHeight;
+        var selectionGridRect = TopMiddleRectStack(SelectionGridWidth, selectionGridHeight, 3);
+        ChangeTableSelector = GUI.SelectionGrid(selectionGridRect, ChangeTableSelector, TableDisplayNames, 5);
         // update the active table to change with the selected table
-        ActiveTables[TableToChange] = TableNames[ChangeTableSelector]; }
+        ActiveTables[TableToChange] = DisplayNameToTableName[TableDisplayNames[ChangeTableSelector]]; }
     public static void RuleExecutionTimes() => GUI.Label(CenteredRect(400, 400), 
         string.Concat(from table in TalkOfTheTown.Simulation.Tables
-                           where table.RuleExecutionTime > 0
+                           where table.RuleExecutionTime > 0 && !table.Name.Contains("initially")
                            orderby -table.RuleExecutionTime
                            select $"{table.Name} {table.RuleExecutionTime}\n"));
     #endregion
@@ -117,18 +123,27 @@ public static class GUIManager {
     internal static Rect SelectedTileInfoRect(int width, int height) =>
         new(mousePosition.x + TileSize, (Screen.height - mousePosition.y) + TileSize, width, height);
     #endregion
+
+    #region Label helpers
+    public static void BoldLabel(string label, params GUILayoutOption[] options) {
+        GUI.skin.label.fontStyle = FontStyle.Bold;
+        GUILayout.Label(label, options);
+        GUI.skin.label.fontStyle = FontStyle.Normal; }
+    public static void Label(string label, bool bold, params GUILayoutOption[] options) {
+        if (bold) BoldLabel(label, options);
+        else GUILayout.Label(label, options); }
+    #endregion
 }
 
 public class GUITable {
     #region Table display constants
     internal const int ColumnPadding = 5;
-    internal const int LabelHeight = 21; // calculated once via:
-    // (int)GUI.skin.label.CalcSize(new GUIContent("Any string here will do")).y
-    internal const int TableHeight = 260; // 270 * 4 = 1080...
-    internal const int TablePadding = 10;
-    internal const int TableWidthOffset = 50;
-    internal const int numRowsToDisplay = (TableHeight - TablePadding) / LabelHeight - 2;  // 9, but ~flexible~
-    // - 2 from the possible display rows, one for the header row and one to not get cutoff/crowd the space
+    internal const int LabelHeight = 18; // same as GUI.skin.label.fixedHeight
+    internal const int TablePadding = 8; // using height padding for left side offset as well
+    internal const int DefaultTableHeight = 260; // (260 * 4) + (8 * 5) = 1080...
+    internal const int TableWidthOffset = 50; // account for the scrollbar and then some
+    internal const int DefaultNumRowsToDisplay = (DefaultTableHeight - TablePadding) / LabelHeight - 4;
+    // - 4 from display rows; two for the title and header row, and two to not get cutoff/crowd the space
     #endregion
 
     #region Fields
@@ -154,7 +169,10 @@ public class GUITable {
     internal uint ScrollRow => (uint)Math.Floor(scrollPosition);
     internal int LongestRow => longestStrings.Sum() + longestStrings.Length * ColumnPadding;
     internal int TableWidth => RowCount == 0 ? noEntriesWidth : LongestRow;
+    internal int NumDisplayRows => buffer.Length;
+    internal bool DefaultTable => NumDisplayRows == DefaultNumRowsToDisplay;
 
+    // Properties related to logic about when to call Update:
     internal bool UpdateEveryTick => predicate.IsDynamic && predicate.IsIntensional;
     internal bool UpdateMonthly => predicate.IsDynamic && predicate.IsExtensional;
     internal bool SetLastMonth() { 
@@ -163,25 +181,43 @@ public class GUITable {
     internal bool TrySetLastMonth() => lastMonth != TalkOfTheTown.Time.Month && SetLastMonth();
     internal bool MonthlyUpdate() => UpdateMonthly && TrySetLastMonth();
     internal bool UpdateCheck => UpdateEveryTick || MonthlyUpdate();
+    internal bool UpdateRowCount() {
+        if (previousRowCount == RowCount) return false;
+        previousRowCount = RowCount;
+        return true; }
+    internal bool RowCountChange => !usingScroll && UpdateRowCount();
     #endregion
 
-    public GUITable(TablePredicate predicate) {
+    #region Construction and helpers
+    public GUITable(TablePredicate predicate, int numRows = DefaultNumRowsToDisplay) {
         this.predicate = predicate;
-        headings = (from heading in predicate.ColumnHeadings 
-                    select Utils.Heading(heading)).ToArray();
-        buffer = new string[numRowsToDisplay][];
-        for (var i = 0; i < numRowsToDisplay; i++)
-            buffer[i] = new string[NumColumns];
+        headings = (from heading in predicate.ColumnHeadings
+            select Utils.Heading(heading)).ToArray();
+        BuildBuffer(numRows);
         longestStrings = new int[NumColumns]; }
+    public void NewNumRows(int numRows) {
+        if (numRows != NumDisplayRows) BuildBuffer(numRows); }
+    internal void BuildBuffer(int numRows) {
+        buffer = new string[numRows][];
+        for (var i = 0; i < numRows; i++)
+            buffer[i] = new string[NumColumns]; }
+    #endregion
 
     #region Table Updates
     public void Initialize() {
+        // This is how I am doing bold label display for now, so ditto for size calc:
+        GUI.skin.label.fontStyle = FontStyle.Bold;
         UpdateLongestStrings(headings);
+        GUI.skin.label.fontStyle = FontStyle.Normal;
+        // If the table is empty now or could be empty in future ticks...
         if (RowCount == 0 || predicate.IsIntensional) {
+            // Consider the no entries conditions as well
             noEntries = new GUIContent($"No entries in table {Name}");
             noEntriesWidth = (int)GUI.skin.label.CalcSize(noEntries).x;
             noEntriesWidth = Math.Max(noEntriesWidth, LongestRow); }
+        // GUITables must be initialized after Time (inside TalkOfTheTown):
         if (UpdateMonthly) lastMonth = TalkOfTheTown.Time.Month;
+        // Normal update, try to get row strings for the buffer:
         Update(); }
     public void Update() {
         bufferedRows = predicate.RowRangeToStrings(ScrollRow, buffer);
@@ -190,69 +226,73 @@ public class GUITable {
         for (var i = 0; i < NumColumns; i++) {
             var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
             if (longestStrings[i] < stringLength) longestStrings[i] = stringLength; } }
-    internal bool UpdateRowCount() {
-        if (previousRowCount == RowCount) return false;
-        previousRowCount = RowCount;
-        return true; }
     #endregion
 
     #region GUILayout helper functions
-    internal Rect TableRect(int x, int y) => new(x, y, TableWidth + TableWidthOffset, TableHeight);
-    internal Rect LeftSideTables(int tableNum) => TableRect(TablePadding, tableNum * (TableHeight + TablePadding) + TablePadding);
+    // no width control - size of columns is calculated
+    internal Rect TableRect(int x, int y, int height) => new(x, y, TableWidth + TableWidthOffset, height);
+    // height control via num rows with a special case for the 4 tables on the left side
+    internal Rect LeftSideTables(int tableNum) => TableRect(TablePadding, 
+        tableNum * (DefaultTableHeight + TablePadding) + TablePadding, DefaultTableHeight);
+    internal static int NumRowsToHeight(int numRows) => (numRows + 4) * LabelHeight + 2 * TablePadding;
+    internal Rect TableRect(int x, int y) => TableRect(x, y, NumRowsToHeight(NumDisplayRows));
+    // Scroll check based on Rects
     internal static bool ScrollingInRect(Rect rect) =>
-        rect.Contains(Event.current.mousePosition) && Event.current.type == EventType.ScrollWheel;
-
-    internal GUILayoutOption ScrollHeight = GUILayout.Height((numRowsToDisplay + 1) * LabelHeight);
+        rect.Contains(new Vector2(mousePosition.x, Screen.height - mousePosition.y)) && 
+        Event.current.type is EventType.ScrollWheel or EventType.MouseDrag;
+    // Display options
+    internal GUILayoutOption ScrollHeight => GUILayout.Height((NumDisplayRows + 1) * LabelHeight);
     internal GUILayoutOption ColumnWidth(int i) => GUILayout.Width(longestStrings[i] + ColumnPadding);
     #endregion
 
     #region Table Layout
     internal void LayoutRow(string[] strings, bool header = false) {
-        if (header) GUI.skin.label.fontStyle = FontStyle.Bold;
         GUILayout.BeginHorizontal();
         for (var i = 0; i < NumColumns; i++)
-            GUILayout.Label(strings[i], ColumnWidth(i));
-        GUILayout.EndHorizontal();
-        if (header) GUI.skin.label.fontStyle = FontStyle.Normal; }
+            GUIManager.Label(strings[i], header, ColumnWidth(i));
+        GUILayout.EndHorizontal(); }
 
     internal void OnGUI(Rect screenRect) {
-        GUILayout.BeginArea(screenRect);
+        GUILayout.BeginArea(screenRect); // table area
+        // Title and Header:
+        GUIManager.BoldLabel(Name);
         LayoutRow(headings, true);
-        GUILayout.BeginHorizontal();
+        GUILayout.BeginHorizontal(); // table and scroll bar area
+        // Table contents:
         GUILayout.BeginVertical();
         if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
         else { foreach (var row in buffer) LayoutRow(row); }
         GUILayout.EndVertical();
-        if (RowCount != 0 && RowCount >= numRowsToDisplay) {
+        // Scrollbar and Update logic:
+        if (RowCount != 0 && RowCount >= NumDisplayRows) {
             scrollPosition = GUILayout.VerticalScrollbar(scrollPosition,
-                numRowsToDisplay - 0.1f, 0f, RowCount, ScrollHeight);
+                NumDisplayRows - 0.1f, 0f, RowCount, ScrollHeight);
             if (ScrollingInRect(screenRect)) scrollPosition += Event.current.delta.y;
             if (Scrolled || !usingScroll || UpdateCheck) {
                 Update();
                 oldScroll = scrollPosition; }
             if (!usingScroll) usingScroll = true;
-        } else if ((!usingScroll && UpdateRowCount()) || UpdateCheck) Update();
+        } else if (RowCountChange || UpdateCheck) Update();
         GUILayout.EndHorizontal();
-        GUILayout.EndArea();
-    }
+        GUILayout.EndArea(); }
     #endregion
 
-    public void OnGUI(int tableNum) => OnGUI(LeftSideTables(tableNum));
-    // public void OnGUI(int x, int y) => OnGUI(TableRect(x, y));
-    // The ScrollHeight and numRowsToDisplay are const based in the base version of OnGUI,
-    // so the display Rect must be of a certain size with this implementation...
+    public void OnGUI(int tableNum) { // Default check is not needed, more of a reminder that this
+        // version of OnGUI is only meant to be called in the default case of left side display.
+        if (DefaultTable) OnGUI(LeftSideTables(tableNum)); }
+    public void OnGUI(int x, int y) => OnGUI(TableRect(x, y));
 }
 
 public class GUIString {
-    internal const int LabelWidthOffset = 26;
-    internal const int LabelHeightOffset = 6;
+    internal const int WidthOffset = 26;
+    internal const int HeightOffset = 6;
 
     internal string displayString;
     internal Func<string> GetStringFunc;
     internal bool staticStringCalcOnce;
+    internal Func<int, int, Rect> DisplayFunc;
     internal int width;
     internal int height;
-    internal Func<int, int, Rect> DisplayFunc;
     internal bool centered = true;
 
     public GUIString(Func<string> getStringFunc, Func<int, int, Rect> displayFunc) {
@@ -269,7 +309,7 @@ public class GUIString {
     public void OnGUI() {
         UpdateString();
         if (displayString is null) return;
-        // MiddleLeft doesn't allow fo LabelWidthOffset/2 padding on the left
+        // MiddleLeft doesn't allow fo WidthOffset/2 padding on the left
         if (!centered) GUI.skin.box.alignment = TextAnchor.MiddleLeft;
         GUI.Box(DisplayFunc(width, height), displayString);
         if (!centered) GUI.skin.box.alignment = TextAnchor.MiddleCenter; }
@@ -287,7 +327,7 @@ public class GUIString {
         return true; }
     internal void UpdateSize() {
         var displayStringSize = GUI.skin.box.CalcSize(new GUIContent(displayString));
-        width = Mathf.CeilToInt(displayStringSize.x + LabelWidthOffset);
-        height = Mathf.CeilToInt(displayStringSize.y + LabelHeightOffset); }
+        width = Mathf.CeilToInt(displayStringSize.x + WidthOffset);
+        height = Mathf.CeilToInt(displayStringSize.y + HeightOffset); }
 }
 // ReSharper restore InconsistentNaming

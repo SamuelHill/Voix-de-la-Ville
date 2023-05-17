@@ -53,7 +53,7 @@ public class UnityComponent : MonoBehaviour {
 
     internal void OnGUI() {
         if (!GUIRunOnce) {
-            GUI.skin.box.alignment = TextAnchor.MiddleCenter;
+            GUIManager.CustomSkins();
             GUIManager.GetTableToolbarSize();
             GUIManager.InitAllTables();
             GUIRunOnce = true; }
@@ -137,7 +137,7 @@ public class UnityComponent : MonoBehaviour {
     internal string BuriedAtCemetery(LocationType locationType) => 
         locationType == LocationType.Cemetery && TalkOfTheTown.Buried.Length > 0 ? BuriedAtCemetery() : "";
     internal string BuriedAtCemetery() => 
-        $"\nBuried at location: {GroupUp(TalkOfTheTown.Buried.Select(p => p.FullName).ToArray(), 3)}";
+        $"\n\nBuried at location: {GroupUp(TalkOfTheTown.Buried.Select(p => p.FullName).ToArray(), 3)}";
 
     internal string GroupUp(string[] strings, int itemsPerGroup) =>
         // Concat an empty string to the beginning, takes place of "People at location: "

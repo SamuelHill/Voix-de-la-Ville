@@ -67,7 +67,7 @@ public class Time {
     public Function<T> GetProperty<T>(string property) => GetMember<T>(this, property);
     public PrimitiveTest TestProperty(string property) => TestMember(this, property);
 
-    internal static byte Since(byte current, byte past, byte max) => (byte)((max + (current - past)) % max);
+    internal static byte Since(byte current, byte previous, byte max) => (byte)((max + (current - previous)) % max);
     // using byte for since because all base calls to since are small enough to just use byte
 
     #region Properties & Helper functions
@@ -88,9 +88,12 @@ public class Time {
     #region Date(s)
     public Date Date => new(Month, Day);
     public bool IsDate(Date date) => date.Equals(Month, Day);
-    public int YearsSince(Date date, int year) => Year - year + (date.Month < Month || (date.Month == Month && date.Day < Day) ? 1 : 0);
-    public byte MonthsSince(Date previousDate) => (byte)(MonthsSince(previousDate.Month) - (Day < previousDate.Day ? 1 : 0));
-    public ushort DaysSince(Date previousDate) => (ushort)(MonthsSince(previousDate) * DaysPerMonth + DaysSince(previousDate.Day));
+    public int YearsSince(Date date, int year) => 
+        Year - year + (date.Month < Month || (date.Month == Month && date.Day < Day) ? 1 : 0);
+    public byte MonthsSince(Date previousDate) => 
+        (byte)(MonthsSince(previousDate.Month) - (Day < previousDate.Day ? 1 : 0));
+    public ushort DaysSince(Date previousDate) => 
+        (ushort)(MonthsSince(previousDate) * DaysPerMonth + DaysSince(previousDate.Day));
     public bool NineMonthsPast(Date date) => DaysSince(date) >= NineMonths;
     #endregion
 

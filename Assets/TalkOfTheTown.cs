@@ -11,7 +11,6 @@ using static TED.Language;
 using AgentRow = System.ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
 using BirthRow = System.ValueTuple<Person, Person, Sex, Person>;
 using ColorUtility = UnityEngine.ColorUtility;
-using Predicate = TED.Predicate;
 
 public class TalkOfTheTown {
     public static Simulation Simulation = null!;
@@ -319,18 +318,20 @@ public class TalkOfTheTown {
             IsAM, IsDate[dateOfBirth], !BirthTo[__, __, __, person], age == Increment[previousAge]);
 
         // And add anything else that is needed for a new agent:
-        Personality.Add[person, facet, SByteBellCurve].If(BirthTo[__, __, __, person], Facets);
-        Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[__, __, __, person], Jobs);
+        Personality.Add[person, facet, SByteBellCurve].If(Agents.Add[person, __, __, __, __, __], Facets);
+        Aptitude.Add[person, job, SByteBellCurve].If(Agents.Add[person, __, __, __, __, __], Jobs);
+        // Agents.Add[person, __, __, __, __, __] handles both Birth and Drifters, if we want to make kids be some amalgamation of
+        // the parents then BirthTo[__, __, __, person] will be needed separately (and other cases like drifters will need special
+        // accounting as well).
         #endregion
-
-        // TODO : add a drifter table that gets added into Agents but also is used to set home location etc
+        
         #region Drifters - adults moving to town:
-        // Using a Definition to wrap RandomPerson and RandomSexuality
         var RandomDate = Function("RandomDate", Date.Random);
         var RandomAdultAge = Method(Sims.RandomAdultAge);
-        Agents.Add[person, RandomAdultAge, RandomDate, RandomSex, sexuality, VitalStatus.Alive]
-            .If(Prob[Time.PerYear(0.05f)],
-                RandomPerson, sexuality == RandomSexuality[sex]);
+        var Drifter = Predicate("Drifter", person, sex, sexuality);
+        Drifter[person, RandomSex, sexuality].If(Prob[Time.PerYear(0.05f)], 
+            RandomPerson, sexuality == RandomSexuality[sex]);
+        Agents.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
         #endregion
 
         // ********************************* Locations: *********************************
@@ -368,14 +369,18 @@ public class TalkOfTheTown {
             location, locationCategory).If(LocationInformation, Locations);
         var AnyInCategory = Definition("AnyInCategory", locationCategory)
             .Is(NonZero(LocationsOfCategory[__, locationCategory]));
+        var AvailableCategories = Predicate("AvailableCategories", 
+            locationCategory).If(LocationsOfCategory);
         #endregion
 
         // TODO : Separate out the dead into a new table... involve removal ?
-        //        Housing is not a good candidate for a bool column status based removal - one entry per person
         // TODO : Include ApartmentComplex locations in Housing logic
         #region Housing:
         var Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
+        var Occupancy = Predicate("Occupancy", location, count)
+            .If(Locations[location, LocationType.House, position, founded, opening], count == Count(Homes));
+        var UnderOccupied = Predicate("UnderOccupied", location).If(Occupancy, count <= 5);
 
         // Using this to randomly assign one house per person...
         var PrimordialHouses = Predicate("PrimordialHouses", location)
@@ -385,6 +390,7 @@ public class TalkOfTheTown {
         Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality], RandomElement(PrimordialHouses, location));
         
         Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
+        Homes.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
 
         Homes.Set(occupant, location).If(JustDied[occupant],
             Locations[location, LocationType.Cemetery, __, __, __]);
@@ -404,11 +410,8 @@ public class TalkOfTheTown {
 
         // TODO : More "logic" behind who moves in and out of houses
         #region Moving houses:
-        var Occupancy = Predicate("Occupancy", location, count)
-            .If(Locations[location, LocationType.House, position, founded, opening], count == Count(Homes));
-        var UnderOccupied = Predicate("UnderOccupied", location).If(Occupancy, count <= 5);
         var WantToMove = Predicate("WantToMove", person).If(Homes[person, location], Occupancy, count >= 8);
-
+        
         var LivingWithFamily = Predicate("LivingWithFamily", person)
             .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
         var FamilyHome = Predicate("FamilyHome", location)
@@ -516,6 +519,7 @@ public class TalkOfTheTown {
             .If(ActionToCategory, AnyInCategory);
         #endregion
 
+        // TODO : fix OpenLocationTypes - functions mean not an ebd?
         #region Operation and Open logic:
         var InOperation = TestMethod<DailyOperation>(Time.InOperation);
         var IsOpen = TestMethod<Schedule>(Time.IsOpen);
@@ -523,9 +527,9 @@ public class TalkOfTheTown {
         // of the location types that are accessible as this is the only place that
         // the functions InOperation and IsOpen need to be called
         var OpenLocationTypes = Predicate("OpenLocationTypes", locationType)
-            .If(LocationInformation, InOperation[operation], IsOpen[schedule]);
+            .If(LocationInformation, InOperation[operation], IsOpen[schedule]); // , AvailableCategories
         var OpenForBusiness = Predicate("OpenForBusiness", location)
-            .If(Locations, OpenLocationTypes); // for more complex scheduling have a table
+            .If(Locations, LocationInformation, InOperation[operation], IsOpen[schedule]); // for more complex scheduling have an extra table
         // of non-default schedule or operation per location to include in this Predicate
         var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
             .If(ActionToCategory, LocationsOfCategory, OpenForBusiness);
