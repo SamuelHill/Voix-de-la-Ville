@@ -41,19 +41,19 @@ v49 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 v51 [ label = "set location"];
 }
 subgraph "cluster_VocationShifts"{
-v62 [ label = "VocationShifts" fillcolor="gold" shape="diamond"];
-v63 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v66 [ label = "VocationShifts" fillcolor="gold" shape="diamond"];
+v67 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Vocations"{
-v64 [ label = "Vocations" fillcolor="limegreen"];
-v65 [ label = "Add"];
+v68 [ label = "Vocations" fillcolor="limegreen"];
+v69 [ label = "Add"];
 }
 v0 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
 v1 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
 v2 [ label = "Surnames" fillcolor="gold" shape="diamond"];
 v3 [ label = "Facets" fillcolor="gold" shape="diamond"];
 v6 [ label = "BirthTo"];
-v9 [ label = "Copulation"];
+v9 [ label = "Whoopee"];
 v10 [ label = "Pregnant"];
 v11 [ label = "ProcreativePair" fillcolor="limegreen"];
 v12 [ label = "NewProcreativePair"];
@@ -83,26 +83,30 @@ v55 [ label = "VacatedLocations" fillcolor="gold" shape="diamond"];
 v56 [ label = "LocationsOfCategory"];
 v57 [ label = "BuriedAt"];
 v58 [ label = "Buried"];
-v59 [ label = "VocationLocations" fillcolor="gold" shape="diamond"];
-v60 [ label = "PositionsPerJob" fillcolor="gold" shape="diamond"];
-v61 [ label = "OperatingTimes" fillcolor="gold" shape="diamond"];
-v66 [ label = "Candidates"];
-v67 [ label = "JobsToFill"];
-v68 [ label = "ActionToCategory" fillcolor="gold" shape="diamond"];
-v69 [ label = "AvailableActions"];
-v70 [ label = "OpenForBusiness"];
-v71 [ label = "OpenForBusinessByAction"];
-v72 [ label = "Kids"];
-v73 [ label = "NeedsSchooling"];
-v74 [ label = "NeedsDayCare"];
-v75 [ label = "GoingToSchool"];
-v76 [ label = "GoingToDayCare"];
-v77 [ label = "GoingToWork"];
-v78 [ label = "WhereTheyAt"];
-v79 [ label = "RandomActionAssign"];
-v80 [ label = "AdultActions"];
-v81 [ label = "NeedsActionAssignment"];
-v82 [ label = "LocationByActionAssign"];
+v59 [ label = "LivingWithFamily"];
+v60 [ label = "FamilyHome"];
+v61 [ label = "LivingAlone"];
+v62 [ label = "MoveToFamily"];
+v63 [ label = "VocationLocations" fillcolor="gold" shape="diamond"];
+v64 [ label = "PositionsPerJob" fillcolor="gold" shape="diamond"];
+v65 [ label = "OperatingTimes" fillcolor="gold" shape="diamond"];
+v70 [ label = "Candidates"];
+v71 [ label = "JobsToFill"];
+v72 [ label = "ActionToCategory" fillcolor="gold" shape="diamond"];
+v73 [ label = "AvailableActions"];
+v74 [ label = "OpenForBusiness"];
+v75 [ label = "OpenForBusinessByAction"];
+v76 [ label = "Kids"];
+v77 [ label = "NeedsSchooling"];
+v78 [ label = "NeedsDayCare"];
+v79 [ label = "GoingToSchool"];
+v80 [ label = "GoingToDayCare"];
+v81 [ label = "GoingToWork"];
+v82 [ label = "WhereTheyAt"];
+v83 [ label = "RandomActionAssign"];
+v84 [ label = "AdultActions"];
+v85 [ label = "NeedsActionAssignment"];
+v86 [ label = "LocationByActionAssign"];
 v5 -> v4 [ color="green" ]
 v6 -> v5 [ constraint="false" ]
 v7 -> v6
@@ -156,7 +160,6 @@ v21 -> v32 [ constraint="false" ]
 v29 -> v32 [ constraint="false" ]
 v22 -> v33
 v15 -> v34
-v10 -> v35
 v7 -> v35
 v35 -> v36
 v40 -> v39 [ color="blue" ]
@@ -194,56 +197,63 @@ v43 -> v56
 v43 -> v57
 v47 -> v57
 v57 -> v58
-v63 -> v62 [ color="blue" ]
-v59 -> v63 [ constraint="false" ]
-v37 -> v63 [ constraint="false" ]
-v61 -> v63 [ constraint="false" ]
-v65 -> v64 [ color="green" ]
-v66 -> v65 [ constraint="false" ]
-v67 -> v66
-v43 -> v67
-v63 -> v67
-v60 -> v67
-v64 -> v67
-v64 -> v66
-v18 -> v66
-v30 -> v66
-v68 -> v69
-v56 -> v69
-v43 -> v70
-v37 -> v70
+v25 -> v59
+v47 -> v59
+v25 -> v60
+v47 -> v60
+v47 -> v61
+v59 -> v62
+v46 -> v62
+v67 -> v66 [ color="blue" ]
+v63 -> v67 [ constraint="false" ]
+v37 -> v67 [ constraint="false" ]
+v65 -> v67 [ constraint="false" ]
+v69 -> v68 [ color="green" ]
+v70 -> v69 [ constraint="false" ]
+v71 -> v70
+v43 -> v71
+v67 -> v71
+v64 -> v71
 v68 -> v71
-v56 -> v71
-v70 -> v71
-v18 -> v72
+v68 -> v70
+v18 -> v70
+v30 -> v70
 v72 -> v73
-v18 -> v73
-v73 -> v74
-v72 -> v74
-v69 -> v75
-v70 -> v75
-v43 -> v75
-v73 -> v75
-v69 -> v76
-v70 -> v76
-v43 -> v76
-v74 -> v76
-v64 -> v77
-v70 -> v77
-v75 -> v78
-v76 -> v78
+v56 -> v73
+v43 -> v74
+v37 -> v74
+v72 -> v75
+v56 -> v75
+v74 -> v75
+v18 -> v76
+v76 -> v77
+v18 -> v77
 v77 -> v78
-v79 -> v78
-v80 -> v79
-v69 -> v80
-v81 -> v79
-v77 -> v81
-v76 -> v81
-v75 -> v81
-v18 -> v81
-v82 -> v78
+v76 -> v78
+v73 -> v79
+v74 -> v79
+v43 -> v79
+v77 -> v79
+v73 -> v80
+v74 -> v80
+v43 -> v80
+v78 -> v80
+v68 -> v81
+v74 -> v81
 v79 -> v82
-v47 -> v82
-v71 -> v82
-v43 -> v82
+v80 -> v82
+v81 -> v82
+v83 -> v82
+v84 -> v83
+v73 -> v84
+v85 -> v83
+v81 -> v85
+v80 -> v85
+v79 -> v85
+v18 -> v85
+v86 -> v82
+v83 -> v86
+v47 -> v86
+v75 -> v86
+v43 -> v86
 }

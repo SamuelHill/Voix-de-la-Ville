@@ -259,25 +259,25 @@ public class TalkOfTheTown {
         // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
         var Surname = Function<Person, string>("Surname", p => p.LastName);
 
-        // Copulation Indexed by woman allows for multiple partners (in the same tick I guess?)
-        var Copulation = Predicate("Copulation", woman.Indexed, man, sex, child);
-        var CopulationIndex = (GeneralIndex<BirthRow, Person>)Copulation.IndexFor(woman, false);
+        // Procreate Indexed by woman allows for multiple partners (in the same tick)
+        var Procreate = Predicate("Procreate", woman.Indexed, man, sex, child);
+        var ProcreateIndex = (GeneralIndex<BirthRow, Person>)Procreate.IndexFor(woman, false);
         // Random element by indexed column...
-        var RandomCopulation = Function<Person, BirthRow>("RandomCopulation", 
-            p => CopulationIndex.RowsMatching(p).ToList().RandomElement());
-        var GetMan = Item2(man, Copulation);
-        var GetSex = Item3(sex, Copulation);
-        var GetChild = Item4(child, Copulation);
-        var copulationRow = RowVariable(Copulation);
+        var RandomProcreateByWoman = Function<Person, BirthRow>(
+            "RandomProcreateByWoman", p => ProcreateIndex.RowsMatching(p).ToList().RandomElement());
+        var ProcreateMan = Item2(man, Procreate);
+        var ProcreateSex = Item3(sex, Procreate);
+        var ProcreateChild = Item4(child, Procreate);
+        var procreateRow = RowVariable(Procreate);
         // woman should be NonVar | man, sex, and child are all Var
-        var GetRandomCopulation = Definition("GetRandomCopulation", 
-            woman, man, sex, child).Is(copulationRow == RandomCopulation[woman],
-            GetMan[copulationRow, man], GetSex[copulationRow, sex], GetChild[copulationRow, child]);
+        var RandomProcreate = Definition("RandomProcreate", 
+            woman, man, sex, child).Is(procreateRow == RandomProcreateByWoman[woman],
+            ProcreateMan[procreateRow, man], ProcreateSex[procreateRow, sex], ProcreateChild[procreateRow, child]);
 
-        // Gestation is that interstitial table between copulation and birth. These are dependent events and
+        // Gestation is that interstitial table between Procreate and birth. These are dependent events and
         // as such they need to both have data dependency but also Event dependency. Two Events are needed -
-        // copulation and birth. Could have some `pseudo` event (the rules for the gestation table are the
-        // copulation event) but this is less robust. E.g. to prevent multiple partners creating a gestation
+        // Procreate and birth. Could have some `pseudo` event (the rules for the gestation table are the
+        // Procreate event) but this is less robust. E.g. to prevent multiple partners creating a gestation
         // event in the same tick the system would have to be designed such that only one pair of woman and man
         // have sex on a given tick. Additionally, to allow for set on this table, one column must be a key
         var Gestation = Predicate("Gestation", 
@@ -286,31 +286,22 @@ public class TalkOfTheTown {
             .If(Gestation[woman, __, __, __, __, true]);
 
         // The point of linking birth to gestation is to not have women getting pregnant again while pregnant,
-        // a copulation event is used to do this check (thus !Pregnant)
-        Copulation.If(ProcreativePair[woman, man], !Pregnant[woman],
+        // a Procreate event is used to do this check (thus !Pregnant)
+        Procreate.If(ProcreativePair[woman, man], !Pregnant[woman],
             Agents[woman, age, __, Sex.Female, __, VitalStatus.Alive],
             Agents[man, __, __, Sex.Male, __, VitalStatus.Alive], 
             Prob[FertilityRate[age]],
             sex == RandomSex, RandomFirstName, child == NewPerson[firstName, Surname[man]]);
         Gestation.Add[woman, man, sex, child, GetDate, true]
-            .If(Count(Copulation[woman, __, __, __]) <= 1, Copulation);
+            .If(Count(Procreate[woman, __, __, __]) <= 1, Procreate);
         Gestation.Add[woman, man, sex, child, GetDate, true]
-            .If(Count(Copulation[woman, __, __, __]) > 1, 
-                Copulation[woman, __, __, __], GetRandomCopulation);
-
-        // DaysSince seems to work, the Days increment as expected but birth still only occurs on the first.
-        var DaysSince = Method<Date, int>(Time.DaysSince);
-        var DaysPregnant = Predicate("DaysPregnant", woman, count)
-            .If(Pregnant, Gestation, count == DaysSince[conception]);
-        var BirthTesting = Predicate("BirthTesting", woman)
-            .If(DaysPregnant, count >= Time.NineMonths);
-        // Should only need this function - the days since logic above is equivalent
-        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
-
-        // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months
+            .If(Count(Procreate[woman, __, __, __]) > 1, 
+                Procreate[woman, __, __, __], RandomProcreate);
+        
+        // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months with 'labor'
         var BirthTo = Predicate("BirthTo", woman, man, sex, child);
-        BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception], 
-            Prob[0.1f]); // 'Induced labor' - helps hide the NineMonth issue but also adds some birth variation
+        var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
+        BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception], Prob[0.8f]);
         Gestation.Set(child, state, false).If(BirthTo);
 
         // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
@@ -332,6 +323,7 @@ public class TalkOfTheTown {
         Aptitude.Add[person, job, SByteBellCurve].If(BirthTo[__, __, __, person], Jobs);
         #endregion
 
+        // TODO : add a drifter table that gets added into Agents but also is used to set home location etc
         #region Drifters - adults moving to town:
         // Using a Definition to wrap RandomPerson and RandomSexuality
         var RandomDate = Function("RandomDate", Date.Random);
@@ -414,9 +406,8 @@ public class TalkOfTheTown {
         #region Moving houses:
         var Occupancy = Predicate("Occupancy", location, count)
             .If(Locations[location, LocationType.House, position, founded, opening], count == Count(Homes));
-        var UnderOccupied = Predicate("UnderOccupied", location).If(Occupancy, count < 5);
-        var WantToMove = Predicate("WantToMove", person).If(Homes[person, location], Occupancy, count > 5);
-
+        var UnderOccupied = Predicate("UnderOccupied", location).If(Occupancy, count <= 5);
+        var WantToMove = Predicate("WantToMove", person).If(Homes[person, location], Occupancy, count >= 8);
 
         var LivingWithFamily = Predicate("LivingWithFamily", person)
             .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
@@ -427,7 +418,6 @@ public class TalkOfTheTown {
             .If(Homes[person, location], !Homes[__, location]);
 
         var MoveToFamily = Predicate("MoveToFamily", person).If(WantToMove, !LivingWithFamily[person]);
-
 
         var MovingIn = Predicate("MovingIn", person, location).If(!!WantToMove[person], 
             RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
@@ -529,8 +519,14 @@ public class TalkOfTheTown {
         #region Operation and Open logic:
         var InOperation = TestMethod<DailyOperation>(Time.InOperation);
         var IsOpen = TestMethod<Schedule>(Time.IsOpen);
-        var OpenForBusiness = Predicate("OpenForBusiness", location).If(Locations,
-            LocationInformation, InOperation[operation], IsOpen[schedule]);
+        // for better performance with larger numbers of locations, do a pre-calculation 
+        // of the location types that are accessible as this is the only place that
+        // the functions InOperation and IsOpen need to be called
+        var OpenLocationTypes = Predicate("OpenLocationTypes", locationType)
+            .If(LocationInformation, InOperation[operation], IsOpen[schedule]);
+        var OpenForBusiness = Predicate("OpenForBusiness", location)
+            .If(Locations, OpenLocationTypes); // for more complex scheduling have a table
+        // of non-default schedule or operation per location to include in this Predicate
         var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
             .If(ActionToCategory, LocationsOfCategory, OpenForBusiness);
         #endregion
