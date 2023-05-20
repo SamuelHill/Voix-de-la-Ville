@@ -3782,10 +3782,10 @@
             Makes a Function where the Func T is built from a property on the given type
             </summary>
         </member>
-        <member name="M:TED.Language.GetMember``1(System.Object,System.String)">
+        <member name="M:TED.Language.Member``1(System.Object,System.String,System.String)">
             <summary>
-            Makes a Function where the Func T is built from a property on the given type,
-            pre-pending Get to the property for the Function name
+            Makes a Function where the Func T is built from a property on the given type and the name
+            of the function is of the form: prependProperty
             </summary>
         </member>
         <member name="M:TED.Language.Function``1(System.String,System.Func{``0})">
@@ -5495,6 +5495,16 @@
         <member name="P:TED.TablePredicate.IsDynamic">
             <summary>
             True if this is a table in a simulation that needs to be updated dynamically
+            </summary>
+        </member>
+        <member name="F:TED.TablePredicate.MustBeDynamic">
+            <summary>
+            True if we need the predicate to be dynamic
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.ForceDynamic">
+            <summary>
+            Forces a table to be treated as dynamic
             </summary>
         </member>
         <member name="P:TED.TablePredicate.IsStatic">

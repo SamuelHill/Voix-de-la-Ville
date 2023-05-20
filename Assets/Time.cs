@@ -64,7 +64,7 @@ public class Time {
         _year++;
         _clock = 1; }
 
-    public Function<T> GetProperty<T>(string property) => GetMember<T>(this, property);
+    public Function<T> Property<T>(string property) => Member<T>(this, property, "Current");
     public PrimitiveTest TestProperty(string property) => TestMember(this, property);
 
     internal static byte Since(byte current, byte previous, byte max) => (byte)((max + (current - previous)) % max);
@@ -74,26 +74,24 @@ public class Time {
     public int Year => (int)_year + _offset;
 
     #region Month
-    internal static Month GetMonth(ushort clock) => (Month)((clock - 1) / TicksPerMonth);
-    public Month Month => GetMonth(_clock);
+    internal static Month CalcMonth(ushort clock) => (Month)((clock - 1) / TicksPerMonth);
+    public Month Month => CalcMonth(_clock);
     internal byte MonthsSince(Month previousMonth) => Since((byte)Month, (byte)previousMonth, Months);
     #endregion
 
     #region Day
-    internal static byte GetDay(ushort clock) => (byte)((clock - 1) % TicksPerMonth / TimesOfDay + 1);
-    public byte Day => GetDay(_clock);
+    internal static byte CalcDay(ushort clock) => (byte)((clock - 1) % TicksPerMonth / TimesOfDay + 1);
+    public byte Day => CalcDay(_clock);
     internal byte DaysSince(byte previousDay) => Since(Day, previousDay, DaysPerMonth);
     #endregion
 
     #region Date(s)
     public Date Date => new(Month, Day);
     public bool IsDate(Date date) => date.Equals(Month, Day);
-    public int YearsSince(Date date, int year) => 
-        Year - year + (date.Month < Month || (date.Month == Month && date.Day < Day) ? 1 : 0);
-    public byte MonthsSince(Date previousDate) => 
-        (byte)(MonthsSince(previousDate.Month) - (Day < previousDate.Day ? 1 : 0));
-    public ushort DaysSince(Date previousDate) => 
-        (ushort)(MonthsSince(previousDate) * DaysPerMonth + DaysSince(previousDate.Day));
+    public bool PastDate(Date date) => date.Month < Month || (date.Month == Month && date.Day < Day);
+    public int YearsSince(Date date, int year) => Year - year + (PastDate(date) ? 1 : 0);
+    public byte MonthsSince(Date previousDate) => (byte)(MonthsSince(previousDate.Month) - (Day < previousDate.Day ? 1 : 0));
+    public ushort DaysSince(Date previousDate) => (ushort)(MonthsSince(previousDate) * DaysPerMonth + DaysSince(previousDate.Day));
     public bool NineMonthsPast(Date date) => DaysSince(date) >= NineMonths;
     #endregion
 

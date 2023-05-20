@@ -86,11 +86,12 @@ public class TalkOfTheTown {
         #region Functions/PrimitiveTests
         var SByteBellCurve = Method(Randomize.SByteBellCurve);
         var Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
-        var GetYear = Time.GetProperty<int>(nameof(Time.Year));
-        var GetDate = Time.GetProperty<Date>(nameof(Time.Date));
-        var GetTimeOfDay = Time.GetProperty<TimeOfDay>(nameof(Time.TimeOfDay));
+        var CurrentYear = Time.Property<int>(nameof(Time.Year));
+        var CurrentDate = Time.Property<Date>(nameof(Time.Date));
+        var CurrentTimeOfDay = Time.Property<TimeOfDay>(nameof(Time.TimeOfDay));
         var IsAM = Time.TestProperty(nameof(Time.IsAM));
         var IsDate = TestMethod<Date>(Time.IsDate);
+        var PastDate = TestMethod<Date>(Time.PastDate);
         #endregion
 
         #region Variables
@@ -291,9 +292,9 @@ public class TalkOfTheTown {
             Agents[man, __, __, Sex.Male, __, VitalStatus.Alive], 
             Prob[FertilityRate[age]],
             sex == RandomSex, RandomFirstName, child == NewPerson[firstName, Surname[man]]);
-        Gestation.Add[woman, man, sex, child, GetDate, true]
+        Gestation.Add[woman, man, sex, child, CurrentDate, true]
             .If(Count(Procreate[woman, __, __, __]) <= 1, Procreate);
-        Gestation.Add[woman, man, sex, child, GetDate, true]
+        Gestation.Add[woman, man, sex, child, CurrentDate, true]
             .If(Count(Procreate[woman, __, __, __]) > 1, 
                 Procreate[woman, __, __, __], RandomProcreate);
         
@@ -306,7 +307,7 @@ public class TalkOfTheTown {
         // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
         // determine the child's sexuality in BirthTo, a child has the sexuality established when they are added to Agents
         var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
-        Agents.Add[person, 0, GetDate, sex, sexuality, VitalStatus.Alive].If(
+        Agents.Add[person, 0, CurrentDate, sex, sexuality, VitalStatus.Alive].If(
             BirthTo[__, __, sex, person], sexuality == RandomSexuality[sex]);
 
         Parents.Add.If(BirthTo[parent, __, __, child]);
@@ -412,15 +413,13 @@ public class TalkOfTheTown {
         #region Moving houses:
         var WantToMove = Predicate("WantToMove", person).If(Homes[person, location], Occupancy, count >= 8);
         
-        var LivingWithFamily = Predicate("LivingWithFamily", person)
-            .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
-        var FamilyHome = Predicate("FamilyHome", location)
-            .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
-
-        var LivingAlone = Predicate("LivingAlone", person)
-            .If(Homes[person, location], !Homes[__, location]);
-
-        var MoveToFamily = Predicate("MoveToFamily", person).If(WantToMove, !LivingWithFamily[person]);
+        // var LivingWithFamily = Predicate("LivingWithFamily", person)
+        //     .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
+        // var FamilyHome = Predicate("FamilyHome", location)
+        //     .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
+        // var LivingAlone = Predicate("LivingAlone", person)
+        //     .If(Homes[person, location], !Homes[__, location]);
+        // var MoveToFamily = Predicate("MoveToFamily", person).If(WantToMove, !LivingWithFamily[person]);
 
         var MovingIn = Predicate("MovingIn", person, location).If(!!WantToMove[person], 
             RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
@@ -444,7 +443,7 @@ public class TalkOfTheTown {
         #region New Location helper functions (meta-sub-expressions):
         // Base case - useful mainly for testing/rapid development (you only need one string/generating a list of names can come second)
         void AddNewNamedLocation(LocationType locType, string name, Goal readyToAdd) =>
-            NewLocations[location, locType, position, GetYear, GetDate]
+            NewLocations[location, locType, position, CurrentYear, CurrentDate]
                 .If(FreeLot, Prob[Time.PerWeek(0.5f)], // Needs the random lot to be available & 'construction' isn't instantaneous
                 readyToAdd, location == NewLocation[name]); // otherwise, check the readyToAdd Goal and if it passes add a NewLocation
 
@@ -455,7 +454,7 @@ public class TalkOfTheTown {
 
         // This is the more realistic use case with a list of names for a give type to choose from.
         void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
-            NewLocations[location, locType, position, GetYear, GetDate]
+            NewLocations[location, locType, position, CurrentYear, CurrentDate]
                 .If(FreeLot, Prob[Time.PerWeek(0.5f)], readyToAdd,
                 RandomElement(names, locationName), location == NewLocation[locationName]);
         #endregion
@@ -500,14 +499,14 @@ public class TalkOfTheTown {
         var Vocations = Predicate("Vocations", job, employee, location, timeOfDay);
 
         var JobsToFill = Predicate("JobsToFill", location, job)
-            .If(timeOfDay == GetTimeOfDay, Locations, VocationShifts,
+            .If(timeOfDay == CurrentTimeOfDay, Locations, VocationShifts,
                 PositionsPerJob, Count(Vocations) < positions);
 
         var Candidates = Predicate("Candidates", person, job, location)
             .If(JobsToFill, Maximal(person, aptitude, Goals(Alive[person], 
                 !Vocations[__, person, __, __], Age, age > 18, Aptitude)));
 
-        Vocations.Add[job, person, location, GetTimeOfDay].If(Candidates);
+        Vocations.Add[job, person, location, CurrentTimeOfDay].If(Candidates);
         #endregion
 
         // ********************************** Movement: *********************************
@@ -518,8 +517,7 @@ public class TalkOfTheTown {
         var AvailableActions = Predicate("AvailableActions", actionType)
             .If(ActionToCategory, AnyInCategory);
         #endregion
-
-        // TODO : fix OpenLocationTypes - functions mean not an ebd?
+        
         #region Operation and Open logic:
         var InOperation = TestMethod<DailyOperation>(Time.InOperation);
         var IsOpen = TestMethod<Schedule>(Time.IsOpen);
@@ -527,9 +525,10 @@ public class TalkOfTheTown {
         // of the location types that are accessible as this is the only place that
         // the functions InOperation and IsOpen need to be called
         var OpenLocationTypes = Predicate("OpenLocationTypes", locationType)
-            .If(LocationInformation, InOperation[operation], IsOpen[schedule]); // , AvailableCategories
+            .If(LocationInformation, InOperation[operation], IsOpen[schedule]);
+        OpenLocationTypes.ForceDynamic();
         var OpenForBusiness = Predicate("OpenForBusiness", location)
-            .If(Locations, LocationInformation, InOperation[operation], IsOpen[schedule]); // for more complex scheduling have an extra table
+            .If(OpenLocationTypes, Locations); // for more complex scheduling have an extra table
         // of non-default schedule or operation per location to include in this Predicate
         var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
             .If(ActionToCategory, LocationsOfCategory, OpenForBusiness);
@@ -552,7 +551,7 @@ public class TalkOfTheTown {
 
         #region Working:
         var GoingToWork = Predicate("GoingToWork", person, location)
-            .If(Vocations[__, person, location, GetTimeOfDay], OpenForBusiness);
+            .If(Vocations[__, person, location, CurrentTimeOfDay], OpenForBusiness);
         #endregion
 
         // TODO : Couple movements

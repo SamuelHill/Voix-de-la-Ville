@@ -41,12 +41,12 @@ v50 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 v52 [ label = "set location"];
 }
 subgraph "cluster_VocationShifts"{
-v66 [ label = "VocationShifts" fillcolor="gold" shape="diamond"];
-v67 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v62 [ label = "VocationShifts" fillcolor="gold" shape="diamond"];
+v63 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Vocations"{
-v68 [ label = "Vocations" fillcolor="limegreen"];
-v69 [ label = "Add"];
+v64 [ label = "Vocations" fillcolor="limegreen"];
+v65 [ label = "Add"];
 }
 v0 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
 v1 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
@@ -83,31 +83,27 @@ v55 [ label = "LocationsOfCategory"];
 v56 [ label = "AvailableCategories"];
 v57 [ label = "BuriedAt"];
 v58 [ label = "Buried"];
-v59 [ label = "LivingWithFamily"];
-v60 [ label = "FamilyHome"];
-v61 [ label = "LivingAlone"];
-v62 [ label = "MoveToFamily"];
-v63 [ label = "VocationLocations" fillcolor="gold" shape="diamond"];
-v64 [ label = "PositionsPerJob" fillcolor="gold" shape="diamond"];
-v65 [ label = "OperatingTimes" fillcolor="gold" shape="diamond"];
-v70 [ label = "Candidates"];
-v71 [ label = "JobsToFill"];
-v72 [ label = "ActionToCategory" fillcolor="gold" shape="diamond"];
-v73 [ label = "AvailableActions"];
-v74 [ label = "OpenLocationTypes" fillcolor="deepskyblue" shape="diamond"];
-v75 [ label = "OpenForBusiness"];
-v76 [ label = "OpenForBusinessByAction"];
-v77 [ label = "Kids"];
-v78 [ label = "NeedsSchooling"];
-v79 [ label = "NeedsDayCare"];
-v80 [ label = "GoingToSchool"];
-v81 [ label = "GoingToDayCare"];
-v82 [ label = "GoingToWork"];
-v83 [ label = "WhereTheyAt"];
-v84 [ label = "RandomActionAssign"];
-v85 [ label = "AdultActions"];
-v86 [ label = "NeedsActionAssignment"];
-v87 [ label = "LocationByActionAssign"];
+v59 [ label = "VocationLocations" fillcolor="gold" shape="diamond"];
+v60 [ label = "PositionsPerJob" fillcolor="gold" shape="diamond"];
+v61 [ label = "OperatingTimes" fillcolor="gold" shape="diamond"];
+v66 [ label = "Candidates"];
+v67 [ label = "JobsToFill"];
+v68 [ label = "ActionToCategory" fillcolor="gold" shape="diamond"];
+v69 [ label = "AvailableActions"];
+v70 [ label = "OpenLocationTypes"];
+v71 [ label = "OpenForBusiness"];
+v72 [ label = "OpenForBusinessByAction"];
+v73 [ label = "Kids"];
+v74 [ label = "NeedsSchooling"];
+v75 [ label = "NeedsDayCare"];
+v76 [ label = "GoingToSchool"];
+v77 [ label = "GoingToDayCare"];
+v78 [ label = "GoingToWork"];
+v79 [ label = "WhereTheyAt"];
+v80 [ label = "RandomActionAssign"];
+v81 [ label = "AdultActions"];
+v82 [ label = "NeedsActionAssignment"];
+v83 [ label = "LocationByActionAssign"];
 v5 -> v4 [ color="green" ]
 v6 -> v5 [ constraint="false" ]
 v7 -> v6 [ constraint="false" ]
@@ -200,64 +196,57 @@ v55 -> v56
 v42 -> v57
 v46 -> v57
 v57 -> v58
-v25 -> v59
-v46 -> v59
-v25 -> v60
-v46 -> v60
-v46 -> v61
-v59 -> v62
-v45 -> v62
-v67 -> v66 [ color="blue" ]
-v63 -> v67 [ constraint="false" ]
-v36 -> v67 [ constraint="false" ]
-v65 -> v67 [ constraint="false" ]
-v69 -> v68 [ color="green" ]
-v70 -> v69 [ constraint="false" ]
-v71 -> v70
+v63 -> v62 [ color="blue" ]
+v59 -> v63 [ constraint="false" ]
+v36 -> v63 [ constraint="false" ]
+v61 -> v63 [ constraint="false" ]
+v65 -> v64 [ color="green" ]
+v66 -> v65 [ constraint="false" ]
+v67 -> v66
+v42 -> v67
+v63 -> v67
+v60 -> v67
+v64 -> v67
+v64 -> v66
+v19 -> v66
+v31 -> v66
+v68 -> v69
+v55 -> v69
+v36 -> v70
 v42 -> v71
-v67 -> v71
-v64 -> v71
-v68 -> v71
-v68 -> v70
-v19 -> v70
-v31 -> v70
-v72 -> v73
-v55 -> v73
-v36 -> v74
-v42 -> v75
-v36 -> v75
-v72 -> v76
-v55 -> v76
-v75 -> v76
-v19 -> v77
-v77 -> v78
-v19 -> v78
-v78 -> v79
+v36 -> v71
+v68 -> v72
+v55 -> v72
+v71 -> v72
+v19 -> v73
+v73 -> v74
+v19 -> v74
+v74 -> v75
+v73 -> v75
+v69 -> v76
+v71 -> v76
+v42 -> v76
+v74 -> v76
+v69 -> v77
+v71 -> v77
+v42 -> v77
+v75 -> v77
+v64 -> v78
+v71 -> v78
+v76 -> v79
 v77 -> v79
-v73 -> v80
-v75 -> v80
-v42 -> v80
-v78 -> v80
-v73 -> v81
-v75 -> v81
-v42 -> v81
-v79 -> v81
-v68 -> v82
-v75 -> v82
+v78 -> v79
+v80 -> v79
+v81 -> v80
+v69 -> v81
+v82 -> v80
+v78 -> v82
+v77 -> v82
+v76 -> v82
+v19 -> v82
+v83 -> v79
 v80 -> v83
-v81 -> v83
-v82 -> v83
-v84 -> v83
-v85 -> v84
-v73 -> v85
-v86 -> v84
-v82 -> v86
-v81 -> v86
-v80 -> v86
-v19 -> v86
-v87 -> v83
-v84 -> v87
-v46 -> v87
-v76 -> v87
-v42 -> v87
+v46 -> v83
+v72 -> v83
+v42 -> v83
 }

@@ -63,9 +63,9 @@ public static class GUIManager {
     public static void CustomSkins() {
         GUI.skin.box.alignment = TextAnchor.MiddleCenter;
         GUI.skin.label.fontSize = 14;
-        GUI.skin.label.padding.top = 0;
-        GUI.skin.label.padding.bottom = 0;
-        GUI.skin.label.fixedHeight = 18f; }
+        GUI.skin.label.padding.top = 1;
+        GUI.skin.label.padding.bottom = 1;
+        GUI.skin.label.fixedHeight = 0; }
     public static void GetTableToolbarSize() => TableToolbarSize = 
         (from content in GUITableDisplayNames select (int)GUI.skin.button.CalcSize(content).x).Sum();
     public static void InitAllTables() { foreach (var table in Tables.Values) table.Initialize(); }
@@ -93,11 +93,11 @@ public static class GUIManager {
         ChangeTableSelector = GUI.SelectionGrid(selectionGridRect, ChangeTableSelector, TableDisplayNames, 5);
         // update the active table to change with the selected table
         ActiveTables[TableToChange] = DisplayNameToTableName[TableDisplayNames[ChangeTableSelector]]; }
-    public static void RuleExecutionTimes() => GUI.Label(CenteredRect(400, 400), 
-        string.Concat(from table in TalkOfTheTown.Simulation.Tables
-                           where table.RuleExecutionTime > 0f && !table.Name.Contains("initially")
-                           orderby -table.RuleExecutionTime
-                           select $"{table.Name} {table.RuleExecutionTime}\n"));
+    public static void RuleExecutionTimes() => GUI.Label(CenteredRect(480, 350),
+        string.Concat((from table in TalkOfTheTown.Simulation.Tables
+                            where table.RuleExecutionTime > 0 && !table.Name.Contains("initially")
+                            orderby -table.RuleExecutionTime
+                            select $"{table.Name} {table.RuleExecutionTime}\n").Take(20)));
     #endregion
 
     #region Rects - display containers
@@ -132,25 +132,42 @@ public static class GUIManager {
     public static void Label(string label, bool bold, params GUILayoutOption[] options) {
         if (bold) BoldLabel(label, options);
         else GUILayout.Label(label, options); }
+    public static void ButtonLabel(string label, out bool pressed, params GUILayoutOption[] options) {
+        GUI.skin.label.fontStyle = FontStyle.BoldAndItalic;
+        pressed = GUILayout.Button(label, GUI.skin.label, options);
+        GUI.skin.label.fontStyle = FontStyle.Normal; }
+    public static void TableTitleToggle(int tableNum) {
+        if (TableToChange == tableNum)
+            ChangeTable = !ChangeTable;
+        else ChangeTable = true;
+        TableToChange = tableNum; }
+    public static void TableTitle(int tableNum, string title) {
+        if (tableNum >= 0) {
+            ButtonLabel(title, out var pressed);
+            if (pressed) TableTitleToggle(tableNum);
+        } else BoldLabel(title); }
     #endregion
 }
 
 public class GUITable {
     #region Table display constants
     internal const int ColumnPadding = 5;
-    internal const int LabelHeight = 18; // same as GUI.skin.label.fixedHeight
+    internal const int LabelHeight = 16; // same as fontSize + padding
     internal const int TablePadding = 8; // using height padding for left side offset as well
     internal const int DefaultTableHeight = 260; // (260 * 4) + (8 * 5) = 1080...
     internal const int TableWidthOffset = 50; // account for the scrollbar and then some
-    internal const int DefaultNumRowsToDisplay = (DefaultTableHeight - TablePadding) / LabelHeight - 4;
-    // - 4 from display rows; two for the title and header row, and two to not get cutoff/crowd the space
+    internal const int DefaultNumRowsToDisplay = (DefaultTableHeight - TablePadding) / LabelHeight - 5;
+    // - 5 from display rows; two for the bold title and header row, and three to not get cutoff/crowd the space
+    // this could probably be calculated dynamically based on label margins but for now this offset math is good enough.
+    // to fix, update DefaultNumRowsToDisplay, ScrollHeight, NumRowsToHeight... everything derived from LabelHeight
     #endregion
-
+    
     #region Fields
     internal TablePredicate predicate;
     internal string[][] buffer;
+    internal int[] longestBufferStrings;
     internal string[] headings;
-    internal int[] longestStrings;
+    internal int[] headingLengths;
     internal GUIContent noEntries;
     internal int noEntriesWidth;
     internal uint bufferedRows;
@@ -167,7 +184,8 @@ public class GUITable {
     internal uint RowCount => predicate.Length;
     internal bool Scrolled => Math.Abs(scrollPosition - oldScroll) > 0.0001f;
     internal uint ScrollRow => (uint)Math.Floor(scrollPosition);
-    internal int LongestRow => longestStrings.Sum() + longestStrings.Length * ColumnPadding;
+    internal int[] LongestStrings => longestBufferStrings.Zip(headingLengths, Mathf.Max).ToArray();
+    internal int LongestRow => LongestStrings.Sum() + longestBufferStrings.Length * ColumnPadding;
     internal int TableWidth => RowCount == 0 ? noEntriesWidth : LongestRow;
     internal int NumDisplayRows => buffer.Length;
     internal bool DefaultTable => NumDisplayRows == DefaultNumRowsToDisplay;
@@ -193,8 +211,9 @@ public class GUITable {
         this.predicate = predicate;
         headings = (from heading in predicate.ColumnHeadings
             select Utils.Heading(heading)).ToArray();
+        headingLengths = new int[headings.Length];
         BuildBuffer(numRows);
-        longestStrings = new int[NumColumns]; }
+        longestBufferStrings = new int[NumColumns]; }
     public void NewNumRows(int numRows) {
         if (numRows != NumDisplayRows) BuildBuffer(numRows); }
     internal void BuildBuffer(int numRows) {
@@ -207,7 +226,7 @@ public class GUITable {
     public void Initialize() {
         // This is how I am doing bold label display for now, so ditto for size calc:
         GUI.skin.label.fontStyle = FontStyle.Bold;
-        UpdateLongestStrings(headings);
+        CalcStringLengths(headings, ref headingLengths);
         GUI.skin.label.fontStyle = FontStyle.Normal;
         // If the table is empty now or could be empty in future ticks...
         if (RowCount == 0 || predicate.IsIntensional) {
@@ -221,11 +240,15 @@ public class GUITable {
         Update(); }
     public void Update() {
         bufferedRows = predicate.RowRangeToStrings(ScrollRow, buffer);
-        for (var i = 0; i < bufferedRows; i++) UpdateLongestStrings(buffer[i]); }
-    internal void UpdateLongestStrings(string[] strings) {
+        // update string lengths per tick - prevents permanent growth due to singular long entries
+        var updatedBufferStrings = new int[NumColumns];
+        for (var i = 0; i < bufferedRows; i++) CalcStringLengths(buffer[i], ref updatedBufferStrings);
+        // overwrite the longest strings for per tick update, pass in to CalcStringLength for permanent growth
+        longestBufferStrings = updatedBufferStrings; }
+    internal void CalcStringLengths(string[] strings, ref int[] stringLengths) {
         for (var i = 0; i < NumColumns; i++) {
             var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
-            if (longestStrings[i] < stringLength) longestStrings[i] = stringLength; } }
+            if (stringLengths[i] < stringLength) stringLengths[i] = stringLength; } }
     #endregion
 
     #region GUILayout helper functions
@@ -234,15 +257,15 @@ public class GUITable {
     // height control via num rows with a special case for the 4 tables on the left side
     internal Rect LeftSideTables(int tableNum) => TableRect(TablePadding, 
         tableNum * (DefaultTableHeight + TablePadding) + TablePadding, DefaultTableHeight);
-    internal static int NumRowsToHeight(int numRows) => (numRows + 4) * LabelHeight + 2 * TablePadding;
+    internal static int NumRowsToHeight(int numRows) => (numRows + 5) * LabelHeight + 2 * TablePadding;
     internal Rect TableRect(int x, int y) => TableRect(x, y, NumRowsToHeight(NumDisplayRows));
     // Scroll check based on Rects (why doesn't Event.current.mousePosition work?)
     internal static bool ScrollingInRect(Rect rect) =>
         rect.Contains(new Vector2(mousePosition.x, Screen.height - mousePosition.y)) && 
         Event.current.type is EventType.ScrollWheel or EventType.MouseDrag;
     // Display options
-    internal GUILayoutOption ScrollHeight => GUILayout.Height((NumDisplayRows + 1) * LabelHeight);
-    internal GUILayoutOption ColumnWidth(int i) => GUILayout.Width(longestStrings[i] + ColumnPadding);
+    internal GUILayoutOption ScrollHeight => GUILayout.Height((NumDisplayRows + 3) * LabelHeight);
+    internal GUILayoutOption ColumnWidth(int i) => GUILayout.Width(LongestStrings[i] + ColumnPadding);
     #endregion
 
     #region Table Layout
@@ -252,10 +275,10 @@ public class GUITable {
             GUIManager.Label(strings[i], header, ColumnWidth(i));
         GUILayout.EndHorizontal(); }
 
-    internal void OnGUI(Rect screenRect) {
+    internal void OnGUI(Rect screenRect, int tableNum = -1) {
         GUILayout.BeginArea(screenRect); // table area
         // Title and Header:
-        GUIManager.BoldLabel(Name);
+        GUIManager.TableTitle(tableNum, Name);
         LayoutRow(headings, true);
         GUILayout.BeginHorizontal(); // table and scroll bar area
         // Table contents:
@@ -279,7 +302,7 @@ public class GUITable {
 
     public void OnGUI(int tableNum) { // Default check is not needed, more of a reminder that this
         // version of OnGUI is only meant to be called in the default case of left side display.
-        if (DefaultTable) OnGUI(LeftSideTables(tableNum)); }
+        if (DefaultTable) OnGUI(LeftSideTables(tableNum), tableNum); }
     public void OnGUI(int x, int y) => OnGUI(TableRect(x, y));
 }
 

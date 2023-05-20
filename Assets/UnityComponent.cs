@@ -44,6 +44,7 @@ public class UnityComponent : MonoBehaviour {
         if (GetKeyDown(KeyCode.Escape)) SimulationRunning = !SimulationRunning;
         if (!SimulationRunning && GetKeyDown(KeyCode.Space)) SimulationSingleStep = true;
         if (GetKeyDown(KeyCode.BackQuote)) DebugRuleExecutionTime = !DebugRuleExecutionTime;
+        if (GetKeyDown(KeyCode.F1)) GUIManager.ShowTables = !GUIManager.ShowTables;
         if (SimulationRunning || SimulationSingleStep) {
             try { TalkOfTheTown.UpdateSimulator(); }
             catch { SimulationRunning = false; throw; }
