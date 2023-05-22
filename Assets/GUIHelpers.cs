@@ -46,6 +46,7 @@ public static class GUIManager {
     #region Called once each in Start
     public static void SetAvailableTables(List<TablePredicate> tables) {
         foreach (var table in tables) Tables[table.Name] = new GUITable(table);
+        // To short here
         TableDisplayNames = Tables.Keys.Select(n => n.Length > TableDisplayNameCutoff ?
             n[..TableDisplayNameCutoff] + "…" : n).ToArray();
         GUITableDisplayNames = (from available in TableDisplayNames

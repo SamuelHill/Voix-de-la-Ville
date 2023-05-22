@@ -1350,7 +1350,17 @@
             Cells holding the values of the variables in the rule.
             </summary>
         </member>
-        <member name="P:TED.Interpreter.Rule.AverageExecutionTime">
+        <member name="P:TED.Interpreter.Rule.TotalExecutionTime">
+            <summary>
+            Total execution time spent in this rule.
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.Rule.InstantaneousExecutionTime">
+            <summary>
+            Execution time for the most recent execution of this rule.
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.Rule.AverageExecutionTime">
             <summary>
             Average number of milliseconds required to run this rule
             </summary>
@@ -2678,8 +2688,40 @@
         </member>
         <member name="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})">
             <summary>
-            Matches output against a random element of the table.
+            Matches output against a random row of the table.
             </summary>
+        </member>
+        <member name="M:TED.Language.RandomElement``2(TED.TablePredicate{``0,``1},TED.Term{System.ValueTuple{``0,``1}})">
+            <inheritdoc cref="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})"/>
+        </member>
+        <member name="M:TED.Language.RandomElement``3(TED.TablePredicate{``0,``1,``2},TED.Term{System.ValueTuple{``0,``1,``2}})">
+            <inheritdoc cref="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})"/>
+        </member>
+        <member name="M:TED.Language.RandomElement``4(TED.TablePredicate{``0,``1,``2,``3},TED.Term{System.ValueTuple{``0,``1,``2,``3}})">
+            <inheritdoc cref="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})"/>
+        </member>
+        <member name="M:TED.Language.RandomElement``5(TED.TablePredicate{``0,``1,``2,``3,``4},TED.Term{System.ValueTuple{``0,``1,``2,``3,``4}})">
+            <inheritdoc cref="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})"/>
+        </member>
+        <member name="M:TED.Language.RandomElement``6(TED.TablePredicate{``0,``1,``2,``3,``4,``5},TED.Term{System.ValueTuple{``0,``1,``2,``3,``4,``5}})">
+            <inheritdoc cref="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})"/>
+        </member>
+        <member name="M:TED.Language.RandomElement``7(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6},TED.Term{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}})">
+            <inheritdoc cref="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})"/>
+        </member>
+        <member name="M:TED.Language.RandomElement``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},TED.Term{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6,System.ValueTuple{``7}}})">
+            <inheritdoc cref="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})"/>
+        </member>
+        <member name="M:TED.Language.RandomIndexedElement``2(TED.Tables.GeneralIndex{``0,``1},TED.Term{``1},TED.Term{``0})">
+            <summary>
+            Matches output against a random row from GeneralIndex where rowMatching has rows
+            </summary>
+        </member>
+        <member name="M:TED.Language.RandomIndexedElement``2(TED.Tables.TableIndex,TED.Term{``1},TED.Term{``0})">
+            <inheritdoc cref="M:TED.Language.RandomIndexedElement``2(TED.Tables.GeneralIndex{``0,``1},TED.Term{``1},TED.Term{``0})"/>
+        </member>
+        <member name="M:TED.Language.RandomIndexedElement``2(TED.TablePredicate,TED.Var{``1},TED.Term{``0})">
+            <inheritdoc cref="M:TED.Language.RandomIndexedElement``2(TED.Tables.GeneralIndex{``0,``1},TED.Term{``1},TED.Term{``0})"/>
         </member>
         <member name="M:TED.Language.In``1(TED.Term{``0},TED.Term{System.Collections.Generic.ICollection{``0}})">
             <summary>
@@ -5251,6 +5293,83 @@
             Implementation of the RandomElement primitive
             </summary>
             <typeparam name="T">Type of list element we're selecting from</typeparam>
+        </member>
+        <member name="T:TED.Primitives.RandomElementPrimitive`2">
+            <summary>
+            Implementation of the RandomElement primitive
+            </summary>
+            <typeparam name="T1">Type of the first column from the table we're selecting from</typeparam>
+            <typeparam name="T2">Type of the second column from the table we're selecting from</typeparam>
+        </member>
+        <member name="T:TED.Primitives.RandomElementPrimitive`3">
+            <summary>
+            Implementation of the RandomElement primitive
+            </summary>
+            <typeparam name="T1">Type of the first column from the table we're selecting from</typeparam>
+            <typeparam name="T2">Type of the second column from the table we're selecting from</typeparam>
+            <typeparam name="T3">Type of the third column from the table we're selecting from</typeparam>
+        </member>
+        <member name="T:TED.Primitives.RandomElementPrimitive`4">
+            <summary>
+            Implementation of the RandomElement primitive
+            </summary>
+            <typeparam name="T1">Type of the first column from the table we're selecting from</typeparam>
+            <typeparam name="T2">Type of the second column from the table we're selecting from</typeparam>
+            <typeparam name="T3">Type of the third column from the table we're selecting from</typeparam>
+            <typeparam name="T4">Type of the fourth column from the table we're selecting from</typeparam>
+        </member>
+        <member name="T:TED.Primitives.RandomElementPrimitive`5">
+            <summary>
+            Implementation of the RandomElement primitive
+            </summary>
+            <typeparam name="T1">Type of the first column from the table we're selecting from</typeparam>
+            <typeparam name="T2">Type of the second column from the table we're selecting from</typeparam>
+            <typeparam name="T3">Type of the third column from the table we're selecting from</typeparam>
+            <typeparam name="T4">Type of the fourth column from the table we're selecting from</typeparam>
+            <typeparam name="T5">Type of the fifth column from the table we're selecting from</typeparam>
+        </member>
+        <member name="T:TED.Primitives.RandomElementPrimitive`6">
+            <summary>
+            Implementation of the RandomElement primitive
+            </summary>
+            <typeparam name="T1">Type of the first column from the table we're selecting from</typeparam>
+            <typeparam name="T2">Type of the second column from the table we're selecting from</typeparam>
+            <typeparam name="T3">Type of the third column from the table we're selecting from</typeparam>
+            <typeparam name="T4">Type of the fourth column from the table we're selecting from</typeparam>
+            <typeparam name="T5">Type of the fifth column from the table we're selecting from</typeparam>
+            <typeparam name="T6">Type of the sixth column from the table we're selecting from</typeparam>
+        </member>
+        <member name="T:TED.Primitives.RandomElementPrimitive`7">
+            <summary>
+            Implementation of the RandomElement primitive
+            </summary>
+            <typeparam name="T1">Type of the first column from the table we're selecting from</typeparam>
+            <typeparam name="T2">Type of the second column from the table we're selecting from</typeparam>
+            <typeparam name="T3">Type of the third column from the table we're selecting from</typeparam>
+            <typeparam name="T4">Type of the fourth column from the table we're selecting from</typeparam>
+            <typeparam name="T5">Type of the fifth column from the table we're selecting from</typeparam>
+            <typeparam name="T6">Type of the sixth column from the table we're selecting from</typeparam>
+            <typeparam name="T7">Type of the seventh column from the table we're selecting from</typeparam>
+        </member>
+        <member name="T:TED.Primitives.RandomElementPrimitive`8">
+            <summary>
+            Implementation of the RandomElement primitive
+            </summary>
+            <typeparam name="T1">Type of the first column from the table we're selecting from</typeparam>
+            <typeparam name="T2">Type of the second column from the table we're selecting from</typeparam>
+            <typeparam name="T3">Type of the third column from the table we're selecting from</typeparam>
+            <typeparam name="T4">Type of the fourth column from the table we're selecting from</typeparam>
+            <typeparam name="T5">Type of the fifth column from the table we're selecting from</typeparam>
+            <typeparam name="T6">Type of the sixth column from the table we're selecting from</typeparam>
+            <typeparam name="T7">Type of the seventh column from the table we're selecting from</typeparam>
+            <typeparam name="T8">Type of the seventh column from the table we're selecting from</typeparam>
+        </member>
+        <member name="T:TED.Primitives.RandomIndexedElementPrimitive`2">
+            <summary>
+            Implementation of the RandomIndexedElement primitive
+            </summary>
+            <typeparam name="TRow">Type of the row</typeparam>
+            <typeparam name="T">Type of the column we are indexing from</typeparam>
         </member>
         <member name="T:TED.Primitives.UnaryArithmeticOperator`1">
             <summary>

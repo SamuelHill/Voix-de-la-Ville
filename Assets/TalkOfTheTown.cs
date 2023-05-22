@@ -174,7 +174,7 @@ public class TalkOfTheTown {
         var Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
         #endregion
         
-        #region Agents setup and Death (Set) logic:
+        #region Agents setup and state logic:
         Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
         AgentsVitalStatusIndex = (GeneralIndex<AgentRow, VitalStatus>)Agents.IndexFor(vitalStatus, false);
 
@@ -183,24 +183,27 @@ public class TalkOfTheTown {
             .Is(Agents[person, __, __, __, __, VitalStatus.Dead]);
         var Alive = Definition("Alive", person)
             .Is(Agents[person, __, __, __, __, VitalStatus.Alive]);
+        // special case Alive check where we also bind age
+        var Age = Definition("Age", person, age)
+            .Is(Agents[person, age, __, __, __, VitalStatus.Alive]);
 
         // Set Dead condition:
         Agents.Set(person, vitalStatus, VitalStatus.Dead)
-            .If(Alive, Agents, age > 60, Prob[Time.PerMonth(0.003f)]);
+            .If(Age, age > 60, Prob[Time.PerMonth(0.003f)]);
         var JustDied = Predicate("JustDied", person).If(Agents.Set(person, vitalStatus));
-
-        // Agent helper definitions
-        var Age = Definition("Age", person, age)
-            .Is(Agents[person, age, __, __, __, VitalStatus.Alive]);
         #endregion
 
         #region Sexual Attraction:
-        var SexualityAttracted = Test<Sexuality, Sex>("SexualityAttracted",
-            (se, s) => se.IsAttracted(s));
+        // special case Alive check where we also bind sex
         var PersonSex = Definition("PersonSex", person, sex)
             .Is(Agents[person, __, __, sex, __, VitalStatus.Alive]);
+        // special case Alive check where we also bind sexuality
         var PersonSexuality = Definition("PersonSexuality", person, sexuality)
             .Is(Agents[person, __, __, __, sexuality, VitalStatus.Alive]);
+
+        var SexualityAttracted = Test<Sexuality, Sex>(
+            "SexualityAttracted", (se, s) => se.IsAttracted(s));
+
         var AttractedSexuality = Definition("AttractedSexuality", person, partner)
             .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], SexualityAttracted[sexuality, sexOfPartner],
                 PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], SexualityAttracted[sexualOfPartner, sex]);
@@ -215,9 +218,10 @@ public class TalkOfTheTown {
         Aptitude.Initially[person, job, SByteBellCurve].Where(PrimordialBeings, Jobs);
         #endregion
 
-        // TODO : Better util for couples - facet likeness or score based on facet logic (> X, score + 100)
-        // TODO : Use set logic to allow for renaming of married couples - or something similar...
-        //        set name is complicated by the Person object storing first and last name...
+        // TODO : Better util for couples - facet similarity or score based on facet logic (> X, score + 100)
+        // TODO : Married couples separate from ProcreativePair - last name changes in 'nickname' like table
+        // TODO : Limit PotentialPairings by interactions (avoids performance hit for batch selection)
+        // TODO : Non-monogamous pairings (needs above limitation as well) - alter NewProcreativePair too...
         #region Couples (for procreation):
         var Men = Predicate("Men", man).If(
             Agents[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
@@ -233,10 +237,11 @@ public class TalkOfTheTown {
             .Is(Parents[person, otherPerson] | Parents[otherPerson, person]); // only immediate family
 
         var PotentialPairings = Predicate("PotentialPairings", woman.Indexed, man.Indexed)
-            .If(Women, !ProcreativePair[woman, __], // super limited procreative pairings for performance
+            .If(Women, !ProcreativePair[woman, __],
                 Men, !ProcreativePair[__, man],
                 AttractedSexuality[woman, man], !FamilialRelation[woman, man]);
 
+        // Batch Selection from Market approach
         var NormalScore = Method(Randomize.NormalScore);
         var ScoredPairings = Predicate("ScoredPairings", woman.Indexed, man.Indexed, util)
             .If(PotentialPairings, util == NormalScore);
@@ -245,7 +250,7 @@ public class TalkOfTheTown {
         var BestPairForBoth = Predicate("BestPairForBoth", woman, man)
             .If(BestPairForWomen[__, man, __], Maximal(woman, util, BestPairForWomen));
 
-        // Another approach - less expensive but only adds one pair at a time
+        // Best in Market approach - less expensive but only adds one pair at a time
         var PairingBestOnce = Predicate("PairingBestOnce", woman, man)
             .If(Maximal((woman, man), util, ScoredPairings));
 
@@ -253,6 +258,9 @@ public class TalkOfTheTown {
         ProcreativePair.Accumulates(NewProcreativePair);
         #endregion
 
+        // TODO : Limit Procreate by interactions to make procreation be more "physical" (also limits birth rates)
+        // TODO : Limit Procreate by Personality (family planning, could include likely-hood to use contraceptives)
+        // TODO : Limit Procreate by time since last birth and total number of children with partner (Gestation table info)
         #region Birth and aging:
         var FertilityRate = Method<int, float>(Sims.FertilityRate);
         var RandomSex = Method(Sims.RandomSex);
@@ -261,17 +269,13 @@ public class TalkOfTheTown {
 
         // Procreate Indexed by woman allows for multiple partners (in the same tick)
         var Procreate = Predicate("Procreate", woman.Indexed, man, sex, child);
-        var ProcreateIndex = (GeneralIndex<BirthRow, Person>)Procreate.IndexFor(woman, false);
-        // Random element by indexed column...
-        var RandomProcreateByWoman = Function<Person, BirthRow>(
-            "RandomProcreateByWoman", p => ProcreateIndex.RowsMatching(p).ToList().RandomElement());
         var ProcreateMan = Item2(man, Procreate);
         var ProcreateSex = Item3(sex, Procreate);
         var ProcreateChild = Item4(child, Procreate);
         var procreateRow = RowVariable(Procreate);
         // woman should be NonVar | man, sex, and child are all Var
         var RandomProcreate = Definition("RandomProcreate", 
-            woman, man, sex, child).Is(procreateRow == RandomProcreateByWoman[woman],
+            woman, man, sex, child).Is(RandomIndexedElement(Procreate, woman, procreateRow),
             ProcreateMan[procreateRow, man], ProcreateSex[procreateRow, sex], ProcreateChild[procreateRow, child]);
 
         // Gestation is that interstitial table between Procreate and birth. These are dependent events and
@@ -288,9 +292,7 @@ public class TalkOfTheTown {
         // The point of linking birth to gestation is to not have women getting pregnant again while pregnant,
         // a Procreate event is used to do this check (thus !Pregnant)
         Procreate.If(ProcreativePair[woman, man], !Pregnant[woman],
-            Agents[woman, age, __, Sex.Female, __, VitalStatus.Alive],
-            Agents[man, __, __, Sex.Male, __, VitalStatus.Alive], 
-            Prob[FertilityRate[age]],
+            Age[woman, age], Alive[man], Prob[FertilityRate[age]],
             sex == RandomSex, RandomFirstName, child == NewPerson[firstName, Surname[man]]);
         Gestation.Add[woman, man, sex, child, CurrentDate, true]
             .If(Count(Procreate[woman, __, __, __]) <= 1, Procreate);
@@ -314,18 +316,19 @@ public class TalkOfTheTown {
         Parents.Add.If(BirthTo[__, parent, __, child]);
 
         // Increment age once per birthday (in the AM, if you weren't just born)
-        var Increment = Function<int, int>("Increment", i => i + 1);
-        Agents.Set(person, age).If(Agents[person, previousAge, dateOfBirth, __, __, VitalStatus.Alive],
-            IsAM, IsDate[dateOfBirth], !BirthTo[__, __, __, person], age == Increment[previousAge]);
+        var WhenToAge = Definition("WhenToAge", person, age).Is(
+            Agents[person, age, dateOfBirth, __, __, VitalStatus.Alive],
+            IsAM, IsDate[dateOfBirth], !BirthTo[__, __, __, person]);
+        Agents.Increment(person, age, WhenToAge);
 
         // And add anything else that is needed for a new agent:
-        Personality.Add[person, facet, SByteBellCurve].If(Agents.Add[person, __, __, __, __, __], Facets);
-        Aptitude.Add[person, job, SByteBellCurve].If(Agents.Add[person, __, __, __, __, __], Jobs);
-        // Agents.Add[person, __, __, __, __, __] handles both Birth and Drifters, if we want to make kids be some amalgamation of
-        // the parents then BirthTo[__, __, __, person] will be needed separately (and other cases like drifters will need special
-        // accounting as well).
+        Personality.Add[person, facet, SByteBellCurve].If(Agents.Add, Facets);
+        Aptitude.Add[person, job, SByteBellCurve].If(Agents.Add, Jobs);
+        // Agents.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
+        // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
         #endregion
-        
+
+        // TODO : Cue drifters when new jobs need filling that the township can't meet requirements for
         #region Drifters - adults moving to town:
         var RandomDate = Function("RandomDate", Date.Random);
         var RandomAdultAge = Method(Sims.RandomAdultAge);
@@ -334,6 +337,8 @@ public class TalkOfTheTown {
             RandomPerson, sexuality == RandomSexuality[sex]);
         Agents.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
         #endregion
+
+        // TODO : All non-intimate relationships 
 
         // ********************************* Locations: *********************************
 
@@ -365,17 +370,18 @@ public class TalkOfTheTown {
         Locations.Accumulates(NewLocations);
         LocationsPositionIndex = Locations.KeyIndex(position);
 
-        // Locations Information tables and definitions:
-        var LocationsOfCategory = Predicate("LocationsOfCategory", 
-            location, locationCategory).If(LocationInformation, Locations);
-        var AnyInCategory = Definition("AnyInCategory", locationCategory)
-            .Is(NonZero(LocationsOfCategory[__, locationCategory]));
-        var AvailableCategories = Predicate("AvailableCategories", 
-            locationCategory).If(LocationsOfCategory);
+        var LocationOfCategory = Predicate("LocationOfCategory", location, locationCategory);
+        LocationOfCategory.Initially.Where(LocationInformation, PrimordialLocations);
+        LocationOfCategory.Add.If(LocationInformation, NewLocations);
+
+        var AvailableCategories = Predicate("AvailableCategories", locationCategory);
+        AvailableCategories.Initially.Where(LocationInformation, NonZero(LocationInformation, PrimordialLocations));
+        AvailableCategories.Add.If(LocationOfCategory.Add, NonZero(!AvailableCategories[locationCategory], LocationOfCategory.Add));
         #endregion
 
         // TODO : Separate out the dead into a new table... involve removal ?
         // TODO : Include ApartmentComplex locations in Housing logic
+        // TODO : Include Inn locations in Housing logic - drifters start at an Inn ?
         #region Housing:
         var Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
@@ -421,7 +427,7 @@ public class TalkOfTheTown {
         //     .If(Homes[person, location], !Homes[__, location]);
         // var MoveToFamily = Predicate("MoveToFamily", person).If(WantToMove, !LivingWithFamily[person]);
 
-        var MovingIn = Predicate("MovingIn", person, location).If(!!WantToMove[person], 
+        var MovingIn = Predicate("MovingIn", person, location).If(NonZero(WantToMove[person]),
             RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
 
         Homes.Set(occupant, location).If(MovingIn[occupant, location]);
@@ -515,7 +521,7 @@ public class TalkOfTheTown {
         var ActionToCategory = FromCsv("ActionToCategory",
             Csv("actionCategories"), actionType, locationCategory);
         var AvailableActions = Predicate("AvailableActions", actionType)
-            .If(ActionToCategory, AnyInCategory);
+            .If(ActionToCategory, AvailableCategories);
         #endregion
         
         #region Operation and Open logic:
@@ -531,7 +537,7 @@ public class TalkOfTheTown {
             .If(OpenLocationTypes, Locations); // for more complex scheduling have an extra table
         // of non-default schedule or operation per location to include in this Predicate
         var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
-            .If(ActionToCategory, LocationsOfCategory, OpenForBusiness);
+            .If(ActionToCategory, LocationOfCategory, OpenForBusiness);
         #endregion
 
         #region Schooling:
