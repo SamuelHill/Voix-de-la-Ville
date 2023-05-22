@@ -32,31 +32,27 @@ v39 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Locations"{
 v42 [ label = "Locations" fillcolor="limegreen"];
-v43 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
-}
-subgraph "cluster_LocationOfCategory"{
-v55 [ label = "LocationOfCategory" fillcolor="limegreen"];
-v56 [ label = "Add"];
-v57 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v43 [ label = "Add"];
+v44 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_AvailableCategories"{
-v58 [ label = "AvailableCategories" fillcolor="limegreen"];
-v59 [ label = "Add"];
-v60 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v56 [ label = "AvailableCategories" fillcolor="limegreen"];
+v57 [ label = "Add"];
+v58 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Homes"{
-v46 [ label = "Homes" fillcolor="limegreen"];
-v47 [ label = "Add"];
-v50 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
-v52 [ label = "set location"];
+v47 [ label = "Homes" fillcolor="limegreen"];
+v48 [ label = "Add"];
+v51 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v53 [ label = "set location"];
 }
 subgraph "cluster_VocationShifts"{
-v66 [ label = "VocationShifts" fillcolor="gold" shape="diamond"];
-v67 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v64 [ label = "VocationShifts" fillcolor="gold" shape="diamond"];
+v65 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Vocations"{
-v68 [ label = "Vocations" fillcolor="limegreen"];
-v69 [ label = "Add"];
+v66 [ label = "Vocations" fillcolor="limegreen"];
+v67 [ label = "Add"];
 }
 v0 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
 v1 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
@@ -82,36 +78,35 @@ v36 [ label = "LocationInformation" fillcolor="gold" shape="diamond"];
 v37 [ label = "CategoryColors" fillcolor="gold" shape="diamond"];
 v40 [ label = "PrimordialLocations" fillcolor="gold" shape="diamond"];
 v41 [ label = "NewLocations"];
-v44 [ label = "HouseNames" fillcolor="gold" shape="diamond"];
-v45 [ label = "WantToMove"];
-v48 [ label = "UnderOccupied"];
-v49 [ label = "Occupancy"];
-v51 [ label = "PrimordialHouses" fillcolor="deepskyblue" shape="diamond"];
-v53 [ label = "MovingIn"];
-v54 [ label = "VacatedLocations" fillcolor="gold" shape="diamond"];
-v61 [ label = "BuriedAt"];
-v62 [ label = "Buried"];
-v63 [ label = "VocationLocations" fillcolor="gold" shape="diamond"];
-v64 [ label = "PositionsPerJob" fillcolor="gold" shape="diamond"];
-v65 [ label = "OperatingTimes" fillcolor="gold" shape="diamond"];
-v70 [ label = "Candidates"];
-v71 [ label = "JobsToFill"];
-v72 [ label = "ActionToCategory" fillcolor="gold" shape="diamond"];
-v73 [ label = "AvailableActions"];
-v74 [ label = "OpenLocationTypes"];
-v75 [ label = "OpenForBusiness"];
-v76 [ label = "OpenForBusinessByAction"];
-v77 [ label = "Kids"];
-v78 [ label = "NeedsSchooling"];
-v79 [ label = "NeedsDayCare"];
-v80 [ label = "GoingToSchool"];
-v81 [ label = "GoingToDayCare"];
-v82 [ label = "GoingToWork"];
-v83 [ label = "WhereTheyAt"];
-v84 [ label = "RandomActionAssign"];
-v85 [ label = "AdultActions"];
-v86 [ label = "NeedsActionAssignment"];
-v87 [ label = "LocationByActionAssign"];
+v45 [ label = "HouseNames" fillcolor="gold" shape="diamond"];
+v46 [ label = "WantToMove"];
+v49 [ label = "UnderOccupied"];
+v50 [ label = "Occupancy"];
+v52 [ label = "PrimordialHouses" fillcolor="deepskyblue" shape="diamond"];
+v54 [ label = "MovingIn"];
+v55 [ label = "VacatedLocations" fillcolor="gold" shape="diamond"];
+v59 [ label = "BuriedAt"];
+v60 [ label = "Buried"];
+v61 [ label = "VocationLocations" fillcolor="gold" shape="diamond"];
+v62 [ label = "PositionsPerJob" fillcolor="gold" shape="diamond"];
+v63 [ label = "OperatingTimes" fillcolor="gold" shape="diamond"];
+v68 [ label = "Candidates"];
+v69 [ label = "JobsToFill"];
+v70 [ label = "ActionToCategory" fillcolor="gold" shape="diamond"];
+v71 [ label = "AvailableActions"];
+v72 [ label = "OpenLocationTypes"];
+v73 [ label = "Kids"];
+v74 [ label = "NeedsSchooling"];
+v75 [ label = "NeedsDayCare"];
+v76 [ label = "GoingToSchool"];
+v77 [ label = "GoingToDayCare"];
+v78 [ label = "GoingToWork"];
+v79 [ label = "WhereTheyAt"];
+v80 [ label = "RandomActionAssign"];
+v81 [ label = "AdultActions"];
+v82 [ label = "NeedsActionAssignment"];
+v83 [ label = "LocationByActionAssign"];
+v84 [ label = "OpenForBusinessByAction"];
 v5 -> v4 [ color="green" ]
 v6 -> v5 [ constraint="false" ]
 v7 -> v6 [ constraint="false" ]
@@ -170,100 +165,97 @@ v39 -> v38 [ color="blue" ]
 v36 -> v39 [ constraint="false" ]
 v37 -> v39 [ constraint="false" ]
 v42 -> v41
-v41 -> v42 [ color="green" ]
-v43 -> v42 [ color="blue" ]
-v40 -> v43 [ constraint="false" ]
-v44 -> v41
+v43 -> v42 [ color="green" ]
+v41 -> v43 [ constraint="false" ]
+v36 -> v43 [ constraint="false" ]
+v44 -> v42 [ color="blue" ]
+v40 -> v44 [ constraint="false" ]
+v36 -> v44 [ constraint="false" ]
 v45 -> v41
-v46 -> v45
-v47 -> v46 [ color="green" ]
-v7 -> v47 [ constraint="false" ]
-v46 -> v47 [ constraint="false" ]
-v48 -> v47 [ constraint="false" ]
-v49 -> v48
-v42 -> v49
-v46 -> v49
-v28 -> v47 [ constraint="false" ]
-v50 -> v46 [ color="blue" ]
-v51 -> v50 [ constraint="false" ]
-v40 -> v51
-v21 -> v50 [ constraint="false" ]
-v52 -> v46 [ color="red" ]
-v34 -> v52 [ constraint="false" ]
-v42 -> v52 [ constraint="false" ]
-v53 -> v52 [ constraint="false" ]
-v45 -> v53
-v48 -> v53
-v49 -> v45
 v46 -> v41
+v47 -> v46
+v48 -> v47 [ color="green" ]
+v7 -> v48 [ constraint="false" ]
+v47 -> v48 [ constraint="false" ]
+v49 -> v48 [ constraint="false" ]
+v50 -> v49
+v42 -> v50
+v47 -> v50
+v28 -> v48 [ constraint="false" ]
+v51 -> v47 [ color="blue" ]
+v52 -> v51 [ constraint="false" ]
+v40 -> v52
+v21 -> v51 [ constraint="false" ]
+v53 -> v47 [ color="red" ]
+v34 -> v53 [ constraint="false" ]
+v42 -> v53 [ constraint="false" ]
+v54 -> v53 [ constraint="false" ]
+v46 -> v54
+v49 -> v54
+v50 -> v46
+v47 -> v41
 v19 -> v41
 v31 -> v41
-v56 -> v55 [ color="green" ]
-v36 -> v56 [ constraint="false" ]
-v41 -> v56 [ constraint="false" ]
-v57 -> v55 [ color="blue" ]
-v36 -> v57 [ constraint="false" ]
-v40 -> v57 [ constraint="false" ]
-v59 -> v58 [ color="green" ]
-v56 -> v59 [ constraint="false" ]
-v58 -> v59 [ constraint="false" ]
-v60 -> v58 [ color="blue" ]
-v36 -> v60 [ constraint="false" ]
-v40 -> v60 [ constraint="false" ]
-v42 -> v61
-v46 -> v61
-v61 -> v62
-v67 -> v66 [ color="blue" ]
-v63 -> v67 [ constraint="false" ]
-v36 -> v67 [ constraint="false" ]
-v65 -> v67 [ constraint="false" ]
-v69 -> v68 [ color="green" ]
-v70 -> v69 [ constraint="false" ]
-v71 -> v70
-v42 -> v71
-v67 -> v71
-v64 -> v71
-v68 -> v71
-v68 -> v70
-v19 -> v70
-v31 -> v70
-v72 -> v73
-v58 -> v73
-v36 -> v74
+v57 -> v56 [ color="green" ]
+v43 -> v57 [ constraint="false" ]
+v56 -> v57 [ constraint="false" ]
+v58 -> v56 [ color="blue" ]
+v36 -> v58 [ constraint="false" ]
+v40 -> v58 [ constraint="false" ]
+v42 -> v59
+v47 -> v59
+v59 -> v60
+v65 -> v64 [ color="blue" ]
+v61 -> v65 [ constraint="false" ]
+v36 -> v65 [ constraint="false" ]
+v63 -> v65 [ constraint="false" ]
+v67 -> v66 [ color="green" ]
+v68 -> v67 [ constraint="false" ]
+v69 -> v68
+v42 -> v69
+v65 -> v69
+v62 -> v69
+v66 -> v69
+v66 -> v68
+v19 -> v68
+v31 -> v68
+v70 -> v71
+v56 -> v71
+v36 -> v72
+v19 -> v73
+v73 -> v74
+v19 -> v74
 v74 -> v75
-v42 -> v75
+v73 -> v75
+v71 -> v76
 v72 -> v76
-v55 -> v76
-v75 -> v76
-v19 -> v77
-v77 -> v78
-v19 -> v78
-v78 -> v79
+v42 -> v76
+v74 -> v76
+v71 -> v77
+v72 -> v77
+v42 -> v77
+v75 -> v77
+v66 -> v78
+v72 -> v78
+v42 -> v78
+v76 -> v79
 v77 -> v79
-v73 -> v80
-v75 -> v80
-v42 -> v80
-v78 -> v80
-v73 -> v81
-v75 -> v81
-v42 -> v81
-v79 -> v81
-v68 -> v82
-v75 -> v82
+v78 -> v79
+v80 -> v79
+v81 -> v80
+v71 -> v81
+v82 -> v80
+v78 -> v82
+v77 -> v82
+v76 -> v82
+v19 -> v82
+v83 -> v79
 v80 -> v83
-v81 -> v83
-v82 -> v83
+v47 -> v83
 v84 -> v83
-v85 -> v84
-v73 -> v85
-v86 -> v84
-v82 -> v86
-v81 -> v86
-v80 -> v86
-v19 -> v86
-v87 -> v83
-v84 -> v87
-v46 -> v87
-v76 -> v87
-v42 -> v87
+v70 -> v84
+v56 -> v84
+v72 -> v84
+v42 -> v84
+v42 -> v83
 }

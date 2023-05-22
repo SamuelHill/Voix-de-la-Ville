@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using static UnityEngine.Input;
 using AgentRow = System.ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
-using LocationRow = System.ValueTuple<Location, LocationType, UnityEngine.Vector2Int, int, Date>;
+using LocationRow = System.ValueTuple<Location, LocationType, UnityEngine.Vector2Int, int, Date, LocationCategories>;
+using NewLocationRow = System.ValueTuple<Location, LocationType, UnityEngine.Vector2Int, int, Date>;
 
 internal class GridComparer : EqualityComparer<Vector2Int> {
     public override bool Equals(Vector2Int x, Vector2Int y) => x == y;
@@ -89,14 +90,14 @@ public class UnityComponent : MonoBehaviour {
         foreach (var newTile in tilesToOccupy)
             Tilemap.SetColor(newTile.Item1, newTile.Item2); }
     
-    internal bool SetIfLocations(IEnumerable<LocationRow> locations, Action<(Vector3Int, Color)[]> setFunc) {
+    internal bool SetIfLocations(IEnumerable<NewLocationRow> locations, Action<(Vector3Int, Color)[]> setFunc) {
         var tilesToSet = (from location in locations
             select (LotToTile(location.Item3), GetLocationColor(location.Item2))).ToArray(); ;
         if (tilesToSet.Length == 0) return false;
         setFunc(tilesToSet);
         return true; }
-    internal bool DeleteTiles(IEnumerable<LocationRow> locations) => SetIfLocations(locations, DeleteTiles);
-    internal bool OccupyTiles(IEnumerable<LocationRow> locations) => SetIfLocations(locations, OccupyTiles);
+    internal bool DeleteTiles(IEnumerable<NewLocationRow> locations) => SetIfLocations(locations, DeleteTiles);
+    internal bool OccupyTiles(IEnumerable<NewLocationRow> locations) => SetIfLocations(locations, OccupyTiles);
 
     internal void ProcessInitialLocations() {
         OccupyTiles(TalkOfTheTown.PrimordialLocations);

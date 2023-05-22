@@ -5,6 +5,7 @@ using TED;
 using TED.Interpreter;
 using TED.Tables;
 using TED.Utilities;
+using Unity.VisualScripting;
 using UnityEngine;
 using static TED.Language;
 
@@ -63,7 +64,7 @@ public class TalkOfTheTown {
     #region Tables and Indexers - for GUI
     public TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> Agents;
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> PrimordialLocations;
-    public TablePredicate<Location, LocationType, Vector2Int, int, Date> Locations;
+    public TablePredicate<Location, LocationType, Vector2Int, int, Date, LocationCategories> Locations;
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> NewLocations;
     public TablePredicate<Location, LocationType, Vector2Int, int, Date> VacatedLocations;
     public TablePredicate<LocationType, LocationCategories, DailyOperation, Schedule> LocationInformation;
@@ -72,7 +73,7 @@ public class TalkOfTheTown {
 
     public GeneralIndex<AgentRow, VitalStatus> AgentsVitalStatusIndex;
     public KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
-    public KeyIndex<(Location, LocationType, Vector2Int, int, Date), Vector2Int> LocationsPositionIndex;
+    public KeyIndex<(Location, LocationType, Vector2Int, int, Date, LocationCategories), Vector2Int> LocationsPositionIndex;
     public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
     #endregion
 
@@ -120,11 +121,9 @@ public class TalkOfTheTown {
         var age              = (Var<int>)"age";
         var previousAge      = (Var<int>)"previousAge";
         var founded          = (Var<int>)"founded";
-        var founded2         = (Var<int>)"founded2";
         var conception       = (Var<Date>)"conception";
         var dateOfBirth      = (Var<Date>)"dateOfBirth";
         var opening          = (Var<Date>)"opening";
-        var opening2         = (Var<Date>)"opening2";
 
         var location         = (Var<Location>)"location";
         var otherLocation    = (Var<Location>)"otherLocation";
@@ -269,13 +268,16 @@ public class TalkOfTheTown {
 
         // Procreate Indexed by woman allows for multiple partners (in the same tick)
         var Procreate = Predicate("Procreate", woman.Indexed, man, sex, child);
+        var ProcreateIndex = (GeneralIndex<BirthRow, Person>)Procreate.IndexFor(woman, false);
+        var RandomProcreateByWoman = Function<Person, BirthRow>("RandomProcreateByWoman", 
+            p => ProcreateIndex.RowsMatching(p).ToList().RandomElement());
         var ProcreateMan = Item2(man, Procreate);
         var ProcreateSex = Item3(sex, Procreate);
         var ProcreateChild = Item4(child, Procreate);
         var procreateRow = RowVariable(Procreate);
         // woman should be NonVar | man, sex, and child are all Var
         var RandomProcreate = Definition("RandomProcreate", 
-            woman, man, sex, child).Is(RandomIndexedElement(Procreate, woman, procreateRow),
+            woman, man, sex, child).Is(procreateRow == RandomProcreateByWoman[woman],
             ProcreateMan[procreateRow, man], ProcreateSex[procreateRow, sex], ProcreateChild[procreateRow, child]);
 
         // Gestation is that interstitial table between Procreate and birth. These are dependent events and
@@ -364,19 +366,16 @@ public class TalkOfTheTown {
         NewLocations = Predicate("NewLocations", location, locationType, position, founded, opening);
         VacatedLocations = Predicate("VacatedLocations", location, locationType, position, founded, opening);
 
-        // This is how Locations gets built from the above tables (relational connections)
-        Locations = Predicate("Locations", location.Key, locationType.Indexed, position.Key, founded, opening);
-        Locations.Initially.Where(PrimordialLocations);
-        Locations.Accumulates(NewLocations);
+        Locations = Predicate("Locations", location.Key, locationType.Indexed, 
+            position.Key, founded, opening, locationCategory.Indexed);
+        Locations.Initially.Where(PrimordialLocations, LocationInformation);
+        Locations.Add.If(NewLocations, LocationInformation);
         LocationsPositionIndex = Locations.KeyIndex(position);
-
-        var LocationOfCategory = Predicate("LocationOfCategory", location, locationCategory);
-        LocationOfCategory.Initially.Where(LocationInformation, PrimordialLocations);
-        LocationOfCategory.Add.If(LocationInformation, NewLocations);
-
+        
+        // for efficient checks to see if a location category is present:
         var AvailableCategories = Predicate("AvailableCategories", locationCategory);
         AvailableCategories.Initially.Where(LocationInformation, NonZero(LocationInformation, PrimordialLocations));
-        AvailableCategories.Add.If(LocationOfCategory.Add, NonZero(!AvailableCategories[locationCategory], LocationOfCategory.Add));
+        AvailableCategories.Add.If(Locations.Add, NonZero(!AvailableCategories[locationCategory], Locations.Add));
         #endregion
 
         // TODO : Separate out the dead into a new table... involve removal ?
@@ -386,7 +385,7 @@ public class TalkOfTheTown {
         var Homes = Predicate("Homes", occupant.Key, location.Indexed);
         Homes.Unique = true;
         var Occupancy = Predicate("Occupancy", location, count)
-            .If(Locations[location, LocationType.House, position, founded, opening], count == Count(Homes));
+            .If(Locations[location, LocationType.House, __, __, __, __], count == Count(Homes));
         var UnderOccupied = Predicate("UnderOccupied", location).If(Occupancy, count <= 5);
 
         // Using this to randomly assign one house per person...
@@ -400,18 +399,18 @@ public class TalkOfTheTown {
         Homes.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
 
         Homes.Set(occupant, location).If(JustDied[occupant],
-            Locations[location, LocationType.Cemetery, __, __, __]);
+            Locations[location, LocationType.Cemetery, __, __, __, __]);
         var BuriedAt = Predicate("BuriedAt", occupant, location)
-            .If(Locations[location, LocationType.Cemetery, __, __, __], Homes);
+            .If(Locations[location, LocationType.Cemetery, __, __, __, __], Homes);
         // with only the one cemetery for now, the follow will suffice for the GUI
         Buried = Predicate("Buried", person).If(BuriedAt[person, __]);
 
         // Distance per person makes most sense when measured from either where the person is,
         // or where they live. This handles the latter:
         var DistanceFromHome = Definition("DistanceFromHome", person, location, distance)
-            .Is(Locations[location, __, position, __, __], 
+            .Is(Locations[location, __, position, __, __, __], 
                 Homes[person, otherLocation],
-                Locations[otherLocation, __, otherPosition, __, __], 
+                Locations[otherLocation, __, otherPosition, __, __, __], 
                 distance == Distance[position, otherPosition]);
         #endregion
 
@@ -441,7 +440,7 @@ public class TalkOfTheTown {
         var RandomLot = Method<uint, Vector2Int>(Town.RandomLot);
         var NumLots = Length("NumLots", Locations);
         var IsVacant = Definition("IsVacant", position)
-            .Is(!Locations[__, __, position, __, __]);
+            .Is(!Locations[__, __, position, __, __, __]);
         var FreeLot = Definition("FreeLot", position)
             .Is(position == RandomLot[NumLots], IsVacant[position]);
         #endregion
@@ -456,7 +455,7 @@ public class TalkOfTheTown {
         // If you are only planning on adding a single location of the given type, this adds the check that
         // a location of locType doesn't already exist.
         void AddOneLocation(LocationType locType, string name, Goal readyToAdd) => AddNewNamedLocation(locType, name, 
-            !Locations[otherLocation, locType, otherPosition, founded2, opening2] & readyToAdd);
+            !Locations[__, locType, __, __, __, __] & readyToAdd);
 
         // This is the more realistic use case with a list of names for a give type to choose from.
         void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
@@ -502,7 +501,7 @@ public class TalkOfTheTown {
         #endregion
 
         #region Vocations:
-        var Vocations = Predicate("Vocations", job, employee, location, timeOfDay);
+        var Vocations = Predicate("Vocations", job.Indexed, employee, location.Indexed, timeOfDay.Indexed);
 
         var JobsToFill = Predicate("JobsToFill", location, job)
             .If(timeOfDay == CurrentTimeOfDay, Locations, VocationShifts,
@@ -527,17 +526,10 @@ public class TalkOfTheTown {
         #region Operation and Open logic:
         var InOperation = TestMethod<DailyOperation>(Time.InOperation);
         var IsOpen = TestMethod<Schedule>(Time.IsOpen);
-        // for better performance with larger numbers of locations, do a pre-calculation 
-        // of the location types that are accessible as this is the only place that
-        // the functions InOperation and IsOpen need to be called
+        // for more complex scheduling include an extra table of non-default schedule/operation per location
         var OpenLocationTypes = Predicate("OpenLocationTypes", locationType)
             .If(LocationInformation, InOperation[operation], IsOpen[schedule]);
-        OpenLocationTypes.ForceDynamic();
-        var OpenForBusiness = Predicate("OpenForBusiness", location)
-            .If(OpenLocationTypes, Locations); // for more complex scheduling have an extra table
-        // of non-default schedule or operation per location to include in this Predicate
-        var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
-            .If(ActionToCategory, LocationOfCategory, OpenForBusiness);
+        OpenLocationTypes.ForceDynamic(); // replace with Test/Function annotations
         #endregion
 
         #region Schooling:
@@ -546,20 +538,21 @@ public class TalkOfTheTown {
         var NeedsDayCare = Predicate("NeedsDayCare", person).If(Kids, !NeedsSchooling[person]);
 
         var GoingToSchool = Predicate("GoingToSchool", person, location).If(
-            AvailableActions[ActionType.GoingToSchool], OpenForBusiness,
-            Locations[location, LocationType.School, __, __, __], // only expecting one location...
+            AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.School],
+            Locations[location, LocationType.School, __, __, __, __], // only expecting one location...
             NeedsSchooling);
         var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
-            AvailableActions[ActionType.GoingToSchool], OpenForBusiness,
-            Locations[location, LocationType.DayCare, __, __, __], // only expecting one location...
+            AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.DayCare],
+            Locations[location, LocationType.DayCare, __, __, __, __], // only expecting one location...
             NeedsDayCare);
         #endregion
 
         #region Working:
         var GoingToWork = Predicate("GoingToWork", person, location)
-            .If(Vocations[__, person, location, CurrentTimeOfDay], OpenForBusiness);
+            .If(Vocations[__, person, location, CurrentTimeOfDay], OpenLocationTypes, Locations);
         #endregion
 
+        // TODO : Visiting action choose location of relative or partner (future friends)
         // TODO : Couple movements
         // TODO : Babies not in daycare follow mom
         #region Daily Movements:
@@ -579,6 +572,10 @@ public class TalkOfTheTown {
         var LocationByActionAssign = Predicate("LocationByActionAssign", person, location);
         LocationByActionAssign.If(RandomActionAssign[person, ActionType.StayingIn], Homes[person, location]);
         LocationByActionAssign.If(RandomActionAssign[person, ActionType.Visiting], Homes[person, location]);
+
+        // Choose the closest location with the action type assigned
+        var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
+            .If(ActionToCategory, AvailableCategories, OpenLocationTypes, Locations);
         LocationByActionAssign.If(RandomActionAssign, actionType != ActionType.StayingIn, actionType != ActionType.Visiting,
             Minimal(location, distance, OpenForBusinessByAction & DistanceFromHome[person, location, distance]));
 
