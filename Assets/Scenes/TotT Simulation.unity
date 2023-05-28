@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420034}
-  - component: {fileID: 519420033}
+  - component: {fileID: 519420035}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -209,23 +209,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &519420033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e275d0d2aa136774c9de9c7979ff5a27, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  StartYear: 1915
-  TownCenter: {x: 25, y: 0}
-  Tilemap: {fileID: 1000091122}
-  OccupiedLot: {fileID: 11400000, guid: d9d4319b8860fe748b914d7823963c6d, type: 2}
-  PrettyNamesOnly: 0
 --- !u!114 &519420034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,6 +229,23 @@ MonoBehaviour:
   m_CropFrameX: 1
   m_CropFrameY: 1
   m_StretchFill: 0
+--- !u!114 &519420035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6810649d7fdd32e448180772fd59a960, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  StartYear: 1915
+  PrettyNamesOnly: 0
+  TownCenter: {x: 25, y: 0}
+  Tilemap: {fileID: 1000091122}
+  OccupiedLot: {fileID: 11400000, guid: d9d4319b8860fe748b914d7823963c6d, type: 2}
 --- !u!1 &646401261
 GameObject:
   m_ObjectHideFlags: 0
