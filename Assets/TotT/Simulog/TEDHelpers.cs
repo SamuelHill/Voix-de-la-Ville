@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using TED;
 using TED.Interpreter;
+using static TED.Language;
 
 namespace TotT.Simulog {
     // ReSharper disable once InconsistentNaming
@@ -8,5 +10,13 @@ namespace TotT.Simulog {
             goals.Length == 0 ? null : goals.Aggregate((current, goal) => current & goal);
         public static Goal NonZero(Goal goal) => !!goal;
         public static Goal NonZero(params Goal[] goals) => NonZero(Goals(goals));
+
+        private static Function<int, int> Incr => Function<int, int>("Incr", i => i + 1);
+
+        public static TablePredicate<TKey, int> Increment<TKey>(TablePredicate table,
+            Var<TKey> key, Var<int> column, Definition<TKey, int> assignPrevious) {
+            var columnPrevious = (Var<int>)$"{column.Name}Previous";
+            return table.Set(key, column).If(assignPrevious[key, columnPrevious], column == Incr[columnPrevious]);
+        }
     }
 }

@@ -49,8 +49,13 @@ namespace TotT.Simulator {
             _year++;
             _clock = 1; }
 
-        public Function<T> Property<T>(string property) => Member<T>(this, property, "Current");
-        public PrimitiveTest TestProperty(string property) => TestMember(this, property);
+        private Function<T> Property<T>(string property) => Member<T>(this, property, "Current", false);
+        private PrimitiveTest TestProperty(string property) => TestMember(this, property, false);
+
+        public Function<int> CurrentYear => Property<int>(nameof(Year));
+        public Function<Date> CurrentDate => Property<Date>(nameof(Date));
+        public Function<TimeOfDay> CurrentTimeOfDay => Property<TimeOfDay>(nameof(TimeOfDay));
+        public PrimitiveTest CurrentlyMorning => TestProperty(nameof(IsAM));
 
         public int Year => (int)_year + _offset;
         public Month Month => CalcMonth(_clock);
@@ -61,6 +66,11 @@ namespace TotT.Simulator {
         public bool IsAM => TimeOfDay == TimeOfDay.AM;
         public bool IsPM => TimeOfDay == TimeOfDay.PM;
 
+        public PrimitiveTest<Date> IsToday => TestMethod<Date>(IsDate, false);
+        public PrimitiveTest<Date> NineMonthsPast => TestMethod<Date>(NineMonthsPastDate, false);
+        public PrimitiveTest<DailyOperation> CurrentlyOperating => TestMethod<DailyOperation>(InOperation, false);
+        public PrimitiveTest<Schedule> CurrentlyOpen => TestMethod<Schedule>(IsOpen, false);
+
         public bool IsDate(Date date) => date.Equals(Month, Day);
         public bool IsOpen(Schedule schedule) => schedule.IsOpen(DayOfWeek);
         public bool InOperation(DailyOperation operation) =>
@@ -69,7 +79,7 @@ namespace TotT.Simulator {
             (operation is DailyOperation.Evening && IsPM);
         public bool PastDate(Date date) => date.Month < Month || (date.Month == Month && date.Day < Day);
         public int YearsSince(Date date, int year) => Year - year + (PastDate(date) ? 1 : 0);
-        public bool NineMonthsPast(Date date) => DaysSince(date) >= NineMonths;
+        public bool NineMonthsPastDate(Date date) => DaysSince(date) >= NineMonths;
 
         // using byte for Since because all base calls to since are small enough to use byte
         private static byte Since(byte current, byte previous, byte max) => (byte)((max + (current - previous)) % max);

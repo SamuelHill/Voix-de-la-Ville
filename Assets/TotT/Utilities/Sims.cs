@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using TotT.Utilities;
+using TotT.Simulator;
 using TotT.ValueTypes;
 
-namespace TotT.Simulator {
+namespace TotT.Utilities {
     using static Randomize;
 
     public static class Sims {
@@ -53,8 +53,7 @@ namespace TotT.Simulator {
             var simpleCoordinateForT = (x: SimpleX(t), y: SimpleY(t));
             simpleCoordinateForT.x = SimpleXSolveForT(t);
             _ = bezierCoordinateForT == simplifiedCoordinateForT;
-            _ = simplifiedCoordinateForT == simpleCoordinateForT;
-        }
+            _ = simplifiedCoordinateForT == simpleCoordinateForT; }
 
         // The only part of the FertilityCurve math that needs to be pulled out as a standalone function:
         private static float SimpleY(float t) => -2.05f * MathF.Pow(t, 3) + 3 * MathF.Pow(t, 2);

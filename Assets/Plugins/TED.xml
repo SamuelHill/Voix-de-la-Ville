@@ -577,7 +577,7 @@
             Name, for debugging purposes
             </summary>
         </member>
-        <member name="M:TED.Function.#ctor(System.String)">
+        <member name="M:TED.Function.#ctor(System.String,System.Boolean)">
             <summary>
             Make a TedFunction with the specified name
             </summary>
@@ -590,12 +590,17 @@
             True if calls to this function should be printed as an operator rather than in F(args) format.
             </summary>
         </member>
+        <member name="P:TED.Function.IsPure">
+            <summary>
+            True if the function always returns the same value for the same inputs, and has no side-effects.
+            </summary>
+        </member>
         <member name="T:TED.Function`1">
             <summary>
             A wrapper for a C# function to allow it to be called from TED expressions
             </summary>
         </member>
-        <member name="M:TED.Function`1.#ctor(System.String,System.Func{`0})">
+        <member name="M:TED.Function`1.#ctor(System.String,System.Func{`0},System.Boolean)">
             <summary>
             Make a new TedFunction to wrap the specified C# function
             </summary>
@@ -611,7 +616,7 @@
             A wrapper for a C# function to allow it to be called from TED expressions
             </summary>
         </member>
-        <member name="M:TED.Function`2.#ctor(System.String,System.Func{`0,`1})">
+        <member name="M:TED.Function`2.#ctor(System.String,System.Func{`0,`1},System.Boolean)">
             <summary>
             Make a new TedFunction to wrap the specified C# function
             </summary>
@@ -626,7 +631,7 @@
             A wrapper for a C# function to allow it to be called from TED expressions
             </summary>
         </member>
-        <member name="M:TED.Function`3.#ctor(System.String,System.Func{`0,`1,`2})">
+        <member name="M:TED.Function`3.#ctor(System.String,System.Func{`0,`1,`2},System.Boolean)">
             <summary>
             Make a new TedFunction to wrap the specified C# function
             </summary>
@@ -641,7 +646,7 @@
             A wrapper for a C# function to allow it to be called from TED expressions
             </summary>
         </member>
-        <member name="M:TED.Function`4.#ctor(System.String,System.Func{`0,`1,`2,`3})">
+        <member name="M:TED.Function`4.#ctor(System.String,System.Func{`0,`1,`2,`3},System.Boolean)">
             <summary>
             Make a new TedFunction to wrap the specified C# function
             </summary>
@@ -656,7 +661,7 @@
             A wrapper for a C# function to allow it to be called from TED expressions
             </summary>
         </member>
-        <member name="M:TED.Function`5.#ctor(System.String,System.Func{`0,`1,`2,`3,`4})">
+        <member name="M:TED.Function`5.#ctor(System.String,System.Func{`0,`1,`2,`3,`4},System.Boolean)">
             <summary>
             Make a new TedFunction to wrap the specified C# function
             </summary>
@@ -671,7 +676,7 @@
             A wrapper for a C# function to allow it to be called from TED expressions
             </summary>
         </member>
-        <member name="M:TED.Function`6.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5})">
+        <member name="M:TED.Function`6.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5},System.Boolean)">
             <summary>
             Make a new TedFunction to wrap the specified C# function
             </summary>
@@ -686,7 +691,7 @@
             A wrapper for a C# function to allow it to be called from TED expressions
             </summary>
         </member>
-        <member name="M:TED.Function`7.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5,`6})">
+        <member name="M:TED.Function`7.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5,`6},System.Boolean)">
             <summary>
             Make a new TedFunction to wrap the specified C# function
             </summary>
@@ -701,7 +706,7 @@
             A wrapper for a C# function to allow it to be called from TED expressions
             </summary>
         </member>
-        <member name="M:TED.Function`8.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5,`6,`7})">
+        <member name="M:TED.Function`8.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5,`6,`7},System.Boolean)">
             <summary>
             Make a new TedFunction to wrap the specified C# function
             </summary>
@@ -746,16 +751,21 @@
             have different call objects because they need different state information
             </summary>
         </member>
-        <member name="F:TED.Interpreter.Call.Predicate">
+        <member name="F:TED.Interpreter.Call.Table">
             <summary>
             The predicate being called
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.Call.IsPure">
+            <summary>
+            True if the call always produces the same results for the same input tables, and has no side effects of its own.
             </summary>
         </member>
         <member name="M:TED.Interpreter.Call.#ctor(TED.Predicate)">
             <summary>
             Make an object to interpret a particular goal in a particular rule.
             </summary>
-            <param name="predicate"></param>
+            <param name="table"></param>
         </member>
         <member name="P:TED.Interpreter.Call.ArgumentPattern">
             <summary>
@@ -792,6 +802,9 @@
             Make a term representing a call to a TEDFunction
             </summary>
         </member>
+        <member name="P:TED.Interpreter.FunctionCall`1.IsPure">
+            <inheritdoc />
+        </member>
         <member name="M:TED.Interpreter.FunctionCall`1.ToString">
             <inheritdoc />
         </member>
@@ -806,6 +819,9 @@
             <summary>
             The function to be called
             </summary>
+        </member>
+        <member name="P:TED.Interpreter.FunctionCall`2.IsPure">
+            <inheritdoc />
         </member>
         <member name="F:TED.Interpreter.FunctionCall`2.Arg1">
             <summary>
@@ -832,6 +848,9 @@
             <summary>
             The function to be called
             </summary>
+        </member>
+        <member name="P:TED.Interpreter.FunctionCall`3.IsPure">
+            <inheritdoc />
         </member>
         <member name="F:TED.Interpreter.FunctionCall`3.Arg1">
             <summary>
@@ -864,6 +883,9 @@
             <summary>
             The function to be called
             </summary>
+        </member>
+        <member name="P:TED.Interpreter.FunctionCall`4.IsPure">
+            <inheritdoc />
         </member>
         <member name="F:TED.Interpreter.FunctionCall`4.Arg1">
             <summary>
@@ -902,6 +924,9 @@
             <summary>
             The function to be called
             </summary>
+        </member>
+        <member name="P:TED.Interpreter.FunctionCall`5.IsPure">
+            <inheritdoc />
         </member>
         <member name="F:TED.Interpreter.FunctionCall`5.Arg1">
             <summary>
@@ -946,6 +971,9 @@
             <summary>
             The function to be called
             </summary>
+        </member>
+        <member name="P:TED.Interpreter.FunctionCall`6.IsPure">
+            <inheritdoc />
         </member>
         <member name="F:TED.Interpreter.FunctionCall`6.Arg1">
             <summary>
@@ -996,6 +1024,9 @@
             <summary>
             The function to be called
             </summary>
+        </member>
+        <member name="P:TED.Interpreter.FunctionCall`7.IsPure">
+            <inheritdoc />
         </member>
         <member name="F:TED.Interpreter.FunctionCall`7.Arg1">
             <summary>
@@ -1052,6 +1083,9 @@
             <summary>
             The function to be called
             </summary>
+        </member>
+        <member name="P:TED.Interpreter.FunctionCall`8.IsPure">
+            <inheritdoc />
         </member>
         <member name="F:TED.Interpreter.FunctionCall`8.Arg1">
             <summary>
@@ -1348,6 +1382,11 @@
         <member name="F:TED.Interpreter.Rule.ValueCells">
             <summary>
             Cells holding the values of the variables in the rule.
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.Rule.IsPure">
+            <summary>
+            True if the rule only calls pure predicates.
             </summary>
         </member>
         <member name="P:TED.Interpreter.Rule.TotalExecutionTime">
@@ -1959,6 +1998,26 @@
             <summary>
             Add a rule for inferring this predicate from other predicates
             You cannot add rules to a table you add rows to using AddRow.
+            </summary>
+        </member>
+        <member name="T:TED.Interpreter.UpdateMode">
+            <summary>
+            The different types of tables that get updated in different ways
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.UpdateMode.BaseTable">
+            <summary>
+            This table is extensional and either not updated, or updated via .Accumulates, .Add, .Set, etc.
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.UpdateMode.Rules">
+            <summary>
+            This is an intensional table defined by rules
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.UpdateMode.Operator">
+            <summary>
+            This is an intensional table that is the output of an operator.
             </summary>
         </member>
         <member name="T:TED.MatchOperation`1">
@@ -2711,17 +2770,6 @@
         </member>
         <member name="M:TED.Language.RandomElement``8(TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7},TED.Term{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6,System.ValueTuple{``7}}})">
             <inheritdoc cref="M:TED.Language.RandomElement``1(TED.TablePredicate{``0},TED.Term{``0})"/>
-        </member>
-        <member name="M:TED.Language.RandomIndexedElement``2(TED.Tables.GeneralIndex{``0,``1},TED.Term{``1},TED.Term{``0})">
-            <summary>
-            Matches output against a random row from GeneralIndex where rowMatching has rows
-            </summary>
-        </member>
-        <member name="M:TED.Language.RandomIndexedElement``2(TED.Tables.TableIndex,TED.Term{``1},TED.Term{``0})">
-            <inheritdoc cref="M:TED.Language.RandomIndexedElement``2(TED.Tables.GeneralIndex{``0,``1},TED.Term{``1},TED.Term{``0})"/>
-        </member>
-        <member name="M:TED.Language.RandomIndexedElement``2(TED.TablePredicate,TED.Var{``1},TED.Term{``0})">
-            <inheritdoc cref="M:TED.Language.RandomIndexedElement``2(TED.Tables.GeneralIndex{``0,``1},TED.Term{``1},TED.Term{``0})"/>
         </member>
         <member name="M:TED.Language.In``1(TED.Term{``0},TED.Term{System.Collections.Generic.ICollection{``0}})">
             <summary>
@@ -3724,204 +3772,212 @@
             <param name="arg5">Fifth argument to the predicate</param>
             <param name="arg6">Sixth argument to the predicate</param>
         </member>
-        <member name="M:TED.Language.TestMember(System.Object,System.String)">
+        <member name="M:TED.Language.TestMember(System.Object,System.String,System.Boolean)">
             <summary>
             Makes a PrimitiveTest where the bool Func is built from a property on the given type
             </summary>
         </member>
-        <member name="M:TED.Language.Test(System.Func{System.Boolean})">
+        <member name="M:TED.Language.Test(System.Func{System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test(System.String,System.Func{System.Boolean})">
+        <member name="M:TED.Language.Test(System.String,System.Func{System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``1(System.Func{``0,System.Boolean})">
+        <member name="M:TED.Language.TestMethod``1(System.Func{``0,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the System.Predicate being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``1(System.String,System.Func{``0,System.Boolean})">
+        <member name="M:TED.Language.Test``1(System.String,System.Func{``0,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``2(System.Func{``0,``1,System.Boolean})">
+        <member name="M:TED.Language.TestMethod``2(System.Func{``0,``1,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``2(System.String,System.Func{``0,``1,System.Boolean})">
+        <member name="M:TED.Language.Test``2(System.String,System.Func{``0,``1,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``3(System.Func{``0,``1,``2,System.Boolean})">
+        <member name="M:TED.Language.TestMethod``3(System.Func{``0,``1,``2,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``3(System.String,System.Func{``0,``1,``2,System.Boolean})">
+        <member name="M:TED.Language.Test``3(System.String,System.Func{``0,``1,``2,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``4(System.Func{``0,``1,``2,``3,System.Boolean})">
+        <member name="M:TED.Language.TestMethod``4(System.Func{``0,``1,``2,``3,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``4(System.String,System.Func{``0,``1,``2,``3,System.Boolean})">
+        <member name="M:TED.Language.Test``4(System.String,System.Func{``0,``1,``2,``3,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``5(System.Func{``0,``1,``2,``3,``4,System.Boolean})">
+        <member name="M:TED.Language.TestMethod``5(System.Func{``0,``1,``2,``3,``4,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``5(System.String,System.Func{``0,``1,``2,``3,``4,System.Boolean})">
+        <member name="M:TED.Language.Test``5(System.String,System.Func{``0,``1,``2,``3,``4,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``6(System.Func{``0,``1,``2,``3,``4,``5,System.Boolean})">
+        <member name="M:TED.Language.TestMethod``6(System.Func{``0,``1,``2,``3,``4,``5,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``6(System.String,System.Func{``0,``1,``2,``3,``4,``5,System.Boolean})">
+        <member name="M:TED.Language.Test``6(System.String,System.Func{``0,``1,``2,``3,``4,``5,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``7(System.Func{``0,``1,``2,``3,``4,``5,``6,System.Boolean})">
+        <member name="M:TED.Language.TestMethod``7(System.Func{``0,``1,``2,``3,``4,``5,``6,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``7(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,System.Boolean})">
+        <member name="M:TED.Language.Test``7(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.TestMethod``8(System.Func{``0,``1,``2,``3,``4,``5,``6,``7,System.Boolean})">
+        <member name="M:TED.Language.TestMethod``8(System.Func{``0,``1,``2,``3,``4,``5,``6,``7,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Test``8(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7,System.Boolean})">
+        <member name="M:TED.Language.Test``8(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7,System.Boolean},System.Boolean)">
             <summary>
             Makes a PrimitiveTest with the given name
             </summary>
         </member>
-        <member name="M:TED.Language.Member``1(System.Object,System.String)">
+        <member name="M:TED.Language.Member``1(System.Object,System.String,System.Boolean)">
             <summary>
             Makes a Function where the Func T is built from a property on the given type
             </summary>
         </member>
-        <member name="M:TED.Language.Member``1(System.Object,System.String,System.String)">
+        <member name="M:TED.Language.Member``1(System.Object,System.String,System.String,System.Boolean)">
             <summary>
             Makes a Function where the Func T is built from a property on the given type and the name
             of the function is of the form: prependProperty
             </summary>
         </member>
-        <member name="M:TED.Language.Function``1(System.String,System.Func{``0})">
+        <member name="M:TED.Language.Function``1(System.String,System.Func{``0},System.Boolean)">
             <summary>
             Makes a function that can be placed in functional expressions
             </summary>
             <param name="name">Name, for debugging purposes</param>
             <param name="fn">C# code implementing the function</param>
+            <param name="isPure">True (default) if this function has no state or side effects</param>
         </member>
-        <member name="M:TED.Language.Method``1(System.Func{``0})">
+        <member name="M:TED.Language.Method``1(System.Func{``0},System.Boolean)">
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Function``2(System.String,System.Func{``0,``1})">
+        <member name="M:TED.Language.Function``2(System.String,System.Func{``0,``1},System.Boolean)">
             <summary>
             Makes a function that can be placed in functional expressions
             </summary>
             <param name="name">Name, for debugging purposes</param>
             <param name="fn">C# code implementing the function</param>
+            <param name="isPure">True (default) if this function has no state or side effects</param>
         </member>
-        <member name="M:TED.Language.Method``2(System.Func{``0,``1})">
+        <member name="M:TED.Language.Method``2(System.Func{``0,``1},System.Boolean)">
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Function``3(System.String,System.Func{``0,``1,``2})">
+        <member name="M:TED.Language.Function``3(System.String,System.Func{``0,``1,``2},System.Boolean)">
             <summary>
             Makes a function that can be placed in functional expressions
             </summary>
             <param name="name">Name, for debugging purposes</param>
             <param name="fn">C# code implementing the function</param>
+            <param name="isPure">True (default) if this function has no state or side effects</param>
         </member>
-        <member name="M:TED.Language.Method``3(System.Func{``0,``1,``2})">
+        <member name="M:TED.Language.Method``3(System.Func{``0,``1,``2},System.Boolean)">
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Function``4(System.String,System.Func{``0,``1,``2,``3})">
+        <member name="M:TED.Language.Function``4(System.String,System.Func{``0,``1,``2,``3},System.Boolean)">
             <summary>
             Makes a function that can be placed in functional expressions
             </summary>
             <param name="name">Name, for debugging purposes</param>
             <param name="fn">C# code implementing the function</param>
+            <param name="isPure">True (default) if this function has no state or side effects</param>
         </member>
-        <member name="M:TED.Language.Method``4(System.Func{``0,``1,``2,``3})">
+        <member name="M:TED.Language.Method``4(System.Func{``0,``1,``2,``3},System.Boolean)">
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Function``5(System.String,System.Func{``0,``1,``2,``3,``4})">
+        <member name="M:TED.Language.Function``5(System.String,System.Func{``0,``1,``2,``3,``4},System.Boolean)">
             <summary>
             Makes a function that can be placed in functional expressions
             </summary>
             <param name="name">Name, for debugging purposes</param>
             <param name="fn">C# code implementing the function</param>
+            <param name="isPure">True (default) if this function has no state or side effects</param>
         </member>
-        <member name="M:TED.Language.Method``5(System.Func{``0,``1,``2,``3,``4})">
+        <member name="M:TED.Language.Method``5(System.Func{``0,``1,``2,``3,``4},System.Boolean)">
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Function``6(System.String,System.Func{``0,``1,``2,``3,``4,``5})">
+        <member name="M:TED.Language.Function``6(System.String,System.Func{``0,``1,``2,``3,``4,``5},System.Boolean)">
             <summary>
             Makes a function that can be placed in functional expressions
             </summary>
             <param name="name">Name, for debugging purposes</param>
             <param name="fn">C# code implementing the function</param>
+            <param name="isPure">True (default) if this function has no state or side effects</param>
         </member>
-        <member name="M:TED.Language.Method``6(System.Func{``0,``1,``2,``3,``4,``5})">
+        <member name="M:TED.Language.Method``6(System.Func{``0,``1,``2,``3,``4,``5},System.Boolean)">
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Function``7(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6})">
+        <member name="M:TED.Language.Function``7(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6},System.Boolean)">
             <summary>
             Makes a function that can be placed in functional expressions
             </summary>
             <param name="name">Name, for debugging purposes</param>
             <param name="fn">C# code implementing the function</param>
+            <param name="isPure">True (default) if this function has no state or side effects</param>
         </member>
-        <member name="M:TED.Language.Method``7(System.Func{``0,``1,``2,``3,``4,``5,``6})">
+        <member name="M:TED.Language.Method``7(System.Func{``0,``1,``2,``3,``4,``5,``6},System.Boolean)">
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
         </member>
-        <member name="M:TED.Language.Function``8(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7})">
+        <member name="M:TED.Language.Function``8(System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.Boolean)">
             <summary>
             Makes a function that can be placed in functional expressions
             </summary>
             <param name="name">Name, for debugging purposes</param>
             <param name="fn">C# code implementing the function</param>
+            <param name="isPure">True (default) if this function has no state or side effects</param>
         </member>
-        <member name="M:TED.Language.Method``8(System.Func{``0,``1,``2,``3,``4,``5,``6,``7})">
+        <member name="M:TED.Language.Method``8(System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.Boolean)">
             <summary>
             Makes a Function with the same name as the Func being passed in
             </summary>
@@ -4176,6 +4232,67 @@
         <member name="M:TED.Language.Item8``8(TED.Var{``7},TED.TablePredicate{``0,``1,``2,``3,``4,``5,``6,``7})">
             <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
         </member>
+        <member name="M:TED.Language.CountsBy``1(System.String,TED.TablePredicate,TED.Var{``0},TED.Var{System.Int32})">
+            <summary>
+            Make a pivot table containing the number of rows for each value of column
+            </summary>
+            <param name="name">Name to give to the table</param>
+            <param name="t">TablePredicate to construct the pivot table for</param>
+            <param name="column">Column to find counts of</param>
+            <param name="count">Name to give to the count column in the output</param>
+            <typeparam name="TColumn"></typeparam>
+            <returns></returns>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:TED.Language.AssignRandomly``2(System.String,TED.TablePredicate{``0,``1})">
+            <summary>
+            Generate a random subset of the candidate pairs such that each item from the first column
+            appears exactly once.  Does not guarantee that the same item from the second column won't be
+            assigned to two different items from the first column.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
+            <typeparam name="T1">Type of the first column of the table</typeparam>
+            <typeparam name="T2">Type of the second column of the table</typeparam>
+            <returns>Table of random assignments</returns>
+            <exception cref="T:System.InvalidOperationException">If candidates table is not indexed.</exception>
+        </member>
+        <member name="M:TED.Language.AssignGreedily``2(System.String,TED.TablePredicate{``0,``1,System.Single})">
+            <summary>
+            Generate a random subset of the candidate pairs such that each item from the first column
+            appears exactly once.  Does not guarantee that the same item from the second column won't be
+            assigned to two different items from the first column.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
+            <typeparam name="T1">Type of the first column of the table</typeparam>
+            <typeparam name="T2">Type of the second column of the table</typeparam>
+            <returns>Table of assignments</returns>
+        </member>
+        <member name="M:TED.Language.AssignGreedily``2(System.String,TED.TablePredicate{``0,``1,System.Single},TED.TablePredicate{``1,System.Int32})">
+            <summary>
+            Generate a random subset of the candidate pairs such that each item from the first column
+            appears exactly once.  Does not guarantee that the same item from the second column won't be
+            assigned to two different items from the first column.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
+            <param name="capacities">Number of T1's that can be assigned to a given T2</param>
+            <typeparam name="T1">Type of the first column of the table</typeparam>
+            <typeparam name="T2">Type of the second column of the table</typeparam>
+            <returns>Table of assignments</returns>
+        </member>
+        <member name="M:TED.Language.MatchGreedily``1(System.String,TED.TablePredicate{``0,``0,System.Single})">
+            <summary>
+            Generate a random subset of the candidate pairs such that each item from the first column
+            appears exactly once.  Does not guarantee that the same item from the second column won't be
+            assigned to two different items from the first column.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
+            <typeparam name="T1">Type of the first column of the table</typeparam>
+            <returns>Table of assignments</returns>
+        </member>
         <member name="T:TED.Predicate">
             <summary>
             Untyped base class for all predicates
@@ -4194,6 +4311,12 @@
         <member name="M:TED.Predicate.#ctor(System.String)">
             <summary>
             Make a new predicate
+            </summary>
+        </member>
+        <member name="P:TED.Predicate.IsPure">
+            <summary>
+            True if the predicate is a table predicate or is a primitive that acts as a pure function,
+            i.e. it always has the same result for the same inputs and has no side-effects.
             </summary>
         </member>
         <member name="T:TED.Preprocessing.GoalAnalyzer">
@@ -4425,6 +4548,9 @@
             Implements evaluation of a functional expression and matching/storing it to a variable
             </summary>
         </member>
+        <member name="P:TED.Primitives.EvalPrimitive`1.EvalCall.IsPure">
+            <inheritdoc />
+        </member>
         <member name="T:TED.Primitives.InPrimitive`1">
             <summary>
             Implementation of the typed In(element, collection) primitive 
@@ -4473,6 +4599,11 @@
         <member name="P:TED.Primitives.OrPrimitive.Item(TED.Interpreter.Goal[])">
             <summary>
             True when all the subgoals are true
+            </summary>
+        </member>
+        <member name="P:TED.Primitives.PickRandomlyPrimitive`1.IsPure">
+            <summary>
+            Randomization does not behave like a pure predicate
             </summary>
         </member>
         <member name="T:TED.Primitives.PrimitivePredicate">
@@ -5096,7 +5227,10 @@
             A primitive that tests for truth using a C# function.
             </summary>
         </member>
-        <member name="M:TED.Primitives.PrimitiveTest.#ctor(System.String,System.Func{System.Boolean})">
+        <member name="P:TED.Primitives.PrimitiveTest.IsPure">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.Primitives.PrimitiveTest.#ctor(System.String,System.Func{System.Boolean},System.Boolean)">
             <summary>
             Make a primitive test, i.e. a predicate that can only be called on instantiated arguments.
             </summary>
@@ -5104,6 +5238,7 @@
             <param name="implementation">C# implementation.
                 This will be called with the values of the arguments.
                 If it returns true, the call to the test succeeds, otherwise, it fails and the system backtracks</param>
+            <param name="isPure">This test is deterministic and has no side effects</param>
         </member>
         <member name="M:TED.Primitives.PrimitiveTest.MakeCall(TED.Primitives.PrimitivePredicate.Goal,TED.Preprocessing.GoalAnalyzer)">
             <inheritdoc />
@@ -5113,6 +5248,9 @@
             A primitive that tests instantiated argument. Throws an instantiation exception if its argument is an unbound variable.
             </summary>
             <typeparam name="T1">Type of the argument to the predicate</typeparam>
+        </member>
+        <member name="P:TED.Primitives.PrimitiveTest`1.IsPure">
+            <inheritdoc />
         </member>
         <member name="M:TED.Primitives.PrimitiveTest`1.#ctor(System.String,System.Func{`0,System.Boolean},System.Boolean)">
             <summary>
@@ -5134,6 +5272,9 @@
             <typeparam name="T1">Type of the first argument to the predicate</typeparam>
             <typeparam name="T2">Type of the second argument to the predicate</typeparam>
         </member>
+        <member name="P:TED.Primitives.PrimitiveTest`2.IsPure">
+            <inheritdoc />
+        </member>
         <member name="M:TED.Primitives.PrimitiveTest`2.#ctor(System.String,System.Func{`0,`1,System.Boolean},System.Boolean)">
             <summary>
             Make a primitive test, i.e. a predicate that can only be called on instantiated arguments.
@@ -5154,6 +5295,9 @@
             <typeparam name="T1">Type of the first argument to the predicate</typeparam>
             <typeparam name="T2">Type of the second argument to the predicate</typeparam>
             <typeparam name="T3">Type of the third argument to the predicate</typeparam>
+        </member>
+        <member name="P:TED.Primitives.PrimitiveTest`3.IsPure">
+            <inheritdoc />
         </member>
         <member name="M:TED.Primitives.PrimitiveTest`3.#ctor(System.String,System.Func{`0,`1,`2,System.Boolean},System.Boolean)">
             <summary>
@@ -5177,6 +5321,9 @@
             <typeparam name="T3">Type of the third argument to the predicate</typeparam>
             <typeparam name="T4">Type of the fourth argument to the predicate</typeparam>
         </member>
+        <member name="P:TED.Primitives.PrimitiveTest`4.IsPure">
+            <inheritdoc />
+        </member>
         <member name="M:TED.Primitives.PrimitiveTest`4.#ctor(System.String,System.Func{`0,`1,`2,`3,System.Boolean},System.Boolean)">
             <summary>
             Make a primitive test, i.e. a predicate that can only be called on instantiated arguments.
@@ -5199,6 +5346,9 @@
             <typeparam name="T3">Type of the third argument to the predicate</typeparam>
             <typeparam name="T4">Type of the fourth argument to the predicate</typeparam>
             <typeparam name="T5">Type of the fifth argument to the predicate</typeparam>
+        </member>
+        <member name="P:TED.Primitives.PrimitiveTest`5.IsPure">
+            <inheritdoc />
         </member>
         <member name="M:TED.Primitives.PrimitiveTest`5.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,System.Boolean},System.Boolean)">
             <summary>
@@ -5224,6 +5374,9 @@
             <typeparam name="T5">Type of the fifth argument to the predicate</typeparam>
             <typeparam name="T6">Type of the sixth argument to the predicate</typeparam>
         </member>
+        <member name="P:TED.Primitives.PrimitiveTest`6.IsPure">
+            <inheritdoc />
+        </member>
         <member name="M:TED.Primitives.PrimitiveTest`6.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5,System.Boolean},System.Boolean)">
             <summary>
             Make a primitive test, i.e. a predicate that can only be called on instantiated arguments.
@@ -5248,6 +5401,9 @@
             <typeparam name="T5">Type of the fifth argument to the predicate</typeparam>
             <typeparam name="T6">Type of the sixth argument to the predicate</typeparam>
             <typeparam name="T7">Type of the seventh argument to the predicate</typeparam>
+        </member>
+        <member name="P:TED.Primitives.PrimitiveTest`7.IsPure">
+            <inheritdoc />
         </member>
         <member name="M:TED.Primitives.PrimitiveTest`7.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5,`6,System.Boolean},System.Boolean)">
             <summary>
@@ -5275,6 +5431,9 @@
             <typeparam name="T7">Type of the seventh argument to the predicate</typeparam>
             <typeparam name="T8">Type of the eighth argument to the predicate</typeparam>
         </member>
+        <member name="P:TED.Primitives.PrimitiveTest`8.IsPure">
+            <inheritdoc />
+        </member>
         <member name="M:TED.Primitives.PrimitiveTest`8.#ctor(System.String,System.Func{`0,`1,`2,`3,`4,`5,`6,`7,System.Boolean},System.Boolean)">
             <summary>
             Make a primitive test, i.e. a predicate that can only be called on instantiated arguments.
@@ -5293,6 +5452,11 @@
             Implementation of the RandomElement primitive
             </summary>
             <typeparam name="T">Type of list element we're selecting from</typeparam>
+        </member>
+        <member name="P:TED.Primitives.RandomElementPrimitive`1.IsPure">
+            <summary>
+            Randomization does not behave like a pure predicate
+            </summary>
         </member>
         <member name="T:TED.Primitives.RandomElementPrimitive`2">
             <summary>
@@ -5363,13 +5527,6 @@
             <typeparam name="T6">Type of the sixth column from the table we're selecting from</typeparam>
             <typeparam name="T7">Type of the seventh column from the table we're selecting from</typeparam>
             <typeparam name="T8">Type of the seventh column from the table we're selecting from</typeparam>
-        </member>
-        <member name="T:TED.Primitives.RandomIndexedElementPrimitive`2">
-            <summary>
-            Implementation of the RandomIndexedElement primitive
-            </summary>
-            <typeparam name="TRow">Type of the row</typeparam>
-            <typeparam name="T">Type of the column we are indexing from</typeparam>
         </member>
         <member name="T:TED.Primitives.UnaryArithmeticOperator`1">
             <summary>
@@ -5601,7 +5758,7 @@
             <returns>The table predicate</returns>
             <exception cref="T:System.ArgumentException">If columns is empty or longer than 8 elements.</exception>
         </member>
-        <member name="M:TED.TablePredicate.#ctor(System.String,TED.Interpreter.IColumnSpec[])">
+        <member name="M:TED.TablePredicate.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec[])">
             <summary>
             Make a new predicate
             </summary>
@@ -5616,19 +5773,14 @@
             True if this is a table in a simulation that needs to be updated dynamically
             </summary>
         </member>
-        <member name="F:TED.TablePredicate.MustBeDynamic">
-            <summary>
-            True if we need the predicate to be dynamic
-            </summary>
-        </member>
-        <member name="M:TED.TablePredicate.ForceDynamic">
-            <summary>
-            Forces a table to be treated as dynamic
-            </summary>
-        </member>
         <member name="P:TED.TablePredicate.IsStatic">
             <summary>
             True if this table doesn't change during a simulation.
+            </summary>
+        </member>
+        <member name="F:TED.TablePredicate.InitializationOnly">
+            <summary>
+            True if this table is only used for initialization of some other table
             </summary>
         </member>
         <member name="P:TED.TablePredicate.Unique">
@@ -5714,9 +5866,19 @@
             All indices for the table
             </summary>
         </member>
+        <member name="P:TED.TablePredicate.UpdateMode">
+            <summary>
+            How this table should be updated, if at all
+            </summary>
+        </member>
         <member name="F:TED.TablePredicate.Rules">
             <summary>
             Rules that can be used to prove goals involving this predicate
+            </summary>
+        </member>
+        <member name="F:TED.TablePredicate.OperatorDependencies">
+            <summary>
+            For tables that are the results of operators.  The tables the operator takes as inputs.
             </summary>
         </member>
         <member name="P:TED.TablePredicate.RuleExecutionTime">
@@ -5734,6 +5896,9 @@
             A predicate is "extensional" if it is defined by directly specifying its extension (the set of it instances/rows)
             using AddRow.  If it's defined by rules, it's "intensional".
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate.IsPure">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate.Clear">
             <summary>
@@ -5960,6 +6125,14 @@
             <param name="name">Name of the predicate</param>
             <param name="arg1">Default variable for the first argument</param>
         </member>
+        <member name="M:TED.TablePredicate`1.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec{`0})">
+            <summary>
+            Make a new table predicate with the specified name
+            </summary>
+            <param name="name">Name of the predicate</param>
+            <param name="updateProc">Procedure to call to update the contents of the table.  This should only be used for tables that are the results of operators</param>
+            <param name="arg1">Default variable for the first argument</param>
+        </member>
         <member name="M:TED.TablePredicate`1.FromCsv(System.String,System.String,TED.Interpreter.IColumnSpec{`0})">
             <summary>
             Read an extensional predicate from a CSV file
@@ -6059,6 +6232,15 @@
             Make a new table predicate with the specified name
             </summary>
             <param name="name">Name of the predicate</param>
+            <param name="arg1">Default variable for the first argument</param>
+            <param name="arg2">Default variable for the second argument</param>
+        </member>
+        <member name="M:TED.TablePredicate`2.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec{`0},TED.Interpreter.IColumnSpec{`1})">
+            <summary>
+            Make a new table predicate with the specified name
+            </summary>
+            <param name="name">Name of the predicate</param>
+            <param name="updateProc">Procedure to call to update the contents of the table.  This should only be used for tables that are the results of operators</param>
             <param name="arg1">Default variable for the first argument</param>
             <param name="arg2">Default variable for the second argument</param>
         </member>
@@ -6227,6 +6409,16 @@
             <param name="arg2">Default variable for the second argument</param>
             <param name="arg3">Default variable for the third argument</param>
         </member>
+        <member name="M:TED.TablePredicate`3.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec{`0},TED.Interpreter.IColumnSpec{`1},TED.Interpreter.IColumnSpec{`2})">
+            <summary>
+            Make a new table predicate with the specified name
+            </summary>
+            <param name="name">Name of the predicate</param>
+            <param name="updateProc">Procedure to call to update the contents of the table.  This should only be used for tables that are the results of operators</param>
+            <param name="arg1">Default variable for the first argument</param>
+            <param name="arg2">Default variable for the second argument</param>
+            <param name="arg3">Default variable for the third argument</param>
+        </member>
         <member name="P:TED.TablePredicate`3.Length">
             <summary>
             The number of rows in the table (i.e. the number of tuples in the extension of the predicate)
@@ -6373,6 +6565,17 @@
             Make a new table predicate with the specified name
             </summary>
             <param name="name">Name of the predicate</param>
+            <param name="arg1">Default variable for the first argument</param>
+            <param name="arg2">Default variable for the second argument</param>
+            <param name="arg3">Default variable for the third argument</param>
+            <param name="arg4">Default variable for the fourth argument</param>
+        </member>
+        <member name="M:TED.TablePredicate`4.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec{`0},TED.Interpreter.IColumnSpec{`1},TED.Interpreter.IColumnSpec{`2},TED.Interpreter.IColumnSpec{`3})">
+            <summary>
+            Make a new table predicate with the specified name
+            </summary>
+            <param name="name">Name of the predicate</param>
+            <param name="updateProc">Procedure to call to update the contents of the table.  This should only be used for tables that are the results of operators</param>
             <param name="arg1">Default variable for the first argument</param>
             <param name="arg2">Default variable for the second argument</param>
             <param name="arg3">Default variable for the third argument</param>
@@ -6527,6 +6730,18 @@
             Make a new table predicate with the specified name
             </summary>
             <param name="name">Name of the predicate</param>
+            <param name="arg1">Default variable for the first argument</param>
+            <param name="arg2">Default variable for the second argument</param>
+            <param name="arg3">Default variable for the third argument</param>
+            <param name="arg4">Default variable for the fourth argument</param>
+            <param name="arg5">Default variable for the fifth argument</param>
+        </member>
+        <member name="M:TED.TablePredicate`5.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec{`0},TED.Interpreter.IColumnSpec{`1},TED.Interpreter.IColumnSpec{`2},TED.Interpreter.IColumnSpec{`3},TED.Interpreter.IColumnSpec{`4})">
+            <summary>
+            Make a new table predicate with the specified name
+            </summary>
+            <param name="name">Name of the predicate</param>
+            <param name="updateProc">Procedure to call to update the contents of the table.  This should only be used for tables that are the results of operators</param>
             <param name="arg1">Default variable for the first argument</param>
             <param name="arg2">Default variable for the second argument</param>
             <param name="arg3">Default variable for the third argument</param>
@@ -6692,6 +6907,19 @@
             <param name="arg5">Default variable for the fifth argument</param>
             <param name="arg6">Default variable for the sixth argument</param>
         </member>
+        <member name="M:TED.TablePredicate`6.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec{`0},TED.Interpreter.IColumnSpec{`1},TED.Interpreter.IColumnSpec{`2},TED.Interpreter.IColumnSpec{`3},TED.Interpreter.IColumnSpec{`4},TED.Interpreter.IColumnSpec{`5})">
+            <summary>
+            Make a new table predicate with the specified name
+            </summary>
+            <param name="name">Name of the predicate</param>
+            <param name="updateProc">Procedure to call to update the contents of the table.  This should only be used for tables that are the results of operators</param>
+            <param name="arg1">Default variable for the first argument</param>
+            <param name="arg2">Default variable for the second argument</param>
+            <param name="arg3">Default variable for the third argument</param>
+            <param name="arg4">Default variable for the fourth argument</param>
+            <param name="arg5">Default variable for the fifth argument</param>
+            <param name="arg6">Default variable for the sixth argument</param>
+        </member>
         <member name="P:TED.TablePredicate`6.Length">
             <summary>
             The number of rows in the table (i.e. the number of tuples in the extension of the predicate)
@@ -6847,6 +7075,20 @@
             Make a new table predicate with the specified name
             </summary>
             <param name="name">Name of the predicate</param>
+            <param name="arg1">Default variable for the first argument</param>
+            <param name="arg2">Default variable for the second argument</param>
+            <param name="arg3">Default variable for the third argument</param>
+            <param name="arg4">Default variable for the fourth argument</param>
+            <param name="arg5">Default variable for the fifth argument</param>
+            <param name="arg6">Default variable for the sixth argument</param>
+            <param name="arg7">Default variable for the seventh argument</param>
+        </member>
+        <member name="M:TED.TablePredicate`7.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec{`0},TED.Interpreter.IColumnSpec{`1},TED.Interpreter.IColumnSpec{`2},TED.Interpreter.IColumnSpec{`3},TED.Interpreter.IColumnSpec{`4},TED.Interpreter.IColumnSpec{`5},TED.Interpreter.IColumnSpec{`6})">
+            <summary>
+            Make a new table predicate with the specified name
+            </summary>
+            <param name="name">Name of the predicate</param>
+            <param name="updateProc">Procedure to call to update the contents of the table.  This should only be used for tables that are the results of operators</param>
             <param name="arg1">Default variable for the first argument</param>
             <param name="arg2">Default variable for the second argument</param>
             <param name="arg3">Default variable for the third argument</param>
@@ -7021,6 +7263,21 @@
             <param name="arg6">Default variable for the sixth argument</param>
             <param name="arg7">Default variable for the seventh argument</param>
             <param name="arg8">Default variable for the eighth argument</param>
+        </member>
+        <member name="M:TED.TablePredicate`8.#ctor(System.String,System.Action{TED.Tables.Table},TED.Interpreter.IColumnSpec{`0},TED.Interpreter.IColumnSpec{`1},TED.Interpreter.IColumnSpec{`2},TED.Interpreter.IColumnSpec{`3},TED.Interpreter.IColumnSpec{`4},TED.Interpreter.IColumnSpec{`5},TED.Interpreter.IColumnSpec{`6},TED.Interpreter.IColumnSpec{`7})">
+            <summary>
+            Make a new table predicate with the specified name
+            </summary>
+            <param name="name">Name of the predicate</param>
+            <param name="updateProc">Procedure to call to update the contents of the table.  This should only be used for tables that are the results of operators</param>
+            <param name="arg1">Default variable for the first argument</param>
+            <param name="arg2">Default variable for the second argument</param>
+            <param name="arg3">Default variable for the third argument</param>
+            <param name="arg4">Default variable for the fourth argument</param>
+            <param name="arg5">Default variable for the fifth argument</param>
+            <param name="arg6">Default variable for the sixth argument</param>
+            <param name="arg7">Default variable for the seventh argument</param>
+            <param name="arg8">Default variable for the eight argument</param>
         </member>
         <member name="P:TED.TablePredicate`8.Length">
             <summary>
@@ -7587,6 +7844,11 @@
             to throw a type initialization exception rather than a missing method exception
             if you use an operator on a term whose type doesn't define it.  This just catches
             that exception and generates a more meaningful error message.
+            </summary>
+        </member>
+        <member name="P:TED.Term.IsPure">
+            <summary>
+            True if evaluating this has no side effects; the only terms that are not pure are calls to impure functions.
             </summary>
         </member>
         <member name="T:TED.Term`1">

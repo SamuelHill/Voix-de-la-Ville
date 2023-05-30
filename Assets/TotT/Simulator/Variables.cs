@@ -5,7 +5,7 @@ using UnityEngine;
 namespace TotT.Simulator {
     public static class Variables {
         // ReSharper disable InconsistentNaming
-        // Variables as fields (not c# var) will be lowercase for style/identification purposes.
+        // Variables as fields (not c# var) will still be lowercase for style/identification purposes.
         public static readonly Var<Person> person = (Var<Person>)"person";
         public static readonly Var<Person> partner = (Var<Person>)"partner";
         public static readonly Var<Person> parent = (Var<Person>)"parent";

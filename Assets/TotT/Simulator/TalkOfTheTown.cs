@@ -14,9 +14,10 @@ namespace TotT.Simulator {
     using AgentRow = ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
     using BirthRow = ValueTuple<Person, Person, Sex, Person>;
     using LocationRow = ValueTuple<Location, LocationType, Vector2Int, int, Date, LocationCategory>;
-    using static CsvParsing;
-    using static Randomize;
-    using static TEDHelpers;
+    using static CsvParsing; // DeclareParsers
+    using static Functions;
+    using static Randomize; // Seed and .RandomElement
+    using static TEDHelpers; // Increment and Goals(params...)
     using static Variables;
 
     public class TalkOfTheTown {
@@ -44,19 +45,9 @@ namespace TotT.Simulator {
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
+            Simulation.BeginPredicates();
             // ReSharper disable InconsistentNaming
             // Tables, despite being local variables, will be capitalized for style/identification purposes.
-
-            var SByteBellCurve = Method(Randomize.SByteBellCurve);
-            var Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
-            var CurrentYear = Time.Property<int>(nameof(Time.Year));
-            var CurrentDate = Time.Property<Date>(nameof(Time.Date));
-            var CurrentTimeOfDay = Time.Property<TimeOfDay>(nameof(Time.TimeOfDay));
-            var IsAM = Time.TestProperty(nameof(Time.IsAM));
-            var IsDate = TestMethod<Date>(Time.IsDate);
-            var PastDate = TestMethod<Date>(Time.PastDate);
-
-            Simulation.BeginPredicates();
 
             // *********************************** Agents: **********************************
 
@@ -69,7 +60,6 @@ namespace TotT.Simulator {
             RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
             RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
 
-            var NewPerson = Method<string, string, Person>(Sims.NewPerson);
             var RandomPerson = Definition("RandomPerson", sex, person);
             RandomPerson.Is(RandomFirstName, RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
             #endregion
@@ -126,9 +116,9 @@ namespace TotT.Simulator {
                 Csv("agents"), person, age, dateOfBirth, sex, sexuality);
 
             Agents.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeings);
-            Personality.Initially[person, facet, SByteBellCurve].Where(PrimordialBeings, Facets);
-            Aptitude.Initially[person, job, SByteBellCurve].Where(PrimordialBeings, Jobs);
-            #endregion
+            Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeings, Facets);
+            Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeings, Jobs);
+            #endregion  
 
             // TODO : Better util for couples - facet similarity or score based on facet logic (> X, score + 100)
             // TODO : Married couples separate from ProcreativePair - last name changes in 'nickname' like table
@@ -154,9 +144,8 @@ namespace TotT.Simulator {
                     AttractedSexuality[woman, man], !FamilialRelation[woman, man]);
 
             // Batch Selection from Market approach
-            var NormalScore = Method(BellCurve);
             var ScoredPairings = Predicate("ScoredPairings", woman.Indexed, man.Indexed, util)
-                .If(PotentialPairings, util == NormalScore);
+                .If(PotentialPairings, util == RandomNormal);
             var BestPairForWomen = Predicate("BestPairForWomen", woman, man, util)
                 .If(Women, Maximal((man, util), util, ScoredPairings));
             var BestPairForBoth = Predicate("BestPairForBoth", woman, man)
@@ -175,10 +164,7 @@ namespace TotT.Simulator {
             // TODO : Limit Procreate by Personality (family planning, could include likely-hood to use contraceptives)
             // TODO : Limit Procreate by time since last birth and total number of children with partner (Gestation table info)
             #region Birth and aging:
-            var FertilityRate = Method<int, float>(Sims.FertilityRate);
-            var RandomSex = Method(Sims.RandomSex);
             // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
-            var Surname = Function<Person, string>("Surname", p => p.LastName);
 
             // Procreate Indexed by woman allows for multiple partners (in the same tick)
             var Procreate = Predicate("Procreate", woman.Indexed, man, sex, child);
@@ -210,22 +196,20 @@ namespace TotT.Simulator {
             Procreate.If(ProcreativePair[woman, man], !Pregnant[woman],
                 Age[woman, age], Alive[man], Prob[FertilityRate[age]],
                 sex == RandomSex, RandomFirstName, child == NewPerson[firstName, Surname[man]]);
-            Gestation.Add[woman, man, sex, child, CurrentDate, true]
+            Gestation.Add[woman, man, sex, child, Time.CurrentDate, true]
                 .If(Count(Procreate[woman, __, __, __]) <= 1, Procreate);
-            Gestation.Add[woman, man, sex, child, CurrentDate, true]
+            Gestation.Add[woman, man, sex, child, Time.CurrentDate, true]
                 .If(Count(Procreate[woman, __, __, __]) > 1,
                     Procreate[woman, __, __, __], RandomProcreate);
 
             // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months with 'labor'
             var BirthTo = Predicate("BirthTo", woman, man, sex, child);
-            var NineMonthsPast = TestMethod<Date>(Time.NineMonthsPast);
-            BirthTo.If(Gestation[woman, man, sex, child, conception, true], NineMonthsPast[conception], Prob[0.8f]);
+            BirthTo.If(Gestation[woman, man, sex, child, conception, true], Time.NineMonthsPast[conception], Prob[0.8f]);
             Gestation.Set(child, state, false).If(BirthTo);
 
             // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
             // determine the child's sexuality in BirthTo, a child has the sexuality established when they are added to Agents
-            var RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random);
-            Agents.Add[person, 0, CurrentDate, sex, sexuality, VitalStatus.Alive].If(
+            Agents.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
                 BirthTo[__, __, sex, person], sexuality == RandomSexuality[sex]);
 
             Parents.Add.If(BirthTo[parent, __, __, child]);
@@ -234,20 +218,18 @@ namespace TotT.Simulator {
             // Increment age once per birthday (in the AM, if you weren't just born)
             var WhenToAge = Definition("WhenToAge", person, age).Is(
                 Agents[person, age, dateOfBirth, __, __, VitalStatus.Alive],
-                IsAM, IsDate[dateOfBirth], !BirthTo[__, __, __, person]);
-            Agents.Increment(person, age, WhenToAge);
+                Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !BirthTo[__, __, __, person]);
+            Increment(Agents, person, age, WhenToAge);
 
             // And add anything else that is needed for a new agent:
-            Personality.Add[person, facet, SByteBellCurve].If(Agents.Add, Facets);
-            Aptitude.Add[person, job, SByteBellCurve].If(Agents.Add, Jobs);
+            Personality.Add[person, facet, RandomNormalSByte].If(Agents.Add, Facets);
+            Aptitude.Add[person, job, RandomNormalSByte].If(Agents.Add, Jobs);
             // Agents.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
             // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
             #endregion
 
             // TODO : Cue drifters when new jobs need filling that the township can't meet requirements for
             #region Drifters - adults moving to town:
-            var RandomDate = Function("RandomDate", Date.Random);
-            var RandomAdultAge = Method(Sims.RandomAdultAge);
             var Drifter = Predicate("Drifter", person, sex, sexuality);
             Drifter[person, RandomSex, sexuality].If(Prob[Time.PerYear(0.05f)],
                 RandomPerson, sexuality == RandomSexuality[sex]);
@@ -285,6 +267,7 @@ namespace TotT.Simulator {
             Locations.Initially.Where(PrimordialLocations, LocationInformation);
             Locations.Add.If(NewLocations, LocationInformation);
             LocationsPositionIndex = Locations.KeyIndex(position);
+            var NumLots = Length("NumLots", Locations);
 
             // for efficient checks to see if a location category is present:
             var AvailableCategories = Predicate("AvailableCategories", locationCategory);
@@ -350,12 +333,7 @@ namespace TotT.Simulator {
             #endregion
 
             #region New Location helper Functions and Definitions:
-            // Title case string and make a Location object
-            var NewLocation = Method<string, Location>(Town.NewLocation);
-
             // Helper functions and definitions for creating new locations at a valid lot in town
-            var RandomLot = Method<uint, Vector2Int>(Town.RandomLot);
-            var NumLots = Length("NumLots", Locations);
             var IsVacant = Definition("IsVacant", position)
                 .Is(!Locations[__, __, position, __, __, __]);
             var FreeLot = Definition("FreeLot", position)
@@ -365,7 +343,7 @@ namespace TotT.Simulator {
             #region New Location helper functions (meta-sub-expressions):
             // Base case - useful mainly for testing/rapid development (you only need one string/generating a list of names can come second)
             void AddNewNamedLocation(LocationType locType, string name, Goal readyToAdd) =>
-                NewLocations[location, locType, position, CurrentYear, CurrentDate]
+                NewLocations[location, locType, position, Time.CurrentYear, Time.CurrentDate]
                     .If(FreeLot, Prob[Time.PerWeek(0.5f)], // Needs the random lot to be available & 'construction' isn't instantaneous
                     readyToAdd, location == NewLocation[name]); // otherwise, check the readyToAdd Goal and if it passes add a NewLocation
 
@@ -376,7 +354,7 @@ namespace TotT.Simulator {
 
             // This is the more realistic use case with a list of names for a give type to choose from.
             void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
-                NewLocations[location, locType, position, CurrentYear, CurrentDate]
+                NewLocations[location, locType, position, Time.CurrentYear, Time.CurrentDate]
                     .If(FreeLot, Prob[Time.PerWeek(0.5f)], readyToAdd,
                     RandomElement(names, locationName), location == NewLocation[locationName]);
             #endregion
@@ -421,14 +399,14 @@ namespace TotT.Simulator {
             var Vocations = Predicate("Vocations", job.Indexed, employee, location.Indexed, timeOfDay.Indexed);
 
             var JobsToFill = Predicate("JobsToFill", location, job)
-                .If(timeOfDay == CurrentTimeOfDay, Locations, VocationShifts,
+                .If(timeOfDay == Time.CurrentTimeOfDay, Locations, VocationShifts,
                     PositionsPerJob, Count(Vocations) < positions);
 
             var Candidates = Predicate("Candidates", person, job, location)
                 .If(JobsToFill, Maximal(person, aptitude, Goals(Alive[person],
                     !Vocations[__, person, __, __], Age, age > 18, Aptitude)));
 
-            Vocations.Add[job, person, location, CurrentTimeOfDay].If(Candidates);
+            Vocations.Add[job, person, location, Time.CurrentTimeOfDay].If(Candidates);
             #endregion
 
             // ********************************** Movement: *********************************
@@ -441,12 +419,9 @@ namespace TotT.Simulator {
             #endregion
 
             #region Operation and Open logic:
-            var InOperation = TestMethod<DailyOperation>(Time.InOperation);
-            var IsOpen = TestMethod<Schedule>(Time.IsOpen);
             // for more complex scheduling include an extra table of non-default schedule/operation per location
             var OpenLocationTypes = Predicate("OpenLocationTypes", locationType)
-                .If(LocationInformation, InOperation[operation], IsOpen[schedule]);
-            OpenLocationTypes.ForceDynamic(); // replace with Test/Function annotations
+                .If(LocationInformation, Time.CurrentlyOperating[operation], Time.CurrentlyOpen[schedule]);
             #endregion
 
             #region Schooling:
@@ -466,7 +441,7 @@ namespace TotT.Simulator {
 
             #region Working:
             var GoingToWork = Predicate("GoingToWork", person, location)
-                .If(Vocations[__, person, location, CurrentTimeOfDay], OpenLocationTypes, Locations);
+                .If(Vocations[__, person, location, Time.CurrentTimeOfDay], OpenLocationTypes, Locations);
             #endregion
 
             // TODO : Visiting action choose location of relative or partner (future friends)

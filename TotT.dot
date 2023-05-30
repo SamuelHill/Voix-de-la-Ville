@@ -70,7 +70,7 @@ v17 [ label = "PotentialPairings"];
 v18 [ label = "Women"];
 v21 [ label = "PrimordialBeings" fillcolor="gold" shape="diamond"];
 v24 [ label = "Men"];
-v28 [ label = "Drifter" fillcolor="deepskyblue" shape="diamond"];
+v28 [ label = "Drifter"];
 v30 [ label = "Jobs" fillcolor="gold" shape="diamond"];
 v34 [ label = "JustDied"];
 v35 [ label = "PairingBestOnce"];

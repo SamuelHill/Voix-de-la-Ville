@@ -61,7 +61,7 @@
     <Compile Include="Assets\TotT\ValueTypes\LocationType.cs" />
     <Compile Include="Assets\TotT\ValueTypes\Vocation.cs" />
     <Compile Include="Assets\TotT\ValueTypes\Person.cs" />
-    <Compile Include="Assets\TotT\Simulator\Sims.cs" />
+    <Compile Include="Assets\TotT\Utilities\Sims.cs" />
     <Compile Include="Assets\TotT\Utilities\Randomize.cs" />
     <Compile Include="Assets\TotT\ValueTypes\VitalStatus.cs" />
     <Compile Include="Assets\TotT\ValueTypes\SexualityName.cs" />
@@ -71,7 +71,7 @@
     <Compile Include="Assets\TotT\ValueTypes\Sexuality.cs" />
     <Compile Include="Assets\TotT\Utilities\StringProcessing.cs" />
     <Compile Include="Assets\TotT\Unity\GUIManager.cs" />
-    <Compile Include="Assets\TotT\Simulator\Town.cs" />
+    <Compile Include="Assets\TotT\Utilities\Town.cs" />
     <Compile Include="Assets\TotT\Unity\TileManager.cs" />
     <Compile Include="Assets\TotT\Unity\SimulationController.cs" />
     <Compile Include="Assets\TotT\Unity\GUIString.cs" />
@@ -91,6 +91,7 @@
     <Compile Include="Assets\TotT\Simulog\TEDHelpers.cs" />
     <Compile Include="Assets\TotT\Utilities\CsvParsing.cs" />
     <Compile Include="Assets\TotT\Simulator\Variables.cs" />
+    <Compile Include="Assets\TotT\Simulator\Functions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

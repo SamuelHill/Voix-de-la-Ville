@@ -1,9 +1,8 @@
 ﻿using System;
-using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
 
-namespace TotT.Simulator {
+namespace TotT.Utilities {
     using static Randomize;
 
     public static class Town {
