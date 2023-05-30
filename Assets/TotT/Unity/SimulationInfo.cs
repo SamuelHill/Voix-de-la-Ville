@@ -9,6 +9,7 @@ using UnityEngine;
 namespace TotT.Unity {
     using LocationRow = ValueTuple<Location, LocationType, Vector2Int, int, Date, LocationCategory>;
     using NewLocationRow = ValueTuple<Location, LocationType, Vector2Int, int, Date>;
+    using static StaticTables;
     using static StringProcessing;
 
     public class SimulationInfo { // Info strings from TalkOfTheTown & table interfacing for TileManager
@@ -26,17 +27,17 @@ namespace TotT.Unity {
         private IEnumerable<Vector2Int> ToDelete() => 
             from row in _talkOfTheTown.VacatedLocations select row.Item3;
 
-        private Color LocationColor(LocationType locationType) =>
-            _talkOfTheTown.LocationColorsIndex[locationType].Item2;
+        private static Color LocationColor(LocationType locationType) =>
+            LocationColorsIndex[locationType].Item2;
 
-        private (Vector2Int, Color)[] ToOccupyAndColor(IEnumerable<NewLocationRow> locations) =>
+        private static (Vector2Int, Color)[] ToOccupyAndColor(IEnumerable<NewLocationRow> locations) =>
             (from row in locations select (row.Item3, LocationColor(row.Item2))).ToArray();
 
         private bool ProcessNewLocations() =>
             _tileManager.OccupyAndColorLots(ToOccupyAndColor(_talkOfTheTown.NewLocations));
 
         private void ProcessPrimordialLocations() =>
-            _tileManager.OccupyAndColorLots(ToOccupyAndColor(_talkOfTheTown.PrimordialLocations));
+            _tileManager.OccupyAndColorLots(ToOccupyAndColor(PrimordialLocations));
 
         public void ProcessInitialLocations() {
             ProcessPrimordialLocations();

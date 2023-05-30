@@ -2704,6 +2704,11 @@
             Static class containing all the standard primitive predicates, such as Not.
             </summary>
         </member>
+        <member name="F:TED.Language.Once">
+            <summary>
+            True if argument is true, but blocks backtracking.
+            </summary>
+        </member>
         <member name="F:TED.Language.Not">
             <summary>
             True if its argument is false
@@ -4583,6 +4588,19 @@
             </summary>
         </member>
         <member name="M:TED.Primitives.NotPrimitive.MakeCall(TED.Primitives.PrimitivePredicate{TED.Interpreter.Goal}.Goal,TED.Preprocessing.GoalAnalyzer)">
+            <inheritdoc />
+        </member>
+        <member name="T:TED.Primitives.OncePrimitive">
+            <summary>
+            Implements negation of a goal
+            </summary>
+        </member>
+        <member name="F:TED.Primitives.OncePrimitive.Singleton">
+            <summary>
+            The object implementing Not
+            </summary>
+        </member>
+        <member name="M:TED.Primitives.OncePrimitive.MakeCall(TED.Primitives.PrimitivePredicate{TED.Interpreter.Goal}.Goal,TED.Preprocessing.GoalAnalyzer)">
             <inheritdoc />
         </member>
         <member name="T:TED.Primitives.OrPrimitive">

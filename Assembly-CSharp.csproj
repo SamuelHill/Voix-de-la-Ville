@@ -92,6 +92,7 @@
     <Compile Include="Assets\TotT\Utilities\CsvParsing.cs" />
     <Compile Include="Assets\TotT\Simulator\Variables.cs" />
     <Compile Include="Assets\TotT\Simulator\Functions.cs" />
+    <Compile Include="Assets\TotT\Simulator\StaticTables.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

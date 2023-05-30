@@ -17,6 +17,7 @@ namespace TotT.Simulator {
     using static CsvParsing; // DeclareParsers
     using static Functions;
     using static Randomize; // Seed and .RandomElement
+    using static StaticTables;
     using static TEDHelpers; // Increment and Goals(params...)
     using static Variables;
 
@@ -34,96 +35,83 @@ namespace TotT.Simulator {
             this() => Time = new Time(year, month, day, time);
 
         // public Tables and Indexers for GUI purposes (see Unity.SimulationInfo for most uses)
-        public TablePredicate<Location, LocationType, Vector2Int, int, Date> PrimordialLocations;
         public TablePredicate<Location, LocationType, Vector2Int, int, Date> NewLocations;
         public TablePredicate<Location, LocationType, Vector2Int, int, Date> VacatedLocations;
         public TablePredicate<Person> Buried;
         public GeneralIndex<AgentRow, VitalStatus> AgentsVitalStatusIndex;
-        public KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
         public KeyIndex<LocationRow, Vector2Int> LocationsPositionIndex;
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
             Simulation.BeginPredicates();
+            InitStaticTables();
             // ReSharper disable InconsistentNaming
             // Tables, despite being local variables, will be capitalized for style/identification purposes.
 
-            // *********************************** Agents: **********************************
+            // ************************************** Agents **************************************
+            // TODO : Cue drifters when new jobs need filling that the township can't meet requirements for
 
-            #region Names and new Person helpers:
-            var MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);
-            var FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
-            var Surnames = FromCsv("Surnames", Csv("english_surnames"), lastName);
-
-            var RandomFirstName = Definition("RandomFirstName", sex, firstName);
-            RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
-            RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
-
-            var RandomPerson = Definition("RandomPerson", sex, person);
-            RandomPerson.Is(RandomFirstName, RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
-            #endregion
-
-            #region Person traits - Personality and Aptitude:
-            var Facets = Predicate("Facets", facet);
-            Facets.AddRows(Enum.GetValues(typeof(Facet)).Cast<Facet>());
+            // Primordial beings init -
+            var Agents = Predicate("Agents", person.Key, 
+                age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
+            Agents.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeings);
+            // ditto for agents associated tables -
             var Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
-
-            var Jobs = Predicate("Jobs", job);
-            Jobs.AddRows(Enum.GetValues(typeof(Vocation)).Cast<Vocation>());
+            Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeings, Facets);
             var Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
-            #endregion
+            Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeings, Jobs);
 
-            #region Agents setup and state logic:
-            var Agents = Predicate("Agents", person.Key, age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
+            // For Population calculation in GUI
             AgentsVitalStatusIndex = (GeneralIndex<AgentRow, VitalStatus>)Agents.IndexFor(vitalStatus, false);
-            var Population = Function("Population",
-                () => AgentsVitalStatusIndex.RowsMatching(VitalStatus.Alive).Count());
 
-            // Dead and Alive definitions:
-            var Dead = Definition("Dead", person)
-                .Is(Agents[person, __, __, __, __, VitalStatus.Dead]);
+            // Dead and Alive logic -
             var Alive = Definition("Alive", person)
                 .Is(Agents[person, __, __, __, __, VitalStatus.Alive]);
             // special case Alive check where we also bind age
             var Age = Definition("Age", person, age)
                 .Is(Agents[person, age, __, __, __, VitalStatus.Alive]);
 
-            // Set Dead condition:
-            Agents.Set(person, vitalStatus, VitalStatus.Dead)
+            Agents.Set(person, vitalStatus, VitalStatus.Dead) // Dying
                 .If(Age, age > 60, Prob[Time.PerMonth(0.003f)]);
-            var JustDied = Predicate("JustDied", person).If(Agents.Set(person, vitalStatus));
-            #endregion
+            var JustDied = Predicate("JustDied", person)
+                .If(Agents.Set(person, vitalStatus)); // Assumes only two vitalstatus's
 
-            #region Sexual Attraction:
-            // special case Alive check where we also bind sex
-            var PersonSex = Definition("PersonSex", person, sex)
-                .Is(Agents[person, __, __, sex, __, VitalStatus.Alive]);
-            // special case Alive check where we also bind sexuality
-            var PersonSexuality = Definition("PersonSexuality", person, sexuality)
-                .Is(Agents[person, __, __, __, sexuality, VitalStatus.Alive]);
+            // Person Name helpers -
+            var RandomFirstName = Definition("RandomFirstName", sex, firstName);
+            RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
+            RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
+            // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
+            var RandomPerson = Definition("RandomPerson", sex, person)
+                .Is(RandomFirstName, RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
 
-            var SexualityAttracted = Test<Sexuality, Sex>(
-                "SexualityAttracted", (se, s) => se.IsAttracted(s));
+            // Independent Agent creation (not birth based) - 
+            var Drifter = Predicate("Drifter", person, sex, sexuality);
+            Drifter[person, RandomSex, sexuality].If(Prob[Time.PerYear(0.05f)],
+                RandomPerson, sexuality == RandomSexuality[sex]);
+            Agents.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
 
-            var AttractedSexuality = Definition("AttractedSexuality", person, partner)
-                .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], SexualityAttracted[sexuality, sexOfPartner],
-                    PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], SexualityAttracted[sexualOfPartner, sex]);
-            #endregion
+            // Add associated info that is needed for a new agent -
+            Personality.Add[person, facet, RandomNormalSByte].If(Agents.Add, Facets);
+            Aptitude.Add[person, job, RandomNormalSByte].If(Agents.Add, Jobs);
+            // Agents.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
+            // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
 
-            #region Primordial Beings initialize:
-            var PrimordialBeings = FromCsv("PrimordialBeings",
-                Csv("agents"), person, age, dateOfBirth, sex, sexuality);
-
-            Agents.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeings);
-            Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeings, Facets);
-            Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeings, Jobs);
-            #endregion  
-
+            // ************************************** Couples *************************************
             // TODO : Better util for couples - facet similarity or score based on facet logic (> X, score + 100)
             // TODO : Married couples separate from ProcreativePair - last name changes in 'nickname' like table
             // TODO : Limit PotentialPairings by interactions (avoids performance hit for batch selection)
             // TODO : Non-monogamous pairings (needs above limitation as well) - alter NewProcreativePair too...
+            // TODO : All non-intimate relationships 
+
+            var PersonSex = Definition("PersonSex", person, sex)
+                .Is(Agents[person, __, __, sex, __, VitalStatus.Alive]);
+            var PersonSexuality = Definition("PersonSexuality", person, sexuality)
+                .Is(Agents[person, __, __, __, sexuality, VitalStatus.Alive]);
+            var AttractedSexuality = Definition("AttractedSexuality", person, partner)
+                .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], SexualityAttracted[sexuality, sexOfPartner],
+                    PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], SexualityAttracted[sexualOfPartner, sex]);
+
             #region Couples (for procreation):
             var Men = Predicate("Men", man).If(
                 Agents[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
@@ -164,7 +152,6 @@ namespace TotT.Simulator {
             // TODO : Limit Procreate by Personality (family planning, could include likely-hood to use contraceptives)
             // TODO : Limit Procreate by time since last birth and total number of children with partner (Gestation table info)
             #region Birth and aging:
-            // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
 
             // Procreate Indexed by woman allows for multiple partners (in the same tick)
             var Procreate = Predicate("Procreate", woman.Indexed, man, sex, child);
@@ -220,45 +207,13 @@ namespace TotT.Simulator {
                 Agents[person, age, dateOfBirth, __, __, VitalStatus.Alive],
                 Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !BirthTo[__, __, __, person]);
             Increment(Agents, person, age, WhenToAge);
-
-            // And add anything else that is needed for a new agent:
-            Personality.Add[person, facet, RandomNormalSByte].If(Agents.Add, Facets);
-            Aptitude.Add[person, job, RandomNormalSByte].If(Agents.Add, Jobs);
-            // Agents.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
-            // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
             #endregion
-
-            // TODO : Cue drifters when new jobs need filling that the township can't meet requirements for
-            #region Drifters - adults moving to town:
-            var Drifter = Predicate("Drifter", person, sex, sexuality);
-            Drifter[person, RandomSex, sexuality].If(Prob[Time.PerYear(0.05f)],
-                RandomPerson, sexuality == RandomSexuality[sex]);
-            Agents.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
-            #endregion
-
-            // TODO : All non-intimate relationships 
 
             // ********************************* Locations: *********************************
-
-            #region Location Information Tables:
-            // Namely used for figuring out where a character can go (time and privacy based)
-            var LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"),
-                locationType.Key, locationCategory.Indexed, operation, schedule);
-
-            // Location Colors:
-            var CategoryColors = FromCsv("CategoryColors",
-                Csv("locationColors"), locationCategory.Key, color);
-            var LocationColors = Predicate("LocationColors", locationType.Key, color);
-            LocationColors.Unique = true;
-            LocationColors.Initially.Where(LocationInformation, CategoryColors);
-            LocationColorsIndex = LocationColors.KeyIndex(locationType);
-            #endregion
 
             #region Location Tables:
             // These tables are used for adding and removing tiles from the tilemap in unity efficiently -
             // by not having to check over all Locations. VacatedLocations is currently UNUSED
-            PrimordialLocations = FromCsv("PrimordialLocations", Csv("locations"),
-                location, locationType, position, founded, opening);
             NewLocations = Predicate("NewLocations", location, locationType, position, founded, opening);
             VacatedLocations = Predicate("VacatedLocations", location, locationType, position, founded, opening);
 
@@ -271,11 +226,8 @@ namespace TotT.Simulator {
 
             // for efficient checks to see if a location category is present:
             var AvailableCategories = Predicate("AvailableCategories", locationCategory);
-            AvailableCategories.Initially.Where(LocationInformation, NonZero(LocationInformation, PrimordialLocations));
-            AvailableCategories.Add.If(Locations.Add, NonZero(!AvailableCategories[locationCategory], Locations.Add));
-
-            //var NumInCategory = Function("NumInCategory", () =>
-            //LocationsPositionIndex.RowsMatching(VitalStatus.Alive).Count());
+            AvailableCategories.Initially.Where(Once[Goals(LocationInformation, PrimordialLocations)]);
+            AvailableCategories.Add.If(Once[Goals(Locations.Add, !AvailableCategories[locationCategory])]);
             #endregion
 
             // TODO : Separate out the dead into a new table... involve removal ?
@@ -326,7 +278,7 @@ namespace TotT.Simulator {
             //     .If(Homes[person, location], !Homes[__, location]);
             // var MoveToFamily = Predicate("MoveToFamily", person).If(WantToMove, !LivingWithFamily[person]);
 
-            var MovingIn = Predicate("MovingIn", person, location).If(NonZero(WantToMove[person]),
+            var MovingIn = Predicate("MovingIn", person, location).If(Once[WantToMove[person]],
                 RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
 
             Homes.Set(occupant, location).If(MovingIn[occupant, location]);
@@ -361,18 +313,16 @@ namespace TotT.Simulator {
 
             // TODO : Add more new locations for each location type
             #region New Location Logic:
-            var HouseNames = FromCsv("HouseNames", Csv("house_names"), locationName);
             AddNewLocation(LocationType.House, HouseNames, !!WantToMove[person]);
             // Currently the following only happens with drifters - everyone starts housed
             AddNewLocation(LocationType.House, HouseNames,
                 Count(Homes[person, location] & Alive[person]) < Count(Alive));
 
             AddOneLocation(LocationType.Hospital, "St. Asmodeus",
-                NonZero(Aptitude[person, Vocation.Doctor, aptitude],
-                    aptitude > 15, Age, age > 21));
+                Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
 
             AddOneLocation(LocationType.Cemetery, "The Old Cemetery",
-                NonZero(Alive, Age, age >= 60));
+                Once[Goals(Alive, Age, age >= 60)]);
 
             AddOneLocation(LocationType.DayCare, "Pumpkin Preschool",
                 Count(Age & (age < 6)) > 5);
@@ -382,20 +332,7 @@ namespace TotT.Simulator {
             #endregion
 
             // ********************************* Vocations: *********************************
-
-            #region Vocation Info:
-            var VocationLocations = FromCsv("VocationLocations",
-                Csv("vocationLocations"), job.Indexed, locationType.Indexed);
-            var PositionsPerJob = FromCsv("PositionsPerJob", // positions is per time of day
-                Csv("positionsPerJob"), job.Key, positions);
-            var OperatingTimes = FromCsv("OperatingTimes",
-                Csv("operatingTimes"), timeOfDay, operation);
-
-            var VocationShifts = Predicate("VocationShifts", locationType.Indexed, job.Indexed, timeOfDay)
-                .Initially.Where(VocationLocations, LocationInformation, OperatingTimes);
-            #endregion
-
-            #region Vocations:
+            
             var Vocations = Predicate("Vocations", job.Indexed, employee, location.Indexed, timeOfDay.Indexed);
 
             var JobsToFill = Predicate("JobsToFill", location, job)
@@ -407,22 +344,14 @@ namespace TotT.Simulator {
                     !Vocations[__, person, __, __], Age, age > 18, Aptitude)));
 
             Vocations.Add[job, person, location, Time.CurrentTimeOfDay].If(Candidates);
-            #endregion
 
             // ********************************** Movement: *********************************
-
-            #region Action Info:
-            var ActionToCategory = FromCsv("ActionToCategory",
-                Csv("actionCategories"), actionType, locationCategory);
+            
             var AvailableActions = Predicate("AvailableActions", actionType)
                 .If(ActionToCategory, AvailableCategories);
-            #endregion
-
-            #region Operation and Open logic:
             // for more complex scheduling include an extra table of non-default schedule/operation per location
             var OpenLocationTypes = Predicate("OpenLocationTypes", locationType)
                 .If(LocationInformation, Time.CurrentlyOperating[operation], Time.CurrentlyOpen[schedule]);
-            #endregion
 
             #region Schooling:
             var Kids = Predicate("Kids", person).If(Alive, Age, age < 18);

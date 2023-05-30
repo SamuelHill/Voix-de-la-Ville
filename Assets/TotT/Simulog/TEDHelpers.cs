@@ -8,8 +8,6 @@ namespace TotT.Simulog {
     public static class TEDHelpers {
         public static Goal Goals(params Goal[] goals) =>
             goals.Length == 0 ? null : goals.Aggregate((current, goal) => current & goal);
-        public static Goal NonZero(Goal goal) => !!goal;
-        public static Goal NonZero(params Goal[] goals) => NonZero(Goals(goals));
 
         private static Function<int, int> Incr => Function<int, int>("Incr", i => i + 1);
 
