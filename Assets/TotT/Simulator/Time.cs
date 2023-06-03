@@ -20,7 +20,6 @@ namespace TotT.Simulator {
         public const byte DaysPerMonth = DaysOfWeek * NumWeeksPerMonth; // 28
         public const byte TicksPerMonth = DaysPerMonth * TimesOfDay; // 56
         public const ushort NumTicks = Months * TicksPerMonth; // 672
-
         public const byte NineMonths = 9 * DaysPerMonth; // 252
         
         public Time(int year) => _offset = year;

@@ -11,10 +11,10 @@ namespace TotT.Simulog {
 
         private static Function<int, int> Incr => Function<int, int>("Incr", i => i + 1);
 
-        public static TablePredicate<TKey, int> Increment<TKey>(TablePredicate table,
+        public static void Increment<TKey>(TablePredicate table,
             Var<TKey> key, Var<int> column, Definition<TKey, int> assignPrevious) {
             var columnPrevious = (Var<int>)$"{column.Name}Previous";
-            return table.Set(key, column).If(assignPrevious[key, columnPrevious], column == Incr[columnPrevious]);
+            table.Set(key, column).If(assignPrevious[key, columnPrevious], column == Incr[columnPrevious]);
         }
     }
 }

@@ -209,9 +209,8 @@ namespace TotT.Simulator {
             Increment(Agents, person, age, WhenToAge);
             #endregion
 
-            // ********************************* Locations: *********************************
+            // ************************************ Locations *************************************
 
-            #region Location Tables:
             // These tables are used for adding and removing tiles from the tilemap in unity efficiently -
             // by not having to check over all Locations. VacatedLocations is currently UNUSED
             NewLocations = Predicate("NewLocations", location, locationType, position, founded, opening);
@@ -222,18 +221,28 @@ namespace TotT.Simulator {
             Locations.Initially.Where(PrimordialLocations, LocationInformation);
             Locations.Add.If(NewLocations, LocationInformation);
             LocationsPositionIndex = Locations.KeyIndex(position);
-            var NumLots = Length("NumLots", Locations);
+
+            // Helper functions and definitions for creating new locations at a valid lot in town
+            var NumLots = Length("NumLots", Locations); // NumLots helps expand town borders
+            var IsVacant = Definition("IsVacant", position)
+                .Is(!Locations[__, __, position, __, __, __]);
+            var FreeLot = Definition("FreeLot", position)
+                .Is(position == RandomLot[NumLots], IsVacant[position]);
 
             // for efficient checks to see if a location category is present:
             var AvailableCategories = Predicate("AvailableCategories", locationCategory);
             AvailableCategories.Initially.Where(Once[Goals(LocationInformation, PrimordialLocations)]);
             AvailableCategories.Add.If(Once[Goals(Locations.Add, !AvailableCategories[locationCategory])]);
-            #endregion
 
-            // TODO : Separate out the dead into a new table... involve removal ?
+            var AvailableActions = Predicate("AvailableActions", actionType)
+                .If(ActionToCategory, AvailableCategories);
+
+            // ************************************** Housing *************************************
+            // TODO : Separate out the dead into a new Homes-like table... involve removal ?
             // TODO : Include ApartmentComplex locations in Housing logic
             // TODO : Include Inn locations in Housing logic - drifters start at an Inn ?
-            #region Housing:
+            // TODO : Families move in and out of houses together
+
             var Homes = Predicate("Homes", occupant.Key, location.Indexed);
             Homes.Unique = true;
             var Occupancy = Predicate("Occupancy", location, count)
@@ -264,12 +273,8 @@ namespace TotT.Simulator {
                     Homes[person, otherLocation],
                     Locations[otherLocation, __, otherPosition, __, __, __],
                     distance == Distance[position, otherPosition]);
-            #endregion
-
-            // TODO : More "logic" behind who moves in and out of houses
-            #region Moving houses:
+            
             var WantToMove = Predicate("WantToMove", person).If(Homes[person, location], Occupancy, count >= 8);
-
             // var LivingWithFamily = Predicate("LivingWithFamily", person)
             //     .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
             // var FamilyHome = Predicate("FamilyHome", location)
@@ -277,22 +282,13 @@ namespace TotT.Simulator {
             // var LivingAlone = Predicate("LivingAlone", person)
             //     .If(Homes[person, location], !Homes[__, location]);
             // var MoveToFamily = Predicate("MoveToFamily", person).If(WantToMove, !LivingWithFamily[person]);
-
-            var MovingIn = Predicate("MovingIn", person, location).If(Once[WantToMove[person]],
+            var MovingIn = Predicate("MovingIn", person, location).If(Once[WantToMove[__]],
                 RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
-
             Homes.Set(occupant, location).If(MovingIn[occupant, location]);
-            #endregion
 
-            #region New Location helper Functions and Definitions:
-            // Helper functions and definitions for creating new locations at a valid lot in town
-            var IsVacant = Definition("IsVacant", position)
-                .Is(!Locations[__, __, position, __, __, __]);
-            var FreeLot = Definition("FreeLot", position)
-                .Is(position == RandomLot[NumLots], IsVacant[position]);
-            #endregion
-
-            #region New Location helper functions (meta-sub-expressions):
+            // ********************************** New Locations ***********************************
+            // TODO : Add more new locations for each location type
+            
             // Base case - useful mainly for testing/rapid development (you only need one string/generating a list of names can come second)
             void AddNewNamedLocation(LocationType locType, string name, Goal readyToAdd) =>
                 NewLocations[location, locType, position, Time.CurrentYear, Time.CurrentDate]
@@ -309,10 +305,8 @@ namespace TotT.Simulator {
                 NewLocations[location, locType, position, Time.CurrentYear, Time.CurrentDate]
                     .If(FreeLot, Prob[Time.PerWeek(0.5f)], readyToAdd,
                     RandomElement(names, locationName), location == NewLocation[locationName]);
-            #endregion
 
-            // TODO : Add more new locations for each location type
-            #region New Location Logic:
+            
             AddNewLocation(LocationType.House, HouseNames, !!WantToMove[person]);
             // Currently the following only happens with drifters - everyone starts housed
             AddNewLocation(LocationType.House, HouseNames,
@@ -329,7 +323,6 @@ namespace TotT.Simulator {
 
             AddOneLocation(LocationType.School, "Talk of the Township High",
                 Count(Age & (age >= 5) & (age < 18)) > 5);
-            #endregion
 
             // ********************************* Vocations: *********************************
             
@@ -346,14 +339,14 @@ namespace TotT.Simulator {
             Vocations.Add[job, person, location, Time.CurrentTimeOfDay].If(Candidates);
 
             // ********************************** Movement: *********************************
-            
-            var AvailableActions = Predicate("AvailableActions", actionType)
-                .If(ActionToCategory, AvailableCategories);
+            // TODO : Visiting action choose location of relative or partner (future friends)
+            // TODO : Couple movements
+            // TODO : Babies not in daycare follow mom
+
             // for more complex scheduling include an extra table of non-default schedule/operation per location
             var OpenLocationTypes = Predicate("OpenLocationTypes", locationType)
                 .If(LocationInformation, Time.CurrentlyOperating[operation], Time.CurrentlyOpen[schedule]);
-
-            #region Schooling:
+            
             var Kids = Predicate("Kids", person).If(Alive, Age, age < 18);
             var NeedsSchooling = Predicate("NeedsSchooling", person).If(Kids, Age, age > 6);
             var NeedsDayCare = Predicate("NeedsDayCare", person).If(Kids, !NeedsSchooling[person]);
@@ -366,17 +359,10 @@ namespace TotT.Simulator {
                 AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.DayCare],
                 Locations[location, LocationType.DayCare, __, __, __, __], // only expecting one location...
                 NeedsDayCare);
-            #endregion
-
-            #region Working:
+            
             var GoingToWork = Predicate("GoingToWork", person, location)
                 .If(Vocations[__, person, location, Time.CurrentTimeOfDay], OpenLocationTypes, Locations);
-            #endregion
 
-            // TODO : Visiting action choose location of relative or partner (future friends)
-            // TODO : Couple movements
-            // TODO : Babies not in daycare follow mom
-            #region Daily Movements:
             var WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType, location.Indexed);
             WhereTheyAt.Unique = true;
             WhereTheyAtLocationIndex = (GeneralIndex<(Person, ActionType, Location), Location>)WhereTheyAt.IndexFor(location, false);
@@ -404,7 +390,6 @@ namespace TotT.Simulator {
             WhereTheyAt[person, ActionType.GoingToSchool, location].If(GoingToDayCare);
             WhereTheyAt[person, ActionType.GoingToWork, location].If(GoingToWork);
             WhereTheyAt.If(RandomActionAssign, LocationByActionAssign);
-            #endregion
 
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();

@@ -93,6 +93,10 @@
     <Compile Include="Assets\TotT\Simulator\Variables.cs" />
     <Compile Include="Assets\TotT\Simulator\Functions.cs" />
     <Compile Include="Assets\TotT\Simulator\StaticTables.cs" />
+    <Compile Include="Assets\TotT\Simulog\Spawning.cs" />
+    <Compile Include="Assets\TotT\Simulog\ColumnAssignment.cs" />
+    <Compile Include="Assets\TotT\Simulog\Event.cs" />
+    <Compile Include="Assets\TotT\ValueTypes\TimePoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
