@@ -13,6 +13,7 @@ namespace TotT.Utilities {
         public static void DeclareParsers() {
             CsvReader.DeclareParser(typeof(Vector2Int), ParseVector2Int);
             CsvReader.DeclareParser(typeof(Date), ParseDate);
+            CsvReader.DeclareParser(typeof(TimePoint), ParseTimePoint);
             CsvReader.DeclareParser(typeof(Sexuality), ParseSexuality);
             CsvReader.DeclareParser(typeof(Schedule), ParseSchedule);
             CsvReader.DeclareParser(typeof(Color), ParseColor);
@@ -22,6 +23,7 @@ namespace TotT.Utilities {
         private static object ParsePerson(string personString) => Person.FromString(personString);
         private static object ParseLocation(string locationString) => Location.FromString(locationString);
         private static object ParseDate(string dateString) => Date.FromString(dateString);
+        private static object ParseTimePoint(string dateString) => TimePoint.FromString(dateString);
         private static object ParseSexuality(string sexualityString) => Sexuality.FromString(sexualityString);
         private static object ParseSchedule(string scheduleString) => Schedule.FromString(scheduleString);
 

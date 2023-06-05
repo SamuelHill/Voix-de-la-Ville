@@ -30,10 +30,10 @@ namespace TotT.Simulator {
         public static readonly Var<sbyte> aptitude = (Var<sbyte>)"aptitude";
 
         public static readonly Var<int> age = (Var<int>)"age";
-        public static readonly Var<int> founded = (Var<int>)"founded";
         public static readonly Var<Date> conception = (Var<Date>)"conception";
         public static readonly Var<Date> dateOfBirth = (Var<Date>)"dateOfBirth";
-        public static readonly Var<Date> opening = (Var<Date>)"opening";
+        public static readonly Var<TimePoint> dob = (Var<TimePoint>)"dob";
+        public static readonly Var<TimePoint> founding = (Var<TimePoint>)"founding";
 
         public static readonly Var<Location> location = (Var<Location>)"location";
         public static readonly Var<Location> otherLocation = (Var<Location>)"otherLocation";
@@ -51,7 +51,7 @@ namespace TotT.Simulator {
         public static readonly Var<ActionType> actionType = (Var<ActionType>)"actionType";
         public static readonly Var<int> distance = (Var<int>)"distance";
         public static readonly Var<int> count = (Var<int>)"count";
-        public static readonly Var<int> util = (Var<int>)"util";
+        public static readonly Var<float> score = (Var<float>)"score";
         public static readonly Var<bool> state = (Var<bool>)"state";
     }
 }

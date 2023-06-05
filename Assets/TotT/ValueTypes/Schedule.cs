@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using TotT.Simulator;
+using TotT.Utilities;
 
 namespace TotT.ValueTypes {
+    using static Calendar;
+
     public readonly struct Schedule {
         private readonly bool[] _openOn; // OpenOn.Length == Time.DaysOfWeek
 
@@ -27,7 +29,7 @@ namespace TotT.ValueTypes {
 
         private string DayOfWeekList() {
             var strings = new List<string>();
-            for (var i = 0; i < Time.DaysOfWeek; i++)
+            for (var i = 0; i < DaysOfWeek; i++)
                 if (_openOn[i]) strings.Add(((DayOfWeek)i).ToString());
             return string.Join(", ", strings); }
 

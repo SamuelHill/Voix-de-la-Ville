@@ -1,83 +1,58 @@
-﻿using System;
-using TED.Primitives;
+﻿using TED.Primitives;
 using TED;
 using TotT.Utilities;
+using TotT.ValueTypes;
 using static TED.Language;
 
 namespace TotT.Simulator {
-    using ValueTypes; // easier than specifying to not use System.DayOfWeek
+    using static Calendar;
     
-    // ReSharper disable MemberCanBePrivate.Global
     public class Time {
-        private ushort _clock = 1; // no day zero... makes the % math more succinct
-        private uint _year; // internal way to keep track of years, starts at 0
-        private readonly int _offset; // int year for pretty dates, optional (can be -)
+        private uint _clock;
+        private readonly int _offset;
 
-        public const byte Months = 12; // Enum.GetValues(typeof(Month)).Length;
-        public const byte DaysOfWeek = 7; // Enum.GetValues(typeof(DayOfWeek)).Length;
-        public const byte TimesOfDay = 2; // Enum.GetValues(typeof(TimeOfDay)).Length;
-        public const byte NumWeeksPerMonth = 4;
-        public const byte DaysPerMonth = DaysOfWeek * NumWeeksPerMonth; // 28
-        public const byte TicksPerMonth = DaysPerMonth * TimesOfDay; // 56
-        public const ushort NumTicks = Months * TicksPerMonth; // 672
-        public const byte NineMonths = 9 * DaysPerMonth; // 252
-        
+        public void Tick() => _clock++;
+
         public Time(int year) => _offset = year;
-        public Time(int year, ushort tick = 1) : this(year) => _clock = CheckTickInRange(tick);
-        public Time(int year, Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) : 
-            this(year) => _clock = CalcClockTick(month, CheckDayInRange(day), time);
+        public Time(int year, ushort tick) : this(year) => _clock = CheckTickInCalendar(tick);
+        public Time(int year, Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) :
+            this(year) => _clock = CalcCalendarTick(month, day, time);
 
-        internal static byte CheckDayInRange(byte day) => day is > DaysPerMonth or 0 ? 
-            throw new ArgumentException($"day not in range 1 to {DaysPerMonth}") : day;
-        private static ushort CheckTickInRange(ushort tick) => tick is > NumTicks or 0 ? 
-            throw new ArgumentException($"tick not in range 1 to {NumTicks}") : tick;
+        private Function<T> Property<T>(string property) => 
+            Member<T>(this, property, "Current", false);
+        private PrimitiveTest TestProperty(string property) => 
+            TestMember(this, property, false);
 
-        // Reverse calculation of clock tick from month, day, and time
-        private static ushort CalcClockTick(Month month, byte day, TimeOfDay time) =>
-            (ushort)((byte)month * TicksPerMonth + (day - 1) * TimesOfDay + (byte)time + 1);
-
-        // Normal calculations from clock tick to various values
-        private static Month CalcMonth(ushort clock) => (Month)((clock - 1) / TicksPerMonth);
-        private static byte CalcDay(ushort clock) => (byte)((clock - 1) % TicksPerMonth / TimesOfDay + 1);
-        private static DayOfWeek CalcDayOfWeek(ushort clock) => (DayOfWeek)((clock - 1) / TimesOfDay % DaysOfWeek);
-        private static TimeOfDay CalcTimeOfDay(ushort clock) => (TimeOfDay)((clock + 1) % TimesOfDay);
-
-        public void Tick() {
-            _clock++;
-            if (_clock <= NumTicks) return;
-            _year++;
-            _clock = 1; }
-
-        private Function<T> Property<T>(string property) => Member<T>(this, property, "Current", false);
-        private PrimitiveTest TestProperty(string property) => TestMember(this, property, false);
+        public int Year => CalcYear(_clock, _offset);
+        public Month Month => CalcMonth(CalendarFromClock(_clock));
+        public byte Day => CalcDay(CalendarFromClock(_clock));
+        public Date Date => new(Month, Day);
+        public TimePoint TimePoint => new(_clock, Year);
+        public DayOfWeek DayOfWeek => CalcDayOfWeek(CalendarFromClock(_clock));
+        public TimeOfDay TimeOfDay => CalcTimeOfDay(CalendarFromClock(_clock));
 
         public Function<int> CurrentYear => Property<int>(nameof(Year));
         public Function<Date> CurrentDate => Property<Date>(nameof(Date));
+        public Function<TimePoint> CurrentTimePoint => Property<TimePoint>(nameof(TimePoint));
         public Function<TimeOfDay> CurrentTimeOfDay => Property<TimeOfDay>(nameof(TimeOfDay));
+
+        public bool IsAM => TimeOfDay == TimeOfDay.AM;
         public PrimitiveTest CurrentlyMorning => TestProperty(nameof(IsAM));
 
-        public int Year => (int)_year + _offset;
-        public Month Month => CalcMonth(_clock);
-        public byte Day => CalcDay(_clock);
-        public Date Date => new(Month, Day);
-        public DayOfWeek DayOfWeek => CalcDayOfWeek(_clock);
-        public TimeOfDay TimeOfDay => CalcTimeOfDay(_clock);
-        public bool IsAM => TimeOfDay == TimeOfDay.AM;
-        public bool IsPM => TimeOfDay == TimeOfDay.PM;
+        private bool InOperation(DailyOperation operation) => IsOperating(operation, TimeOfDay);
+        public PrimitiveTest<DailyOperation> CurrentlyOperating => TestMethod<DailyOperation>(InOperation, false);
+
+        private bool IsOpen(Schedule schedule) => IsScheduled(schedule, DayOfWeek);
+        public PrimitiveTest<Schedule> CurrentlyOpen => TestMethod<Schedule>(IsOpen, false);
 
         public PrimitiveTest<Date> IsToday => TestMethod<Date>(IsDate, false);
         public PrimitiveTest<Date> NineMonthsPast => TestMethod<Date>(NineMonthsPastDate, false);
-        public PrimitiveTest<DailyOperation> CurrentlyOperating => TestMethod<DailyOperation>(InOperation, false);
-        public PrimitiveTest<Schedule> CurrentlyOpen => TestMethod<Schedule>(IsOpen, false);
-
         public bool IsDate(Date date) => date.Equals(Month, Day);
-        public bool IsOpen(Schedule schedule) => schedule.IsOpen(DayOfWeek);
-        public bool InOperation(DailyOperation operation) =>
-            operation is DailyOperation.AllDay ||
-            (operation is DailyOperation.Morning && IsAM) ||
-            (operation is DailyOperation.Evening && IsPM);
         public bool PastDate(Date date) => date.Month < Month || (date.Month == Month && date.Day < Day);
         public int YearsSince(Date date, int year) => Year - year + (PastDate(date) ? 1 : 0);
+        public int YearsSince(TimePoint timePoint) => Year - (timePoint.Year - 1) +
+            timePoint.IsNextCalendarYear(CalendarFromClock(_clock));
+
         public bool NineMonthsPastDate(Date date) => DaysSince(date) >= NineMonths;
 
         // using byte for Since because all base calls to since are small enough to use byte
@@ -88,11 +63,6 @@ namespace TotT.Simulator {
         private byte MonthsSince(Date prevDate) => (byte)(MonthsSince(prevDate.Month) - (Day < prevDate.Day ? 1 : 0));
         private byte DaysSince(byte prevDay) => Since(Day, prevDay, DaysPerMonth);
         private ushort DaysSince(Date prevDate) => (ushort)(MonthsSince(prevDate) * DaysPerMonth + DaysSince(prevDate.Day));
-
-        public static float PerDay(float chance) => chance / TimesOfDay;
-        public static float PerWeek(float chance) => chance / (TimesOfDay * DaysOfWeek);
-        public static float PerMonth(float chance) => chance / TicksPerMonth;
-        public static float PerYear(float chance) => chance / NumTicks;
 
         public override string ToString() =>
             $"{DayOfWeek} {TimeOfDay} - {Month} {Day.SuffixedDate()}, {Year}";

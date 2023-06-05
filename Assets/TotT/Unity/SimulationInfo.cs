@@ -7,8 +7,8 @@ using TotT.ValueTypes;
 using UnityEngine;
 
 namespace TotT.Unity {
-    using LocationRow = ValueTuple<Location, LocationType, Vector2Int, int, Date, LocationCategory>;
-    using NewLocationRow = ValueTuple<Location, LocationType, Vector2Int, int, Date>;
+    using LocationRow = ValueTuple<Location, LocationType, LocationCategory, Vector2Int, TimePoint>;
+    using NewLocationRow = ValueTuple<Location, LocationType, Vector2Int, TimePoint>;
     using static StaticTables;
     using static StringProcessing;
 
@@ -63,11 +63,8 @@ namespace TotT.Unity {
             return LocationInfo(locationRow) + EveryoneAtLocation(locationRow); }
 
         private static string LocationInfo(LocationRow row) =>
-            $"{row.Item1} ({row.Item2}) located at x: {row.Item3.x}, y: {row.Item3.y}\n" +
-            $"Founded on {row.Item5}, {row.Item4} ({LocationAge(row)} years ago)\n";
-
-        private static int LocationAge(LocationRow row) => 
-            TalkOfTheTown.Time.YearsSince(row.Item5, row.Item4);
+            $"{row.Item1} ({row.Item2}) located at x: {row.Item4.x}, y: {row.Item4.y}\n" +
+            $"Founded on {row.Item5} ({TalkOfTheTown.Time.YearsSince(row.Item5)} years ago)\n";
 
         private string EveryoneAtLocation(LocationRow row) =>
             PeopleAtLocation(row.Item1) + BuriedAtCemetery(row.Item2);

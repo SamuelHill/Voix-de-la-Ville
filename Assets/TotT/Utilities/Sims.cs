@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
-using TotT.Simulator;
+using TED.Interpreter;
 using TotT.ValueTypes;
 
 namespace TotT.Utilities {
+    using static Calendar;
     using static Randomize;
 
     public static class Sims {
@@ -75,9 +76,10 @@ namespace TotT.Utilities {
         0.04906f, 0.03582f, 0.02328f, 0.01136f, 0 };
 
         private static readonly float[] FertilityForAge = 
-            (from t in SolvedTForAge select Time.PerYear(SimpleY(t))).ToArray();
+            (from t in SolvedTForAge select SimpleY(t)).ToArray();
         #endregion
 
-        public static float FertilityRate(int age) => age >= FertilityForAge.Length ? 0 : FertilityForAge[age];
+        public static float FertilityRate(int age) => 
+            age >= FertilityForAge.Length ? 0 : ChancePerYear(FertilityForAge[age]);
     }
 }

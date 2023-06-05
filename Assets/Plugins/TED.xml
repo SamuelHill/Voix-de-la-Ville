@@ -605,6 +605,12 @@
             Make a new TedFunction to wrap the specified C# function
             </summary>
         </member>
+        <member name="P:TED.Function`1.Item(TED.Term{`0})">
+            <summary>
+            True when result is the result of this function.
+            </summary>
+            <param name="result">Output of this function</param>
+        </member>
         <member name="M:TED.Function`1.Call">
             <summary>
             Make a call to this parameterless function
@@ -626,6 +632,13 @@
             Make a call to the function
             </summary>
         </member>
+        <member name="P:TED.Function`2.Item(TED.Term{`0},TED.Term{`1})">
+            <summary>
+            True when result is the result of this function.
+            </summary>
+            <param name="arg1">First input to function</param>
+            <param name="result">Output of this function</param>
+        </member>
         <member name="T:TED.Function`3">
             <summary>
             A wrapper for a C# function to allow it to be called from TED expressions
@@ -640,6 +653,14 @@
             <summary>
             Make a call to the function
             </summary>
+        </member>
+        <member name="P:TED.Function`3.Item(TED.Term{`0},TED.Term{`1},TED.Term{`2})">
+            <summary>
+            True when result is the result of this function.
+            </summary>
+            <param name="arg1">First input to function</param>
+            <param name="arg2">Second input</param>
+            <param name="result">Output of this function</param>
         </member>
         <member name="T:TED.Function`4">
             <summary>
@@ -656,6 +677,15 @@
             Make a call to the function
             </summary>
         </member>
+        <member name="P:TED.Function`4.Item(TED.Term{`0},TED.Term{`1},TED.Term{`2},TED.Term{`3})">
+            <summary>
+            True when result is the result of this function.
+            </summary>
+            <param name="arg1">First input to function</param>
+            <param name="arg2">Second input</param>
+            <param name="arg3">Third input</param>
+            <param name="result">Output of this function</param>
+        </member>
         <member name="T:TED.Function`5">
             <summary>
             A wrapper for a C# function to allow it to be called from TED expressions
@@ -670,6 +700,16 @@
             <summary>
             Make a call to the function
             </summary>
+        </member>
+        <member name="P:TED.Function`5.Item(TED.Term{`0},TED.Term{`1},TED.Term{`2},TED.Term{`3},TED.Term{`4})">
+            <summary>
+            True when result is the result of this function.
+            </summary>
+            <param name="arg1">First input to function</param>
+            <param name="arg2">Second input</param>
+            <param name="arg3">Third input</param>
+            <param name="arg4">Fourth input</param>
+            <param name="result">Output of this function</param>
         </member>
         <member name="T:TED.Function`6">
             <summary>
@@ -686,6 +726,17 @@
             Make a call to the function
             </summary>
         </member>
+        <member name="P:TED.Function`6.Item(TED.Term{`0},TED.Term{`1},TED.Term{`2},TED.Term{`3},TED.Term{`4},TED.Term{`5})">
+            <summary>
+            True when result is the result of this function.
+            </summary>
+            <param name="arg1">First input to function</param>
+            <param name="arg2">Second input</param>
+            <param name="arg3">Third input</param>
+            <param name="arg4">Fourth input</param>
+            <param name="arg5">Fifth input</param>
+            <param name="result">Output of this function</param>
+        </member>
         <member name="T:TED.Function`7">
             <summary>
             A wrapper for a C# function to allow it to be called from TED expressions
@@ -701,6 +752,18 @@
             Make a call to the function
             </summary>
         </member>
+        <member name="P:TED.Function`7.Item(TED.Term{`0},TED.Term{`1},TED.Term{`2},TED.Term{`3},TED.Term{`4},TED.Term{`5},TED.Term{`6})">
+            <summary>
+            True when result is the result of this function.
+            </summary>
+            <param name="arg1">First input to function</param>
+            <param name="arg2">Second input</param>
+            <param name="arg3">Third input</param>
+            <param name="arg4">Fourth input</param>
+            <param name="arg5">Fifth input</param>
+            <param name="arg6">Sixth input</param>
+            <param name="result">Output of this function</param>
+        </member>
         <member name="T:TED.Function`8">
             <summary>
             A wrapper for a C# function to allow it to be called from TED expressions
@@ -715,6 +778,19 @@
             <summary>
             Make a call to the function
             </summary>
+        </member>
+        <member name="P:TED.Function`8.Item(TED.Term{`0},TED.Term{`1},TED.Term{`2},TED.Term{`3},TED.Term{`4},TED.Term{`5},TED.Term{`6},TED.Term{`7})">
+            <summary>
+            True when result is the result of this function.
+            </summary>
+            <param name="arg1">First input to function</param>
+            <param name="arg2">Second input</param>
+            <param name="arg3">Third input</param>
+            <param name="arg4">Fourth input</param>
+            <param name="arg5">Fifth input</param>
+            <param name="arg6">Sixth input</param>
+            <param name="arg7">Seventh input</param>
+            <param name="result">Output of this function</param>
         </member>
         <member name="T:TED.FunctionalExpression`1">
             <summary>
@@ -1299,6 +1375,54 @@
             The value of the constant
             </summary>
         </member>
+        <member name="T:TED.Interpreter.IDefinitionArgument">
+            <summary>
+            A formal argument for a Definition
+            This is an IVariable plus an optional input-output mode
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.IDefinitionArgument.UntypedVariable">
+            <summary>
+            The variable that is the formal argument
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.IDefinitionArgument.Mode">
+            <summary>
+            Optional mode constraining whether the argument must be input, output, or a literal constant.
+            </summary>
+        </member>
+        <member name="T:TED.Interpreter.IDefinitionArgument`1">
+            <summary>
+            A formal argument for a Definition
+            This is an Var[T] plus an optional input-output mode
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.IDefinitionArgument`1.TypedVariable">
+            <summary>
+            The variable that is the formal argument
+            </summary>
+        </member>
+        <member name="T:TED.Interpreter.ModeConstrainedArgument`1">
+            <summary>
+            An argument for a Definition that has a type constraint added to it.
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.ModeConstrainedArgument`1.TypedVariable">
+            <inheritdoc />
+        </member>
+        <member name="P:TED.Interpreter.ModeConstrainedArgument`1.UntypedVariable">
+            <inheritdoc />
+        </member>
+        <member name="P:TED.Interpreter.ModeConstrainedArgument`1.Mode">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.Interpreter.ModeConstrainedArgument`1.#ctor(TED.Var{`0},TED.Interpreter.InstantiationConstraint)">
+            <summary>
+            Make a constrained version of the specified formal argument
+            </summary>
+            <param name="variable">Variable used as a formal argument</param>
+            <param name="mode">Input/output mode to constraint it to</param>
+        </member>
         <member name="T:TED.Interpreter.IFunctionalExpression">
             <summary>
             Functions as an untyped base class for FunctionalExpression[T]
@@ -1311,6 +1435,26 @@
             </summary>
             <returns>The expression, a variable of the right type to hold it's value, and a call to the Eval primitive to compute it</returns>
             <exception cref="T:System.NotImplementedException">If this object isn't a FunctionalExpression</exception>
+        </member>
+        <member name="T:TED.Interpreter.InstantiationConstraint">
+            <summary>
+            Specifies a limitation on the binding state of an argument to a definition.
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.InstantiationConstraint.In">
+            <summary>
+            Argument must be an input (i.e. already bound)
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.InstantiationConstraint.Out">
+            <summary>
+            Argument must be an output (i.e. not yet bound)
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.InstantiationConstraint.Constant">
+            <summary>
+            Argument must be a literal constant
+            </summary>
         </member>
         <member name="T:TED.Interpreter.IPattern">
             <summary>
@@ -3240,6 +3384,33 @@
             The nearest integer to x
             </summary>
         </member>
+        <member name="M:TED.Language.AssertIn``1(TED.Term{``0},System.String)">
+            <summary>
+            Assert that term is an "in" parameter, i.e. it's value is known by the time we get to the AssertIn call.
+            If it is, this does nothing.  If not, this throws a preprocessing-time exception.
+            </summary>
+            <param name="term">Term to check the binding state of</param>
+            <param name="message">Message to print if the terms has the wrong bindings state</param>
+            <typeparam name="T">type of term</typeparam>
+        </member>
+        <member name="M:TED.Language.AssertOut``1(TED.Term{``0},System.String)">
+            <summary>
+            Assert that term is an "out" parameter, i.e. it's value is not known by the time we get to the AssertIn call.
+            If it is, this does nothing.  If not, this throws a preprocessing-time exception.
+            </summary>
+            <param name="term">Term to check the binding state of</param>
+            <param name="message">Message to print if the terms has the wrong bindings state</param>
+            <typeparam name="T">type of term</typeparam>
+        </member>
+        <member name="M:TED.Language.AssertConstant``1(TED.Term{``0},System.String)">
+            <summary>
+            Assert that term is a literal constant.
+            If it is, this does nothing.  If not, this throws a preprocessing-time exception.
+            </summary>
+            <param name="term">Term to check the binding state of</param>
+            <param name="message">Message to print if the terms has the wrong bindings state</param>
+            <typeparam name="T">type of term</typeparam>
+        </member>
         <member name="P:TED.Language.__">
             <summary>
             No name variable placeholder
@@ -3247,7 +3418,7 @@
         </member>
         <member name="M:TED.Language.Constant``1(``0)">
             <summary>
-            Coerces a C# constant to a Constant Term for times when C#'s type inference isn't smart enough to figure it out.
+            Coerces a C# constant to a Constant Term for times when C#'s type inference isn'term smart enough to figure it out.
             </summary>
         </member>
         <member name="M:TED.Language.Length(System.String,TED.TablePredicate)">
@@ -4252,7 +4423,7 @@
         <member name="M:TED.Language.AssignRandomly``2(System.String,TED.TablePredicate{``0,``1})">
             <summary>
             Generate a random subset of the candidate pairs such that each item from the first column
-            appears exactly once.  Does not guarantee that the same item from the second column won't be
+            appears exactly once.  Does not guarantee that the same item from the second column won'term be
             assigned to two different items from the first column.
             </summary>
             <param name="name">Name for the table of assignments.</param>
@@ -4265,7 +4436,7 @@
         <member name="M:TED.Language.AssignGreedily``2(System.String,TED.TablePredicate{``0,``1,System.Single})">
             <summary>
             Generate a random subset of the candidate pairs such that each item from the first column
-            appears exactly once.  Does not guarantee that the same item from the second column won't be
+            appears exactly once.  Does not guarantee that the same item from the second column won'term be
             assigned to two different items from the first column.
             </summary>
             <param name="name">Name for the table of assignments.</param>
@@ -4277,7 +4448,7 @@
         <member name="M:TED.Language.AssignGreedily``2(System.String,TED.TablePredicate{``0,``1,System.Single},TED.TablePredicate{``1,System.Int32})">
             <summary>
             Generate a random subset of the candidate pairs such that each item from the first column
-            appears exactly once.  Does not guarantee that the same item from the second column won't be
+            appears exactly once.  Does not guarantee that the same item from the second column won'term be
             assigned to two different items from the first column.
             </summary>
             <param name="name">Name for the table of assignments.</param>
@@ -4290,13 +4461,27 @@
         <member name="M:TED.Language.MatchGreedily``1(System.String,TED.TablePredicate{``0,``0,System.Single})">
             <summary>
             Generate a random subset of the candidate pairs such that each item from the first column
-            appears exactly once.  Does not guarantee that the same item from the second column won't be
+            appears exactly once.  Does not guarantee that the same item from the second column won'term be
             assigned to two different items from the first column.
             </summary>
             <param name="name">Name for the table of assignments.</param>
             <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
             <typeparam name="T1">Type of the first column of the table</typeparam>
             <returns>Table of assignments</returns>
+        </member>
+        <member name="M:TED.Language.Closure``1(System.String,TED.TablePredicate{``0,``0},System.Boolean)">
+            <summary>
+            Returns the a new table predicate holding the transitive closure of the input.
+            This is equivalent to reachability in a graph.  Note that this is not the symmetric transitive
+            closure; the output is directional.
+            WARNING: the size of the output is O(n^2).
+            </summary>
+            <param name="name">Name to give to the output table</param>
+            <param name="predicate">Relation to take the closure of</param>
+            <param name="reflexive">Whether the closure should be reflexive, i.e. whether closure(term,term) should be true when term is in the original predicate</param>
+            <typeparam name="T">Type of the arguments to the predicate</typeparam>
+            <returns>New predicate that is the closure</returns>
+            <exception cref="T:System.InvalidOperationException">If input predicate is not indexed on the first argument</exception>
         </member>
         <member name="T:TED.Predicate">
             <summary>
@@ -4531,6 +4716,12 @@
         <member name="P:TED.Primitives.AndPrimitive.Item(TED.Interpreter.Goal[])">
             <summary>
             True when all the subgoals are true
+            </summary>
+        </member>
+        <member name="T:TED.Primitives.AssertBindingStatePrimitive`1">
+            <summary>
+            Pseudo-primitive that checks the binding state of its argument and throws if it isn't the expected state.
+            Does nothing if it is of the expected state.
             </summary>
         </member>
         <member name="T:TED.Primitives.BinaryArithmeticOperator`1">
@@ -8453,10 +8644,28 @@
             </summary>
         </member>
         <member name="P:TED.Var`1.TypedVariable">
-            <inheritdoc />
+            <inheritdoc cref="T:TED.Interpreter.IColumnSpec" />
         </member>
         <member name="P:TED.Var`1.UntypedVariable">
+            <inheritdoc cref="T:TED.Interpreter.IColumnSpec" />
+        </member>
+        <member name="P:TED.Var`1.Mode">
             <inheritdoc />
+        </member>
+        <member name="P:TED.Var`1.In">
+            <summary>
+            For use as a formal argument in a definition; this argument must be an input, i.e. a value that will be known at call time.
+            </summary>
+        </member>
+        <member name="P:TED.Var`1.Out">
+            <summary>
+            For use as a formal argument in a definition; this argument must be an output, i.e. a variable that will not yet have a value at call time.
+            </summary>
+        </member>
+        <member name="P:TED.Var`1.Constant">
+            <summary>
+            For use as a formal argument in a definition; this argument must be a literal constant.
+            </summary>
         </member>
     </members>
 </doc>

@@ -12,8 +12,8 @@ using static TED.Language;
 
 namespace TotT.Simulator {
     using AgentRow = ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
-    using BirthRow = ValueTuple<Person, Person, Sex, Person>;
-    using LocationRow = ValueTuple<Location, LocationType, Vector2Int, int, Date, LocationCategory>;
+    using LocationRow = ValueTuple<Location, LocationType, LocationCategory, Vector2Int, TimePoint>;
+    using static Calendar; // Prob per
     using static CsvParsing; // DeclareParsers
     using static Functions;
     using static Randomize; // Seed and .RandomElement
@@ -35,8 +35,8 @@ namespace TotT.Simulator {
             this() => Time = new Time(year, month, day, time);
 
         // public Tables and Indexers for GUI purposes (see Unity.SimulationInfo for most uses)
-        public TablePredicate<Location, LocationType, Vector2Int, int, Date> NewLocations;
-        public TablePredicate<Location, LocationType, Vector2Int, int, Date> VacatedLocations;
+        public TablePredicate<Location, LocationType, Vector2Int, TimePoint> NewLocations;
+        public TablePredicate<Location, LocationType, Vector2Int, TimePoint> VacatedLocations;
         public TablePredicate<Person> Buried;
         public GeneralIndex<AgentRow, VitalStatus> AgentsVitalStatusIndex;
         public KeyIndex<LocationRow, Vector2Int> LocationsPositionIndex;
@@ -64,8 +64,7 @@ namespace TotT.Simulator {
 
             // For Population calculation in GUI
             AgentsVitalStatusIndex = (GeneralIndex<AgentRow, VitalStatus>)Agents.IndexFor(vitalStatus, false);
-
-            // Dead and Alive logic -
+            
             var Alive = Definition("Alive", person)
                 .Is(Agents[person, __, __, __, __, VitalStatus.Alive]);
             // special case Alive check where we also bind age
@@ -73,9 +72,9 @@ namespace TotT.Simulator {
                 .Is(Agents[person, age, __, __, __, VitalStatus.Alive]);
 
             Agents.Set(person, vitalStatus, VitalStatus.Dead) // Dying
-                .If(Age, age > 60, Prob[Time.PerMonth(0.003f)]);
+                .If(Age, age > 60, PerMonth(0.003f));
             var JustDied = Predicate("JustDied", person)
-                .If(Agents.Set(person, vitalStatus)); // Assumes only two vitalstatus's
+                .If(Agents.Set(person, vitalStatus)); // Assumes set only used for dying (two vitalStatus values)
 
             // Person Name helpers -
             var RandomFirstName = Definition("RandomFirstName", sex, firstName);
@@ -87,7 +86,7 @@ namespace TotT.Simulator {
 
             // Independent Agent creation (not birth based) - 
             var Drifter = Predicate("Drifter", person, sex, sexuality);
-            Drifter[person, RandomSex, sexuality].If(Prob[Time.PerYear(0.05f)],
+            Drifter[person, RandomSex, sexuality].If(PerYear(0.05f),
                 RandomPerson, sexuality == RandomSexuality[sex]);
             Agents.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
 
@@ -98,21 +97,29 @@ namespace TotT.Simulator {
             // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
 
             // ************************************** Couples *************************************
+            // TODO : Primordial couples?
             // TODO : Better util for couples - facet similarity or score based on facet logic (> X, score + 100)
-            // TODO : Married couples separate from ProcreativePair - last name changes in 'nickname' like table
             // TODO : Limit PotentialPairings by interactions (avoids performance hit for batch selection)
-            // TODO : Non-monogamous pairings (needs above limitation as well) - alter NewProcreativePair too...
-            // TODO : All non-intimate relationships 
+            // TODO : Non-monogamous PotentialPairings for PotentialProcreation (needs interaction based limitation as well)
+            // TODO : Limit PotentialProcreation by interactions (realism)
+            // TODO : Limit PotentialProcreation by Personality (family planning, could include likely-hood to use contraceptives)
+            // TODO : Limit PotentialProcreation by time since last birth and total number of children with partner (Gestation table info)
+            // TODO : All non-intimate relationships
+            // TODO : Married couples separate from ProcreativePair - last name changes in 'nickname' like table
+
+            // Need Parents before parenting logic to prevent procreative relationships between parents and kids
+            var Parents = Predicate("Parents", parent, child);
+            var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
+                .Is(Parents[person, otherPerson] | Parents[otherPerson, person]); // only immediate family
 
             var PersonSex = Definition("PersonSex", person, sex)
                 .Is(Agents[person, __, __, sex, __, VitalStatus.Alive]);
             var PersonSexuality = Definition("PersonSexuality", person, sexuality)
                 .Is(Agents[person, __, __, __, sexuality, VitalStatus.Alive]);
-            var AttractedSexuality = Definition("AttractedSexuality", person, partner)
+            var SexualAttraction = Definition("SexualAttraction", person, partner)
                 .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], SexualityAttracted[sexuality, sexOfPartner],
                     PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], SexualityAttracted[sexualOfPartner, sex]);
-
-            #region Couples (for procreation):
+            
             var Men = Predicate("Men", man).If(
                 Agents[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
             var Women = Predicate("Women", woman).If(
@@ -120,82 +127,40 @@ namespace TotT.Simulator {
 
             var ProcreativePair = Predicate("ProcreativePair", woman.Indexed, man.Indexed);
             ProcreativePair.Unique = true;
-            var NewProcreativePair = Predicate("NewProcreativePair", woman, man);
-
-            var Parents = Predicate("Parents", parent, child);
-            var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
-                .Is(Parents[person, otherPerson] | Parents[otherPerson, person]); // only immediate family
-
             var PotentialPairings = Predicate("PotentialPairings", woman.Indexed, man.Indexed)
-                .If(Women, !ProcreativePair[woman, __],
-                    Men, !ProcreativePair[__, man],
-                    AttractedSexuality[woman, man], !FamilialRelation[woman, man]);
-
-            // Batch Selection from Market approach
-            var ScoredPairings = Predicate("ScoredPairings", woman.Indexed, man.Indexed, util)
-                .If(PotentialPairings, util == RandomNormal);
-            var BestPairForWomen = Predicate("BestPairForWomen", woman, man, util)
-                .If(Women, Maximal((man, util), util, ScoredPairings));
-            var BestPairForBoth = Predicate("BestPairForBoth", woman, man)
-                .If(BestPairForWomen[__, man, __], Maximal(woman, util, BestPairForWomen));
-
-            // Best in Market approach - less expensive but only adds one pair at a time
-            var PairingBestOnce = Predicate("PairingBestOnce", woman, man)
-                .If(Maximal((woman, man), util, ScoredPairings));
-
-            NewProcreativePair.If(BestPairForBoth, !ProcreativePair[__, man], !ProcreativePair[woman, __]);
-            ProcreativePair.Accumulates(NewProcreativePair);
-            #endregion
-
-            // TODO : PotentialProcreate table
-            // TODO : Limit Procreate by interactions to make procreation be more "physical" (also limits birth rates)
-            // TODO : Limit Procreate by Personality (family planning, could include likely-hood to use contraceptives)
-            // TODO : Limit Procreate by time since last birth and total number of children with partner (Gestation table info)
-            #region Birth and aging:
-
-            // Procreate Indexed by woman allows for multiple partners (in the same tick)
-            var Procreate = Predicate("Procreate", woman.Indexed, man, sex, child);
-            var ProcreateIndex = (GeneralIndex<BirthRow, Person>)Procreate.IndexFor(woman, false);
-            var RandomProcreateByWoman = Function<Person, BirthRow>("RandomProcreateByWoman",
-                p => ProcreateIndex.RowsMatching(p).ToList().RandomElement());
-            var ProcreateMan = Item2(man, Procreate);
-            var ProcreateSex = Item3(sex, Procreate);
-            var ProcreateChild = Item4(child, Procreate);
-            var procreateRow = RowVariable(Procreate);
-            // woman should be NonVar | man, sex, and child are all Var
-            var RandomProcreate = Definition("RandomProcreate",
-                woman, man, sex, child).Is(procreateRow == RandomProcreateByWoman[woman],
-                ProcreateMan[procreateRow, man], ProcreateSex[procreateRow, sex], ProcreateChild[procreateRow, child]);
-
-            // Gestation is that interstitial table between Procreate and birth. These are dependent events and
-            // as such they need to both have data dependency but also Event dependency. Two Events are needed -
-            // Procreate and birth. Could have some `pseudo` event (the rules for the gestation table are the
-            // Procreate event) but this is less robust. E.g. to prevent multiple partners creating a gestation
-            // event in the same tick the system would have to be designed such that only one pair of woman and man
-            // have sex on a given tick. Additionally, to allow for set on this table, one column must be a key
+                .If(Women, !ProcreativePair[woman, __], Men, !ProcreativePair[__, man],
+                    SexualAttraction[woman, man], !FamilialRelation[woman, man]);
+            var ScoredPairings = Predicate("ScoredPairings", woman.Indexed, man.Indexed, score);
+            ScoredPairings[woman, man, RandomNormalFloat].If(PotentialPairings);
+            var PairForProcreate = MatchGreedily("PairForProcreate", ScoredPairings);
+            ProcreativePair.Add.If(PairForProcreate);
+            
+            var PotentialProcreation = Predicate("PotentialProcreation", woman.Indexed, man);
+            PotentialProcreation.Unique = true;
             var Gestation = Predicate("Gestation",
                 woman.Indexed, man, sex, child.Key, conception, state.Indexed);
             var Pregnant = Predicate("Pregnant", woman)
                 .If(Gestation[woman, __, __, __, __, true]);
 
-            // The point of linking birth to gestation is to not have women getting pregnant again while pregnant,
-            // a Procreate event is used to do this check (thus !Pregnant)
-            Procreate.If(ProcreativePair[woman, man], !Pregnant[woman],
-                Age[woman, age], Alive[man], Prob[FertilityRate[age]],
-                sex == RandomSex, RandomFirstName, child == NewPerson[firstName, Surname[man]]);
-            Gestation.Add[woman, man, sex, child, Time.CurrentDate, true]
-                .If(Count(Procreate[woman, __, __, __]) <= 1, Procreate);
-            Gestation.Add[woman, man, sex, child, Time.CurrentDate, true]
-                .If(Count(Procreate[woman, __, __, __]) > 1,
-                    Procreate[woman, __, __, __], RandomProcreate);
+            PotentialProcreation.If(ProcreativePair, !Pregnant[woman], Age[woman, age], Alive[man], Prob[FertilityRate[age]]);
+            // // Multiple attempts per tick:
+            // var ProcreationAttemptCounts = CountsBy("ProcreationAttemptCounts", PotentialProcreation, woman, count);
+            // var MultipleProcreateAttempts = Predicate("MultipleProcreateAttempts", woman)
+            //     .If(PotentialProcreation, ProcreationAttemptCounts, count > 1);
+            // var SuccessfulProcreation = Predicate("SuccessfulProcreation", woman, man);
+            // SuccessfulProcreation.If(PotentialProcreation, ProcreationAttemptCounts[woman, 1]);
+            // // Once but random?
+            // SuccessfulProcreation.If(MultipleProcreateAttempts, Once[PotentialProcreation[woman, man]]);
+            var SuccessfulProcreation = AssignRandomly("SuccessfulProcreation", PotentialProcreation);
 
-            // Need to alter the state of the gestation table when giving birth, otherwise birth after 9 months with 'labor'
+            Gestation.Add[woman, man, RandomSex, child, Time.CurrentDate, true]
+                .If(SuccessfulProcreation, RandomFirstName, child == NewPerson[firstName, Surname[man]]);
+
             var BirthTo = Predicate("BirthTo", woman, man, sex, child);
-            BirthTo.If(Gestation[woman, man, sex, child, conception, true], Time.NineMonthsPast[conception], Prob[0.8f]);
+            BirthTo.If(Gestation[woman, man, sex, child, conception, true],
+                Time.NineMonthsPast[conception], Prob[0.8f]); // Birth after 9 months with 'labor'
             Gestation.Set(child, state, false).If(BirthTo);
 
-            // BirthTo has a column for the sex of the child to facilitate gendered naming, however, since there is no need to
-            // determine the child's sexuality in BirthTo, a child has the sexuality established when they are added to Agents
             Agents.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
                 BirthTo[__, __, sex, person], sexuality == RandomSexuality[sex]);
 
@@ -207,17 +172,15 @@ namespace TotT.Simulator {
                 Agents[person, age, dateOfBirth, __, __, VitalStatus.Alive],
                 Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !BirthTo[__, __, __, person]);
             Increment(Agents, person, age, WhenToAge);
-            #endregion
 
             // ************************************ Locations *************************************
-
             // These tables are used for adding and removing tiles from the tilemap in unity efficiently -
             // by not having to check over all Locations. VacatedLocations is currently UNUSED
-            NewLocations = Predicate("NewLocations", location, locationType, position, founded, opening);
-            VacatedLocations = Predicate("VacatedLocations", location, locationType, position, founded, opening);
+            NewLocations = Predicate("NewLocations", location, locationType, position, founding);
+            VacatedLocations = Predicate("VacatedLocations", location, locationType, position, founding);
 
             var Locations = Predicate("Locations", location.Key, locationType.Indexed,
-                position.Key, founded, opening, locationCategory.Indexed);
+                locationCategory.Indexed, position.Key, founding);
             Locations.Initially.Where(PrimordialLocations, LocationInformation);
             Locations.Add.If(NewLocations, LocationInformation);
             LocationsPositionIndex = Locations.KeyIndex(position);
@@ -225,7 +188,7 @@ namespace TotT.Simulator {
             // Helper functions and definitions for creating new locations at a valid lot in town
             var NumLots = Length("NumLots", Locations); // NumLots helps expand town borders
             var IsVacant = Definition("IsVacant", position)
-                .Is(!Locations[__, __, position, __, __, __]);
+                .Is(!Locations[__, __, __, position, __]);
             var FreeLot = Definition("FreeLot", position)
                 .Is(position == RandomLot[NumLots], IsVacant[position]);
 
@@ -242,71 +205,59 @@ namespace TotT.Simulator {
             // TODO : Include ApartmentComplex locations in Housing logic
             // TODO : Include Inn locations in Housing logic - drifters start at an Inn ?
             // TODO : Families move in and out of houses together
+            // TODO : Initialize Homes first based on primordial couples, then on all single agents
 
             var Homes = Predicate("Homes", occupant.Key, location.Indexed);
             Homes.Unique = true;
-            var Occupancy = Predicate("Occupancy", location, count)
-                .If(Locations[location, LocationType.House, __, __, __, __], count == Count(Homes));
-            var UnderOccupied = Predicate("UnderOccupied", location).If(Occupancy, count <= 5);
+            var Occupancy = CountsBy("Occupancy", Homes, location, count);
+            var Unoccupied = Predicate("Unoccupied", location)
+                .If(Locations[location, LocationType.House, __, __, __], !Homes[__, location]);
+            var UnderOccupied = Predicate("UnderOccupied", location);
+            UnderOccupied.If(Occupancy, count <= 5);
+            UnderOccupied.If(Unoccupied);
 
-            // Using this to randomly assign one house per person...
+            // Using this to randomly assign one house per primordial person...
             var PrimordialHouses = Predicate("PrimordialHouses", location)
-                .If(PrimordialLocations[location, LocationType.House, position, founded, opening]);
-            // Ideally this would involve some more complex assignment logic that would fill houses based on some Goal
-            // e.g. Initialize Homes first based on primordial couples, then on all single agents
-            Homes.Initially.Where(PrimordialBeings[occupant, age, dateOfBirth, sex, sexuality], RandomElement(PrimordialHouses, location));
+                .If(PrimordialLocations[location, LocationType.House, __, __]);
+            Homes.Initially.Where(PrimordialBeings[occupant, __, __, __, __], 
+                RandomElement(PrimordialHouses, location));
 
             Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
             Homes.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
 
-            Homes.Set(occupant, location).If(JustDied[occupant],
-                Locations[location, LocationType.Cemetery, __, __, __, __]);
+            Homes.Set(occupant, location).If(JustDied[occupant], // Only one cemetery
+                Locations[location, LocationType.Cemetery, __, __, __]);
             var BuriedAt = Predicate("BuriedAt", occupant, location)
-                .If(Locations[location, LocationType.Cemetery, __, __, __, __], Homes);
+                .If(Locations[location, LocationType.Cemetery, __, __, __], Homes);
             // with only the one cemetery for now, the follow will suffice for the GUI
             Buried = Predicate("Buried", person).If(BuriedAt[person, __]);
 
             // Distance per person makes most sense when measured from either where the person is,
             // or where they live. This handles the latter:
             var DistanceFromHome = Definition("DistanceFromHome", person, location, distance)
-                .Is(Locations[location, __, position, __, __, __],
+                .Is(Locations[location, __, __, position, __],
                     Homes[person, otherLocation],
-                    Locations[otherLocation, __, otherPosition, __, __, __],
+                    Locations[otherLocation, __, __, otherPosition, __],
                     distance == Distance[position, otherPosition]);
             
-            var WantToMove = Predicate("WantToMove", person).If(Homes[person, location], Occupancy, count >= 8);
-            // var LivingWithFamily = Predicate("LivingWithFamily", person)
-            //     .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
-            // var FamilyHome = Predicate("FamilyHome", location)
-            //     .If(Homes[person, location], FamilialRelation, Homes[otherPerson, location]);
-            // var LivingAlone = Predicate("LivingAlone", person)
-            //     .If(Homes[person, location], !Homes[__, location]);
-            // var MoveToFamily = Predicate("MoveToFamily", person).If(WantToMove, !LivingWithFamily[person]);
-            var MovingIn = Predicate("MovingIn", person, location).If(Once[WantToMove[__]],
-                RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
+            var WantToMove = Predicate("WantToMove", person)
+                .If(Homes[person, location], Occupancy, count >= 8);
+            var MovingIn = Predicate("MovingIn", person, location)
+                .If(Once[WantToMove[__]], RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
             Homes.Set(occupant, location).If(MovingIn[occupant, location]);
 
             // ********************************** New Locations ***********************************
             // TODO : Add more new locations for each location type
             
-            // Base case - useful mainly for testing/rapid development (you only need one string/generating a list of names can come second)
-            void AddNewNamedLocation(LocationType locType, string name, Goal readyToAdd) =>
-                NewLocations[location, locType, position, Time.CurrentYear, Time.CurrentDate]
-                    .If(FreeLot, Prob[Time.PerWeek(0.5f)], // Needs the random lot to be available & 'construction' isn't instantaneous
-                    readyToAdd, location == NewLocation[name]); // otherwise, check the readyToAdd Goal and if it passes add a NewLocation
+            // Needs the random lot to be available & 'construction' isn't instantaneous
+            void AddOneLocation(LocationType locType, string name, Goal readyToAdd) => 
+                NewLocations[location, locType, position, Time.CurrentTimePoint].If(FreeLot, // assign position and check
+                    PerWeek(0.5f), !Locations[__, locType, __, __, __], readyToAdd, location == NewLocation[name]);
 
-            // If you are only planning on adding a single location of the given type, this adds the check that
-            // a location of locType doesn't already exist.
-            void AddOneLocation(LocationType locType, string name, Goal readyToAdd) => AddNewNamedLocation(locType, name,
-                !Locations[__, locType, __, __, __, __] & readyToAdd);
-
-            // This is the more realistic use case with a list of names for a give type to choose from.
             void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
-                NewLocations[location, locType, position, Time.CurrentYear, Time.CurrentDate]
-                    .If(FreeLot, Prob[Time.PerWeek(0.5f)], readyToAdd,
-                    RandomElement(names, locationName), location == NewLocation[locationName]);
+                NewLocations[location, locType, position, Time.CurrentTimePoint].If(FreeLot, 
+                    PerWeek(0.5f), readyToAdd, RandomElement(names, locationName), location == NewLocation[locationName]);
 
-            
             AddNewLocation(LocationType.House, HouseNames, !!WantToMove[person]);
             // Currently the following only happens with drifters - everyone starts housed
             AddNewLocation(LocationType.House, HouseNames,
@@ -325,16 +276,18 @@ namespace TotT.Simulator {
                 Count(Age & (age >= 5) & (age < 18)) > 5);
 
             // ********************************* Vocations: *********************************
-            
+
             var Vocations = Predicate("Vocations", job.Indexed, employee, location.Indexed, timeOfDay.Indexed);
 
             var JobsToFill = Predicate("JobsToFill", location, job)
-                .If(timeOfDay == Time.CurrentTimeOfDay, Locations, VocationShifts,
-                    PositionsPerJob, Count(Vocations) < positions);
+                .If(Locations, VocationShifts[__, job, Time.CurrentTimeOfDay], // does this unify timeOfDay
+                    PositionsPerJob, Count(Vocations) < positions); // such that Vocations will use that value?
+
+            var Unemployed = Predicate("Unemployed", person).If(Alive[person],
+                !Vocations[__, person, __, __], Age, age >= 18);
 
             var Candidates = Predicate("Candidates", person, job, location)
-                .If(JobsToFill, Maximal(person, aptitude, Goals(Alive[person],
-                    !Vocations[__, person, __, __], Age, age > 18, Aptitude)));
+                .If(JobsToFill, Maximal(person, aptitude, Goals(Unemployed, Aptitude)));
 
             Vocations.Add[job, person, location, Time.CurrentTimeOfDay].If(Candidates);
 
@@ -353,11 +306,11 @@ namespace TotT.Simulator {
 
             var GoingToSchool = Predicate("GoingToSchool", person, location).If(
                 AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.School],
-                Locations[location, LocationType.School, __, __, __, __], // only expecting one location...
+                Locations[location, LocationType.School, __, __, __], // only expecting one location...
                 NeedsSchooling);
             var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
                 AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.DayCare],
-                Locations[location, LocationType.DayCare, __, __, __, __], // only expecting one location...
+                Locations[location, LocationType.DayCare, __, __, __], // only expecting one location...
                 NeedsDayCare);
             
             var GoingToWork = Predicate("GoingToWork", person, location)
@@ -397,7 +350,7 @@ namespace TotT.Simulator {
             Simulation.Update();
         } // optional, not necessary to call Update after EndPredicates
 
-        public void UpdateSimulator() {
+        public static void UpdateSimulator() {
             Time.Tick();
             Simulation.Update();
         }
