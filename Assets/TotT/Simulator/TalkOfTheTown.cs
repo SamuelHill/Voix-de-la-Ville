@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using TED;
 using TED.Interpreter;
 using TED.Tables;
@@ -82,12 +81,12 @@ namespace TotT.Simulator {
             RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
             // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
             var RandomPerson = Definition("RandomPerson", sex, person)
-                .Is(RandomFirstName, RandomElement(Surnames, lastName), person == NewPerson[firstName, lastName]);
+                .Is(RandomFirstName, RandomElement(Surnames, lastName), NewPerson[firstName, lastName, person]);
 
             // Independent Agent creation (not birth based) - 
             var Drifter = Predicate("Drifter", person, sex, sexuality);
             Drifter[person, RandomSex, sexuality].If(PerYear(0.05f),
-                RandomPerson, sexuality == RandomSexuality[sex]);
+                RandomPerson, RandomSexuality[sex, sexuality]);
             Agents.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
 
             // Add associated info that is needed for a new agent -
@@ -154,7 +153,7 @@ namespace TotT.Simulator {
             var SuccessfulProcreation = AssignRandomly("SuccessfulProcreation", PotentialProcreation);
 
             Gestation.Add[woman, man, RandomSex, child, Time.CurrentDate, true]
-                .If(SuccessfulProcreation, RandomFirstName, child == NewPerson[firstName, Surname[man]]);
+                .If(SuccessfulProcreation, RandomFirstName, NewPerson[firstName, Surname[man], child]);
 
             var BirthTo = Predicate("BirthTo", woman, man, sex, child);
             BirthTo.If(Gestation[woman, man, sex, child, conception, true],
@@ -162,7 +161,7 @@ namespace TotT.Simulator {
             Gestation.Set(child, state, false).If(BirthTo);
 
             Agents.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
-                BirthTo[__, __, sex, person], sexuality == RandomSexuality[sex]);
+                BirthTo[__, __, sex, person], RandomSexuality[sex, sexuality]);
 
             Parents.Add.If(BirthTo[parent, __, __, child]);
             Parents.Add.If(BirthTo[__, parent, __, child]);
@@ -190,7 +189,7 @@ namespace TotT.Simulator {
             var IsVacant = Definition("IsVacant", position)
                 .Is(!Locations[__, __, __, position, __]);
             var FreeLot = Definition("FreeLot", position)
-                .Is(position == RandomLot[NumLots], IsVacant[position]);
+                .Is(RandomLot[NumLots, position], IsVacant[position]);
 
             // for efficient checks to see if a location category is present:
             var AvailableCategories = Predicate("AvailableCategories", locationCategory);
@@ -238,7 +237,7 @@ namespace TotT.Simulator {
                 .Is(Locations[location, __, __, position, __],
                     Homes[person, otherLocation],
                     Locations[otherLocation, __, __, otherPosition, __],
-                    distance == Distance[position, otherPosition]);
+                    Distance[position, otherPosition, distance]);
             
             var WantToMove = Predicate("WantToMove", person)
                 .If(Homes[person, location], Occupancy, count >= 8);
@@ -252,11 +251,11 @@ namespace TotT.Simulator {
             // Needs the random lot to be available & 'construction' isn't instantaneous
             void AddOneLocation(LocationType locType, string name, Goal readyToAdd) => 
                 NewLocations[location, locType, position, Time.CurrentTimePoint].If(FreeLot, // assign position and check
-                    PerWeek(0.5f), !Locations[__, locType, __, __, __], readyToAdd, location == NewLocation[name]);
+                    PerWeek(0.5f), !Locations[__, locType, __, __, __], readyToAdd, NewLocation[name, location]);
 
             void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
                 NewLocations[location, locType, position, Time.CurrentTimePoint].If(FreeLot, 
-                    PerWeek(0.5f), readyToAdd, RandomElement(names, locationName), location == NewLocation[locationName]);
+                    PerWeek(0.5f), readyToAdd, RandomElement(names, locationName), NewLocation[locationName, location]);
 
             AddNewLocation(LocationType.House, HouseNames, !!WantToMove[person]);
             // Currently the following only happens with drifters - everyone starts housed
