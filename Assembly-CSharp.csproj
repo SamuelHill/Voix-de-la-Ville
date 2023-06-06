@@ -98,6 +98,8 @@
     <Compile Include="Assets\TotT\Utilities\Calendar.cs" />
     <Compile Include="Assets\TotT\ValueTypes\SexualityName.cs" />
     <Compile Include="Assets\TotT\Utilities\Town.cs" />
+    <Compile Include="Assets\TotT\ValueTypes\BusinessStatus.cs" />
+    <Compile Include="Assets\TotT\Simulog\Existence.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

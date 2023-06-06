@@ -279,14 +279,12 @@ namespace TotT.Simulator {
             var Vocations = Predicate("Vocations", job.Indexed, employee, location.Indexed, timeOfDay.Indexed);
 
             var JobsToFill = Predicate("JobsToFill", location, job)
-                .If(Locations, VocationShifts[__, job, Time.CurrentTimeOfDay], // does this unify timeOfDay
-                    PositionsPerJob, Count(Vocations) < positions); // such that Vocations will use that value?
-
-            var Unemployed = Predicate("Unemployed", person).If(Alive[person],
-                !Vocations[__, person, __, __], Age, age >= 18);
+                .If(Time.CurrentTimeOfDay[timeOfDay], Locations, VocationShifts,
+                    PositionsPerJob, Count(Vocations) < positions);
 
             var Candidates = Predicate("Candidates", person, job, location)
-                .If(JobsToFill, Maximal(person, aptitude, Goals(Unemployed, Aptitude)));
+                .If(JobsToFill, Maximal(person, aptitude, Goals(Alive,
+                    !Vocations[__, person, __, __], Age, age >= 18, Aptitude)));
 
             Vocations.Add[job, person, location, Time.CurrentTimeOfDay].If(Candidates);
 
@@ -313,7 +311,7 @@ namespace TotT.Simulator {
                 NeedsDayCare);
             
             var GoingToWork = Predicate("GoingToWork", person, location)
-                .If(Vocations[__, person, location, Time.CurrentTimeOfDay], OpenLocationTypes, Locations);
+                .If(OpenLocationTypes, Locations, Vocations[__, person, location, Time.CurrentTimeOfDay]);
 
             var WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType, location.Indexed);
             WhereTheyAt.Unique = true;
@@ -345,6 +343,7 @@ namespace TotT.Simulator {
 
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
+            Debug.Log(ScoredPairings.Dependents[0]);
             DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
             Simulation.Update();
         } // optional, not necessary to call Update after EndPredicates

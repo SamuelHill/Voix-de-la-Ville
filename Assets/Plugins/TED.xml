@@ -6090,6 +6090,11 @@
             For tables that are the results of operators.  The tables the operator takes as inputs.
             </summary>
         </member>
+        <member name="P:TED.TablePredicate.UpdatePrerequisites">
+            <summary>
+            Set of tables that need to already be updated before this can be updated.
+            </summary>
+        </member>
         <member name="P:TED.TablePredicate.RuleExecutionTime">
             <summary>
             Combined average execution time of all the rules for this predicate.
@@ -8586,6 +8591,18 @@
             <param name="returnType">Type to be returned by the method</param>
             <param name="parameterTypes">Types to be passed to the parameters</param>
             <returns>The MethodInfo object for the method implementing the operator, or null if the type doesn't implement the operator.</returns>
+        </member>
+        <member name="T:TED.Utilities.UpdateFlowVisualizer">
+            <summary>
+            Makes GraphViz visualizations of the data flow from one TED TablePredicate to another
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.UpdateFlowVisualizer.MakeGraph(TED.Program,System.String)">
+            <summary>
+            Make a visualization of the dataflow between predicates in a Program or Simulation.
+            </summary>
+            <param name="p"></param>
+            <param name="path"></param>
         </member>
         <member name="T:TED.Var`1">
             <summary>
