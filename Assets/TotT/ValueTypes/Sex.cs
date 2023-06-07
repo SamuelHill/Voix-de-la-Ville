@@ -1,3 +1,6 @@
 ﻿namespace TotT.ValueTypes {
-    public enum Sex { Male, Female } // , Other
+    /// <summary>
+    /// The sex of a person (only Male and Female as of now).
+    /// </summary>
+    public enum Sex { Male, Female }
 }

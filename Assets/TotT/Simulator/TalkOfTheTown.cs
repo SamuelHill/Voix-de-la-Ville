@@ -208,7 +208,9 @@ namespace TotT.Simulator {
 
             var Homes = Predicate("Homes", occupant.Key, location.Indexed);
             Homes.Unique = true;
-            var Occupancy = CountsBy("Occupancy", Homes, location, count);
+            var RealHomes = Predicate("RealHomes", occupant, location.Indexed)
+                .If(Locations[location, LocationType.House, __, __, __], Homes);
+            var Occupancy = CountsBy("Occupancy", RealHomes, location, count);
             var Unoccupied = Predicate("Unoccupied", location)
                 .If(Locations[location, LocationType.House, __, __, __], !Homes[__, location]);
             var UnderOccupied = Predicate("UnderOccupied", location);
@@ -343,7 +345,6 @@ namespace TotT.Simulator {
 
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
-            Debug.Log(ScoredPairings.Dependents[0]);
             DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
             Simulation.Update();
         } // optional, not necessary to call Update after EndPredicates
