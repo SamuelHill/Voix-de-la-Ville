@@ -1,6 +1,6 @@
 # TalkOfTheTown
 
-This repo contains the Talk of the Town Unity project built on TED. Folders of interest:
+This repo contains the Talk of the Town Unity project built on TED for my thesis work. Folders of interest:
 
 * [Simulator](Assets/TotT/Simulator)
 * [Unity](Assets/TotT/Unity)
