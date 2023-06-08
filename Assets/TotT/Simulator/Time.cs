@@ -63,13 +63,14 @@ namespace TotT.Simulator {
 
         private int YearsSince(TimePoint timePoint) => ((Year - timePoint.Year) * NumTicks +
                                                         (_calendar - timePoint.Calender)) / NumTicks;
+        public Function<TimePoint, int> YearsOld => Method<TimePoint, int>(YearsSince, false);
+
         public string YearsAgo(TimePoint timePoint) {
             var yearsAgo = YearsSince(timePoint);
             return yearsAgo switch {
                 0 => "Within the past year", 1 => "One year ago", _ => $"{yearsAgo.ToNumeral()} years ago"
             };
         }
-
         public override string ToString() => $"{DayOfWeek} {TimeOfDay} - {Month} {Day.Suffixed()}, {Year}";
     }
 }

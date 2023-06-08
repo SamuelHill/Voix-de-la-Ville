@@ -184,6 +184,20 @@ namespace TotT.Simulator {
             Locations.Add.If(NewLocations, LocationInformation);
             LocationsPositionIndex = Locations.KeyIndex(position);
 
+
+            var LocationStatus = Predicate("LocationStatus", location.Key, businessStatus.Indexed);
+            LocationStatus.Initially[location, BusinessStatus.InBusiness].Where(Locations.Initially);
+            LocationStatus.Add[location, BusinessStatus.InBusiness].If(Locations.Add);
+            LocationStatus.Set(location, businessStatus, BusinessStatus.OutOfBusiness)
+                          .If(Locations, Time.YearsOld[founding, age], age > 40, PerYear(0.3f));
+
+            var InBusiness = Definition("InBusiness", location)
+               .Is(LocationStatus[location, BusinessStatus.InBusiness]);
+
+            var JustClosed = Predicate("JustClosed", location)
+               .If(LocationStatus.Set(location, businessStatus));
+
+
             // Helper functions and definitions for creating new locations at a valid lot in town
             var NumLots = Length("NumLots", Locations); // NumLots helps expand town borders
             var IsVacant = Definition("IsVacant", position)
@@ -195,9 +209,10 @@ namespace TotT.Simulator {
             var AvailableCategories = Predicate("AvailableCategories", locationCategory);
             AvailableCategories.Initially.Where(Once[Locations.Initially[__, __, locationCategory, __, __]]);
             AvailableCategories.Add.If(Once[Locations.Add[__, __, locationCategory, __, __]]);
+            // NO WAY TO REMOVE A CATEGORY TYPE IF : JustClosed has last location in category
 
             var AvailableActions = Predicate("AvailableActions", actionType)
-                .If(ActionToCategory, AvailableCategories);
+                .If(ActionToCategory, AvailableCategories); // need one to one from this, too many staying in and visiting entries currently
 
             // ************************************** Housing *************************************
             // TODO : Separate out the dead into a new Homes-like table... involve removal ?
@@ -209,10 +224,10 @@ namespace TotT.Simulator {
             var Homes = Predicate("Homes", occupant.Key, location.Indexed);
             Homes.Unique = true;
             var RealHomes = Predicate("RealHomes", occupant, location.Indexed)
-                .If(Locations[location, LocationType.House, __, __, __], Homes);
+                .If(Locations[location, LocationType.House, __, __, __], InBusiness, Homes);
             var Occupancy = CountsBy("Occupancy", RealHomes, location, count);
             var Unoccupied = Predicate("Unoccupied", location)
-                .If(Locations[location, LocationType.House, __, __, __], !Homes[__, location]);
+                .If(Locations[location, LocationType.House, __, __, __], InBusiness, !Homes[__, location]);
             var UnderOccupied = Predicate("UnderOccupied", location);
             UnderOccupied.If(Occupancy, count <= 5);
             UnderOccupied.If(Unoccupied);
@@ -226,12 +241,15 @@ namespace TotT.Simulator {
             Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
             Homes.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
 
-            Homes.Set(occupant, location).If(JustDied[occupant], // Only one cemetery
+            Homes.Set(occupant, location).If(JustDied[occupant], InBusiness,
                 Locations[location, LocationType.Cemetery, __, __, __]);
             var BuriedAt = Predicate("BuriedAt", occupant, location)
-                .If(Locations[location, LocationType.Cemetery, __, __, __], Homes);
+                .If(Locations[location, LocationType.Cemetery, __, __, __], InBusiness, Homes);
             // with only the one cemetery for now, the follow will suffice for the GUI
             Buried = Predicate("Buried", person).If(BuriedAt[person, __]);
+
+            var ForeclosedUpon = Predicate("ForeclosedUpon", occupant).If(Homes, JustClosed);
+            Homes.Set(occupant, location).If(ForeclosedUpon, RandomElement(UnderOccupied, location));
 
             // Distance per person makes most sense when measured from either where the person is,
             // or where they live. This handles the latter:
@@ -253,7 +271,8 @@ namespace TotT.Simulator {
             // Needs the random lot to be available & 'construction' isn't instantaneous
             void AddOneLocation(LocationType locType, string name, Goal readyToAdd) => 
                 NewLocations[location, locType, position, Time.CurrentTimePoint].If(FreeLot, // assign position and check
-                    PerWeek(0.5f), !Locations[__, locType, __, __, __], readyToAdd, NewLocation[name, location]);
+                    PerWeek(0.5f), !Locations[otherLocation, locType, __, __, __], 
+                    !InBusiness[otherLocation], readyToAdd, NewLocation[name, location]);
 
             void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
                 NewLocations[location, locType, position, Time.CurrentTimePoint].If(FreeLot, 
@@ -278,15 +297,21 @@ namespace TotT.Simulator {
 
             // ********************************* Vocations: *********************************
 
-            var Vocations = Predicate("Vocations", job.Indexed, employee, location.Indexed, timeOfDay.Indexed);
+            var Vocations = Predicate("Vocations", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
+
+            var VocationStatus = Predicate("VocationStatus", employee.Key, state.Indexed);
+            VocationStatus.Add[employee, true].If(Vocations.Add);
+            VocationStatus.Set(employee, state, false).If(JustDied[employee]);
+
+            var StillEmployed = Definition("StillEmployed", person).Is(VocationStatus[person, true]);
 
             var JobsToFill = Predicate("JobsToFill", location, job)
-                .If(Time.CurrentTimeOfDay[timeOfDay], Locations, VocationShifts,
-                    PositionsPerJob, Count(Vocations) < positions);
+                .If(Time.CurrentTimeOfDay[timeOfDay], InBusiness, Locations, VocationShifts,
+                    PositionsPerJob, VocationStatus[__, true], Count(Vocations) < positions);
 
             var Candidates = Predicate("Candidates", person, job, location)
-                .If(JobsToFill, Maximal(person, aptitude, Goals(Alive,
-                    !Vocations[__, person, __, __], Age, age >= 18, Aptitude)));
+                .If(JobsToFill, Maximal(person, aptitude, 
+                                        Goals(Alive, !StillEmployed[person], Age, age >= 18, Aptitude)));
 
             Vocations.Add[job, person, location, Time.CurrentTimeOfDay].If(Candidates);
 
@@ -304,16 +329,16 @@ namespace TotT.Simulator {
             var NeedsDayCare = Predicate("NeedsDayCare", person).If(Kids, !NeedsSchooling[person]);
 
             var GoingToSchool = Predicate("GoingToSchool", person, location).If(
-                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.School],
+                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.School], InBusiness,
                 Locations[location, LocationType.School, __, __, __], // only expecting one location...
                 NeedsSchooling);
             var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
-                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.DayCare],
+                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.DayCare], InBusiness,
                 Locations[location, LocationType.DayCare, __, __, __], // only expecting one location...
                 NeedsDayCare);
             
             var GoingToWork = Predicate("GoingToWork", person, location)
-                .If(OpenLocationTypes, Locations, Vocations[__, person, location, Time.CurrentTimeOfDay]);
+                .If(OpenLocationTypes, InBusiness, Locations, StillEmployed, Vocations[__, person, location, Time.CurrentTimeOfDay]);
 
             var WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType, location.Indexed);
             WhereTheyAt.Unique = true;
@@ -334,7 +359,7 @@ namespace TotT.Simulator {
 
             // Choose the closest location with the action type assigned
             var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
-                .If(ActionToCategory, AvailableCategories, OpenLocationTypes, Locations);
+                .If(ActionToCategory, AvailableCategories, OpenLocationTypes, InBusiness, Locations);
             LocationByActionAssign.If(RandomActionAssign, actionType != ActionType.StayingIn, actionType != ActionType.Visiting,
                 Minimal(location, distance, OpenForBusinessByAction & DistanceFromHome[person, location, distance]));
 
@@ -346,8 +371,8 @@ namespace TotT.Simulator {
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
             DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
-            Simulation.Update();
-        } // optional, not necessary to call Update after EndPredicates
+            Simulation.Update(); // optional, not necessary to call Update after EndPredicates
+        } 
 
         public static void UpdateSimulator() {
             Time.Tick();

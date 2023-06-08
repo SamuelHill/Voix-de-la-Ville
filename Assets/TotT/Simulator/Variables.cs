@@ -24,6 +24,7 @@ namespace TotT.Simulator {
         public static readonly Var<Sexuality> sexuality = (Var<Sexuality>)"sexuality";
         public static readonly Var<Sexuality> sexualOfPartner = (Var<Sexuality>)"sexualityOfPartner";
         public static readonly Var<VitalStatus> vitalStatus = (Var<VitalStatus>)"vitalStatus";
+        public static readonly Var<BusinessStatus> businessStatus = (Var<BusinessStatus>)"businessStatus";
 
         public static readonly Var<Facet> facet = (Var<Facet>)"facet";
         public static readonly Var<sbyte> personality = (Var<sbyte>)"personality";
