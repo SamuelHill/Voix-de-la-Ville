@@ -1,4 +1,7 @@
 ﻿namespace TotT.ValueTypes {
+    /// <summary>
+    /// Types of locations.
+    /// </summary>
     public enum LocationType {
         ApartmentComplex,
         Bakery,

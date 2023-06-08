@@ -1,8 +1,8 @@
 ﻿namespace TotT.ValueTypes {
     /// <summary>
-    /// Names of the various jobs that are needed at businesses (LocationTypes that need employees)
-    /// The table that relates each Vocation to its LocationType(s) is _vocationLocations (see StaticTables)
-    /// The table that assigns each Vocation a number of positions to fill per location is PositionsPerJob (see StaticTables)
+    /// The jobs that are needed at businesses, i.e. LocationTypes that need employees.
+    /// The table that relates each Vocation to its LocationType(s) is _vocationLocations (see StaticTables).
+    /// The table that assigns each Vocation a number of positions to fill per location is PositionsPerJob (see StaticTables).
     /// </summary>
     public enum Vocation {
         Architect,

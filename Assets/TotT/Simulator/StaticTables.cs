@@ -12,6 +12,9 @@ namespace TotT.Simulator {
     using static Variables;
     using static CsvParsing;
 
+    /// <summary>
+    /// All static tables (Datalog style EDB's - in TED these can be extensional or intensional).
+    /// </summary>
     public static class StaticTables {
         // ***************************************** Names ****************************************
         public static TablePredicate<string> FemaleNames;

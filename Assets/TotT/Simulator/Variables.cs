@@ -3,9 +3,10 @@ using TotT.ValueTypes;
 using UnityEngine;
 
 namespace TotT.Simulator {
+    /// <summary>Commonly used TED.Vars for types used in this simulator.</summary>
+    /// <remarks>Variables will be lowercase for style/identification purposes.</remarks>
     public static class Variables {
         // ReSharper disable InconsistentNaming
-        // Variables as fields (not c# var) will still be lowercase for style/identification purposes.
         public static readonly Var<Person> person = (Var<Person>)"person";
         public static readonly Var<Person> partner = (Var<Person>)"partner";
         public static readonly Var<Person> parent = (Var<Person>)"parent";

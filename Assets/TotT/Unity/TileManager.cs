@@ -5,33 +5,38 @@ using UnityEngine.Tilemaps;
 using static UnityEngine.Input;
 
 namespace TotT.Unity {
+    /// <summary>
+    /// Handles display of locations in a TileMap (position and color) as well as the ability to click on a tile.
+    /// </summary>
     public class TileManager {
-        public readonly Tilemap Tilemap;
         // for the tile to be able to change color:
         //      https://github.com/Unity-Technologies/2d-extras/issues/96
         private readonly Tile _occupiedLot;
-
         private readonly Vector2Int _townCenter; // offsets the town's location in terms of tiles on screen
-        private Vector3Int LotToTile(Vector2Int lot) => (Vector3Int)(_townCenter + lot);
-        private Vector2Int TileToLot(Vector3Int tile) => (Vector2Int)tile - _townCenter;
+        public readonly Tilemap Tilemap;
+        private Vector3Int? _selectedTile;
 
         public TileManager(Tilemap tilemap, Vector2Int townCenter, Tile occupiedLot) {
             Tilemap = tilemap;
             _townCenter = townCenter;
-            _occupiedLot = occupiedLot; }
+            _occupiedLot = occupiedLot;
+        }
+
+        private Vector3Int LotToTile(Vector2Int lot) => (Vector3Int)(_townCenter + lot);
+        private Vector2Int TileToLot(Vector3Int tile) => (Vector2Int)tile - _townCenter;
 
         // **************************************** Tiles *****************************************
-
         private bool SetTiles(Vector3Int[] tiles, TileBase[] tilesToSet) {
             if (tiles.Length == 0) return false;
             Tilemap.SetTiles(tiles, tilesToSet);
-            return true; }
+            return true;
+        }
         private bool SetAllTiles(Vector3Int[] tiles, TileBase tileToSet) =>
             SetTiles(tiles, Enumerable.Repeat(tileToSet, tiles.Length).ToArray());
 
-        public bool SetLots((Vector2Int, TileBase)[] lots) =>
-            SetTiles(lots.Select(lot => LotToTile(lot.Item1)).ToArray(),
-                lots.Select(lot => lot.Item2).ToArray());
+        public bool SetLots((Vector2Int, TileBase)[] lots) => SetTiles(
+            lots.Select(lot => LotToTile(lot.Item1)).ToArray(),
+            lots.Select(lot => lot.Item2).ToArray());
 
         private bool DeleteTiles(Vector3Int[] tiles) => SetAllTiles(tiles, null);
         public bool DeleteLots(IEnumerable<Vector2Int> lots) => DeleteTiles(lots.Select(LotToTile).ToArray());
@@ -39,35 +44,28 @@ namespace TotT.Unity {
         private bool OccupyLots(IEnumerable<Vector2Int> lots) => OccupyTiles(lots.Select(LotToTile).ToArray());
 
         // **************************************** Colors ****************************************
-
         private void SetColors(IEnumerable<(Vector3Int, Color)> tileColors) {
-            foreach (var tileColor in tileColors)
-                Tilemap.SetColor(tileColor.Item1, tileColor.Item2); }
+            foreach (var tileColor in tileColors) Tilemap.SetColor(tileColor.Item1, tileColor.Item2);
+        }
         private bool ColorTiles(IReadOnlyCollection<(Vector3Int, Color)> tiles) {
             if (tiles.Count == 0) return false;
             SetColors(tiles);
-            return true; }
-        private bool ColorLots(IEnumerable<(Vector2Int, Color)> lots) => 
+            return true;
+        }
+        private bool ColorLots(IEnumerable<(Vector2Int, Color)> lots) =>
             ColorTiles(lots.Select(lot => (LotToTile(lot.Item1), lot.Item2)).ToArray());
 
-        public bool OccupyAndColorLots((Vector2Int, Color)[] lots) => 
+        public bool OccupyAndColorLots((Vector2Int, Color)[] lots) =>
             OccupyLots(lots.Select(t => t.Item1)) && ColorLots(lots);
 
         // ************************************** Selection ***************************************
-        
-        public Vector2Int? SelectedLot => _selectedTile is null ?
-            null : TileToLot((Vector3Int)_selectedTile);
+        public Vector2Int? SelectedLot => _selectedTile is null ? null : TileToLot((Vector3Int)_selectedTile);
 
-        private Vector3Int? _selectedTile;
-
-        private Vector3Int MouseToTile() => 
-            Tilemap.WorldToCell(Camera.main.ScreenToWorldPoint(mousePosition));
-
+        private Vector3Int MouseToTile() => Tilemap.WorldToCell(Camera.main.ScreenToWorldPoint(mousePosition));
         private bool TrySelectTile(out Vector3Int tile) {
             tile = MouseToTile();
-            return Tilemap.HasTile(tile); }
-
-        public void UpdateSelectedTile() =>
-            _selectedTile = TrySelectTile(out var tile) ? tile : null;
+            return Tilemap.HasTile(tile);
+        }
+        public void UpdateSelectedTile() => _selectedTile = TrySelectTile(out var tile) ? tile : null;
     }
 }

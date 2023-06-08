@@ -2,30 +2,42 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Random = TED.Utilities.Random;
 
 namespace TotT.Utilities {
-    using TEDRandom = TED.Utilities.Random;
+    using TEDRandom = Random;
 
+    /// <summary>
+    /// Maps over System.Random.Next for basic types and provides pseudo-normal bell curve
+    /// random scoring and various random element/shuffle functions.
+    /// </summary>
     public static class Randomize {
         // ReSharper disable once InconsistentNaming
-        private static Random RNG;
+        private static System.Random RNG;
 
-        private static readonly uint[] Primes = { 
-            1u, 2u, 3u, 5u, 7u, 11u, 13u, 17u, 19u, 23u, 29u, 31u, 37u, 
-            41u, 43u, 53u, 59u, 61u, 67u, 71u, 73u, 79u, 83u, 89u, 97u };
+        private static readonly uint[] Primes = {
+            1u,  2u,  3u,  5u,  7u,  11u, 13u, 17u, 19u, 23u,
+            29u, 31u, 37u, 41u, 43u, 53u, 59u, 61u, 67u, 71u,
+            73u, 79u, 83u, 89u, 97u
+        };
         private static readonly int[] HighPrimes = new int[100];
 
         static Randomize() {
             var index = 0;
             for (var i = 1; i < HighPrimes.Length; i++) {
                 if (index < Primes.Length - 1 && i > Primes[index + 1]) index++;
-                HighPrimes[i] = index; }
-            RNG = new Random(); }
+                HighPrimes[i] = index;
+            }
+            RNG = new System.Random();
+        }
 
-        public static void Seed(int seed, int tedSeed) { Seed(seed); TEDSeed(tedSeed); }
-        private static void Seed(int seed) => RNG = new Random(seed);
+        public static void Seed(int seed, int tedSeed) {
+            Seed(seed);
+            TEDSeed(tedSeed);
+        }
+        private static void Seed(int seed) => RNG = new System.Random(seed);
         // ReSharper disable once InconsistentNaming
-        private static void TEDSeed(int seed) => TEDRandom.Rng = new Random(seed);
+        private static void TEDSeed(int seed) => TEDRandom.Rng = new System.Random(seed);
 
         // ReSharper disable once MemberCanBePrivate.Global
         public static int Integer(int high) => RNG.Next(high + 1);
@@ -48,8 +60,9 @@ namespace TotT.Utilities {
         public static float FloatBellCurve() => NormalDistribution(-50f, 50f);
 
         private static int NormalDistribution(int low, int high, int numAggregate = 10) => // "Normal"
-            Enumerable.Range(0, numAggregate + 1).Aggregate((value, _) =>
+            Enumerable.Range(0, numAggregate + 1).Aggregate((value, _) => 
                 value + Integer((high + Math.Abs(low)) / numAggregate)) + low;
+
         private static float NormalDistribution(float low, float high, int numAggregate = 10) =>
             Enumerable.Range(0, numAggregate + 1).Select(i => (float)i).Aggregate((value, _) =>
                 value + Float((high + Math.Abs(low)) / numAggregate)) + low;
@@ -62,22 +75,27 @@ namespace TotT.Utilities {
             var randomFloat = Float(dict.Values.Sum());
             foreach (var kvp in dict) {
                 floatMax -= kvp.Value;
-                if (randomFloat > floatMax) return kvp.Key; }
+                if (randomFloat > floatMax) return kvp.Key;
+            }
             // should only return default when some the kvp Values are negative.
-            return default!; }
+            return default!;
+        }
 
         public static T RandomElement<T>(this IList<T> list) {
             var size = list.Count;
             Debug.Assert(size > 0,
-                "cannot choose random element from empty list");
-            return list[RNG.Next(size)]; }
+                         "cannot choose random element from empty list");
+            return list[RNG.Next(size)];
+        }
 
         public static T[] Shuffle<T>(this IEnumerable<T> sequence) {
             var result = sequence.ToArray();
             for (var i = result.Length - 1; i > 0; i--) {
                 var index = RNG.Next(i + 1);
-                (result[index], result[i]) = (result[i], result[index]); }
-            return result; }
+                (result[index], result[i]) = (result[i], result[index]);
+            }
+            return result;
+        }
 
         public static IEnumerable<T> BadShuffle<T>(this IList<T> list) {
             var length = (uint)list.Count;
@@ -88,7 +106,8 @@ namespace TotT.Utilities {
             var step = Primes[RNG.Next() % (maxPrimeIndex + 1)];
             for (uint i = 0; i < length; i++) {
                 yield return list[(int)position];
-                position = (position + step) % length; }
+                position = (position + step) % length;
+            }
         }
     }
 }

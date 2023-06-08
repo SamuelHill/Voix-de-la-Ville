@@ -12,10 +12,10 @@ using static TED.Language;
 namespace TotT.Simulator {
     using AgentRow = ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
     using LocationRow = ValueTuple<Location, LocationType, LocationCategory, Vector2Int, TimePoint>;
-    using static Calendar; // Prob per
+    using static Calendar;   // Prob per interval type
     using static CsvParsing; // DeclareParsers
     using static Functions;
-    using static Randomize; // Seed and .RandomElement
+    using static Randomize;  // Seed and .RandomElement
     using static StaticTables;
     using static TEDHelpers; // Increment and Goals(params...)
     using static Variables;
@@ -153,7 +153,7 @@ namespace TotT.Simulator {
             var SuccessfulProcreation = AssignRandomly("SuccessfulProcreation", PotentialProcreation);
 
             Gestation.Add[woman, man, RandomSex, child, Time.CurrentDate, true]
-                .If(SuccessfulProcreation, RandomFirstName, NewPerson[firstName, Surname[man], child]);
+                .If(SuccessfulProcreation, RandomFirstName, NewPerson[firstName, Surname[man], child], BreakPoint(child));
 
             var BirthTo = Predicate("BirthTo", woman, man, sex, child);
             BirthTo.If(Gestation[woman, man, sex, child, conception, true],
@@ -193,8 +193,8 @@ namespace TotT.Simulator {
 
             // for efficient checks to see if a location category is present:
             var AvailableCategories = Predicate("AvailableCategories", locationCategory);
-            AvailableCategories.Initially.Where(Once[Goals(LocationInformation, PrimordialLocations)]);
-            AvailableCategories.Add.If(Once[Goals(Locations.Add, !AvailableCategories[locationCategory])]);
+            AvailableCategories.Initially.Where(Once[Locations.Initially[__, __, locationCategory, __, __]]);
+            AvailableCategories.Add.If(Once[Locations.Add[__, __, locationCategory, __, __]]);
 
             var AvailableActions = Predicate("AvailableActions", actionType)
                 .If(ActionToCategory, AvailableCategories);

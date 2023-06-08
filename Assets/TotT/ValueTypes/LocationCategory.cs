@@ -1,19 +1,19 @@
 ﻿namespace TotT.ValueTypes {
     /// <summary>
-    /// Highest order classification of Location. LocationCategory denotes shared services/offerings
-    /// that the underlying LocationTypes may provide. The table that relates each LocationType to its
-    /// LocationCategory is LocationInformation (see StaticTables).
+    /// Denotes shared services/offerings that a set of LocationTypes may provide. Highest order
+    /// classification of Location. The table that relates each LocationType to its LocationCategory
+    /// is LocationInformation (see StaticTables).
     /// </summary>
     public enum LocationCategory {
-        Accommodation, 
+        Accommodation,
         Administration,
-        Amenity, 
+        Amenity,
         ChildCare,
-        Commerce, 
-        Eatery, 
-        Food, 
-        Health, 
-        Industry, 
+        Commerce,
+        Eatery,
+        Food,
+        Health,
+        Industry,
         Personal
     }
 }

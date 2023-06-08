@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TED;
-using TED.Tables;
 using TotT.Simulator;
 using TotT.Utilities;
 using TotT.ValueTypes;
@@ -14,6 +13,7 @@ namespace TotT.Unity {
     using static GUIManager;
 
     // ReSharper disable once InconsistentNaming
+    /// <summary>OnGUI based TablePredicate viewer.</summary>
     public class GUITable {
         private const int ColumnPadding = 5;
         private const int LabelHeight = 16; // same as fontSize + padding
@@ -44,18 +44,20 @@ namespace TotT.Unity {
             _headings = (from heading in predicate.ColumnHeadings select Heading(heading)).ToArray();
             _headingLengths = new int[_headings.Length];
             BuildBuffer(numRows);
-            _longestBufferStrings = new int[NumColumns]; }
+            _longestBufferStrings = new int[NumColumns];
+        }
 
         public void NewNumRows(int numRows) {
-            if (numRows != NumDisplayRows) BuildBuffer(numRows); }
+            if (numRows != NumDisplayRows) BuildBuffer(numRows);
+        }
 
         private void BuildBuffer(int numRows) {
             _buffer = new string[numRows][];
             for (var i = 0; i < numRows; i++)
-                _buffer[i] = new string[NumColumns]; }
+                _buffer[i] = new string[NumColumns];
+        }
 
         // *********************************** Table properties ***********************************
-
         private string Name => _predicate.Name;
         private int NumColumns => _headings.Length;
         private uint RowCount => _predicate.Length;
@@ -71,14 +73,16 @@ namespace TotT.Unity {
         private bool UpdateMonthly => _predicate.IsDynamic && _predicate.IsExtensional;
         private bool SetLastMonth() { // only using Set naming for TrySet...
             _lastMonth = TalkOfTheTown.Time.Month;
-            return true; }
+            return true;
+        }
         private bool TrySetLastMonth() => _lastMonth != TalkOfTheTown.Time.Month && SetLastMonth();
         private bool MonthlyUpdate() => UpdateMonthly && TrySetLastMonth();
         private bool UpdateCheck => UpdateEveryTick || MonthlyUpdate();
         private bool UpdateRowCount() {
             if (_previousRowCount == RowCount) return false;
             _previousRowCount = RowCount;
-            return true; }
+            return true;
+        }
         private bool RowCountChange => !_usingScroll && UpdateRowCount();
 
         private GUILayoutOption ScrollHeight => GUILayout.Height((NumDisplayRows + 3) * LabelHeight);
@@ -97,7 +101,6 @@ namespace TotT.Unity {
             Event.current.type is EventType.ScrollWheel or EventType.MouseDrag;
 
         // ************************************ Table control *************************************
-
         public void Initialize() {
             // This is how I am doing bold label display for now, so ditto for size calc:
             GUI.skin.label.fontStyle = FontStyle.Bold;
@@ -112,7 +115,8 @@ namespace TotT.Unity {
             // GUITables must be initialized after Time (inside TalkOfTheTown):
             if (UpdateMonthly) _lastMonth = TalkOfTheTown.Time.Month;
             // Normal update, try to get row strings for the buffer:
-            Update(); }
+            Update();
+        }
 
         private void Update() {
             _bufferedRows = _predicate.RowRangeToStrings(ScrollRow, _buffer);
@@ -120,18 +124,22 @@ namespace TotT.Unity {
             var updatedBufferStrings = new int[NumColumns];
             for (var i = 0; i < _bufferedRows; i++) CalcStringLengths(_buffer[i], ref updatedBufferStrings);
             // overwrite the longest strings for per tick update, pass in to CalcStringLength for permanent growth
-            _longestBufferStrings = updatedBufferStrings; }
+            _longestBufferStrings = updatedBufferStrings;
+        }
 
         private void CalcStringLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
             for (var i = 0; i < NumColumns; i++) {
                 var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
-                if (stringLengths[i] < stringLength) stringLengths[i] = stringLength; } }
+                if (stringLengths[i] < stringLength) stringLengths[i] = stringLength;
+            }
+        }
 
         private void LayoutRow(IReadOnlyList<string> strings, bool header = false) {
             GUILayout.BeginHorizontal();
             for (var i = 0; i < NumColumns; i++)
                 Label(strings[i], header, ColumnWidth(i));
-            GUILayout.EndHorizontal(); }
+            GUILayout.EndHorizontal();
+        }
 
         private void OnGUI(Rect screenRect, int tableNum = -1) {
             GUILayout.BeginArea(screenRect); // table area
@@ -156,11 +164,13 @@ namespace TotT.Unity {
                 if (!_usingScroll) _usingScroll = true;
             } else if (RowCountChange || UpdateCheck) Update();
             GUILayout.EndHorizontal();
-            GUILayout.EndArea(); }
+            GUILayout.EndArea();
+        }
 
         public void OnGUI(int tableNum) { // Default check is not needed, more of a reminder that this
             // version of OnGUI is only meant to be called in the default case of left side display.
-            if (DefaultTable) OnGUI(LeftSideTables(tableNum), tableNum); }
+            if (DefaultTable) OnGUI(LeftSideTables(tableNum), tableNum);
+        }
         public void OnGUI(int x, int y) => OnGUI(TableRect(x, y));
     }
 }

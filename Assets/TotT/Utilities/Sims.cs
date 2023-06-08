@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Linq;
-using TED.Interpreter;
 using TotT.ValueTypes;
 
 namespace TotT.Utilities {
     using static Calendar;
     using static Randomize;
 
+    /// <summary>
+    /// Functions for creating new people (Person constructor, random adult age and sex)
+    /// as well as the math behind fertility rates.
+    /// </summary>
     public static class Sims {
         public static Person NewPerson(string first, string last) => new(first, last);
         public static int RandomAdultAge() => Integer(18, 72);

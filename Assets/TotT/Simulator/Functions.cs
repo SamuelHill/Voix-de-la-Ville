@@ -1,5 +1,4 @@
 ﻿using TED;
-using TED.Interpreter;
 using TED.Primitives;
 using TotT.Utilities;
 using TotT.ValueTypes;
@@ -9,9 +8,10 @@ using static TED.Language;
 namespace TotT.Simulator {
     using static Randomize;
 
+    /// <summary>TED.Functions and TED.PrimitiveTests wrappers for Utility and ValueType functionality.</summary>
+    /// <remarks>Predicates (includes Functions and Primitive tests) are TitleCase.</remarks>
     public static class Functions {
         // ReSharper disable InconsistentNaming
-        // TED naming convention - not Variable means uppercase
         public static readonly Function<string, string, Person> NewPerson = Method<string, string, Person>(Sims.NewPerson, false);
         public static readonly Function<Person, string> Surname = Function<Person, string>("Surname", p => p.LastName);
         public static readonly Function<int> RandomAdultAge = Method(Sims.RandomAdultAge, false);
@@ -23,7 +23,7 @@ namespace TotT.Simulator {
         public static readonly Function<uint, Vector2Int> RandomLot = Method<uint, Vector2Int>(Town.RandomLot, false);
 
         public static readonly Function<Sex, Sexuality> RandomSexuality = Function<Sex, Sexuality>("RandomSexuality", Sexuality.Random, false);
-        public static readonly Function<Date> RandomDate = Function("RandomDate", Date.Random, false);
+        public static readonly Function<Date> RandomDate = Function("RandomDate", Calendar.Random, false);
 
         public static readonly Function<int> RandomNormal = Method(BellCurve, false);
         public static readonly Function<sbyte> RandomNormalSByte = Method(SByteBellCurve, false);

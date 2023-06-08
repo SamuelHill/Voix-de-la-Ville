@@ -9,6 +9,7 @@ namespace TotT.Unity {
     using static GUIManager;
 
     // ReSharper disable once UnusedMember.Global
+    /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>
     public class SimulationController : MonoBehaviour {
         // ReSharper disable MemberCanBePrivate.Global
         // ReSharper disable FieldCanBeMadeReadOnly.Global
@@ -23,17 +24,15 @@ namespace TotT.Unity {
         public Tilemap Tilemap;
         // ReSharper disable once UnassignedField.Global
         public Tile OccupiedLot;
-        // ReSharper restore MemberCanBePrivate.Global
         // ReSharper restore FieldCanBeMadeReadOnly.Global
+        // ReSharper restore MemberCanBePrivate.Global
 
         private TileManager _tileManager;
         private SimulationInfo _simulationInfo;
-        // ReSharper disable InconsistentNaming
-        private bool SimulationRunning = true; // make public for unity inspector control of start
-        private bool SimulationSingleStep;
-        private bool ProfileRuleExecutionTime;
-        private bool GUIRunOnce;
-        // ReSharper restore InconsistentNaming
+        private bool _simulationRunning = true; // make public for unity inspector control of start
+        private bool _simulationSingleStep;
+        private bool _profileRuleExecutionTime;
+        private bool _guiRunOnce;
 
         // ReSharper disable once UnusedMember.Global
         internal void Start() {
@@ -48,31 +47,35 @@ namespace TotT.Unity {
                 : TalkOfTheTown.Simulation.Tables.ToList());
             ActiveTables(new[] { "Agents", "Parents", "Vocations", "WhereTheyAt" });
             AddPopulationInfo(() => $"Population of {_simulationInfo.Population}");
-            AddSelectedTileInfo(_simulationInfo.SelectedLocation); }
+            AddSelectedTileInfo(_simulationInfo.SelectedLocation);
+        }
 
         // ReSharper disable once UnusedMember.Global
         internal void Update() {
-            if (GetKeyDown(KeyCode.Escape)) SimulationRunning = !SimulationRunning;
-            if (!SimulationRunning && GetKeyDown(KeyCode.Space)) SimulationSingleStep = true;
-            if (GetKeyDown(KeyCode.BackQuote)) ProfileRuleExecutionTime = !ProfileRuleExecutionTime;
+            if (GetKeyDown(KeyCode.Escape)) _simulationRunning = !_simulationRunning;
+            if (!_simulationRunning && GetKeyDown(KeyCode.Space)) _simulationSingleStep = true;
+            if (GetKeyDown(KeyCode.BackQuote)) _profileRuleExecutionTime = !_profileRuleExecutionTime;
             if (GetKeyDown(KeyCode.F1)) ToggleShowTables();
-            if (SimulationRunning || SimulationSingleStep) {
-                try { TalkOfTheTown.UpdateSimulator(); } catch { SimulationRunning = false; throw; }
+            if (_simulationRunning || _simulationSingleStep) {
+                try { TalkOfTheTown.UpdateSimulator(); } catch { _simulationRunning = false; throw; }
                 _simulationInfo.ProcessLots();
-                SimulationSingleStep = false; }
-            _tileManager.UpdateSelectedTile(); }
+                _simulationSingleStep = false;
+            }
+            _tileManager.UpdateSelectedTile();
+        }
 
         // ReSharper disable once UnusedMember.Global
         internal void OnGUI() {
-            if (!GUIRunOnce) {
+            if (!_guiRunOnce) {
                 CustomSkins();
                 InitAllTables();
-                GUIRunOnce = true; }
+                _guiRunOnce = true;
+            }
             ShowStrings();
             ShowActiveTables();
             ChangeActiveTables();
-            if (ProfileRuleExecutionTime) RuleExecutionTimes();
-            if (!SimulationRunning) ShowPaused();
+            if (_profileRuleExecutionTime) RuleExecutionTimes();
+            if (!_simulationRunning) ShowPaused();
         }
     }
 }

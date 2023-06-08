@@ -1,4 +1,7 @@
 ﻿namespace TotT.ValueTypes {
+    /// <summary>
+    /// The facets of personality. Uses the Dwarf Fortress 50.
+    /// </summary>
     public enum Facet {
         AbstractInclined,
         ActivityLevel,
