@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using TED;
 using TED.Interpreter;
 using TED.Tables;
@@ -375,8 +376,24 @@ namespace TotT.Simulator {
         } 
 
         public static void UpdateSimulator() {
+#if ParallelUpdate
+            if (update == null)
+                LoopSimulator();
+#else
             Time.Tick();
             Simulation.Update();
+#endif
         }
+
+#if ParallelUpdate
+        private static Task update;
+        
+        static void LoopSimulator()
+        {
+            Time.Tick();
+            Simulation.Update();
+            update = Simulation.UpdateAsync().ContinueWith((_) => LoopSimulator());
+        }
+#endif
     }
 }

@@ -36,6 +36,7 @@ namespace TotT.Simulator {
         public static readonly Var<Date> dateOfBirth = (Var<Date>)"dateOfBirth";
         public static readonly Var<TimePoint> dob = (Var<TimePoint>)"dob";
         public static readonly Var<TimePoint> founding = (Var<TimePoint>)"founding";
+        public static readonly Var<TimePoint> time = (Var<TimePoint>)"time";
 
         public static readonly Var<Location> location = (Var<Location>)"location";
         public static readonly Var<Location> otherLocation = (Var<Location>)"otherLocation";

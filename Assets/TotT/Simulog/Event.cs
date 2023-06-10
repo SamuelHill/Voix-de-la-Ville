@@ -1,7 +1,55 @@
-﻿using TED;
+﻿using Assets.TotT.Simulog;
+using TED;
 using TED.Interpreter;
+using TotT.Simulator;
+using TotT.ValueTypes;
 
 namespace TotT.Simulog {
+    public class Event<T1> : TablePredicate<T1>, IEvent
+    {
+        public Event(string name, IColumnSpec<T1> arg1) : base(name, arg1) { }
+
+        private TablePredicate<T1, TimePoint> _chronicle;
+
+        public TablePredicate<T1, TimePoint> Chronicle
+        {
+            get
+            {
+                if (_chronicle == null)
+                    _chronicle =
+                        new TablePredicate<T1, TimePoint>(Name + "Chronicle", (Var<T1>)DefaultVariables[0], Variables.time);
+                _chronicle.Add.If(this, TalkOfTheTown.Time.CurrentTimePoint[Variables.time]);
+                return _chronicle;
+            }
+        }
+
+        public TablePredicate ChronicleUntyped => Chronicle;
+
+        public Event<T1> OccursWhen(params Goal[] conditions)
+        {
+            If(conditions);
+            return this;
+        }
+
+        public Event<T1> Causes(params Effect[] effects)
+        {
+            foreach (var e in effects)
+                e.GenerateCode(DefaultGoal);
+            return this;
+        }
+
+        public override TableGoal<T1> this[Term<T1> arg1] => new EventGoal(this, arg1);
+
+        public class EventGoal : TableGoal<T1>, IOccurrence
+        {
+            public EventGoal(Event<T1> e, Term<T1> arg1) : base(e, arg1)
+            { }
+        }
+
+    }
+
+
+#if notdef
     public class Event<T1, T2, T3, TTime> {
         public readonly TablePredicate<T1, T2, T3, TTime> Predicate;
 
@@ -36,4 +84,5 @@ namespace TotT.Simulog {
             public TableGoal At(Term<TTime> t) => Event.Predicate[Arg1, Arg2, Arg3, t];
         }
     }
+#endif
 }

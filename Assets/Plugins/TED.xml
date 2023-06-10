@@ -6013,6 +6013,12 @@
             </summary>
             <param name="args">Arguments to the predicate</param>
         </member>
+        <member name="M:TED.TablePredicate.AppendArgs(TED.Interpreter.TableGoal,TED.Term[])">
+            <summary>
+            Return a call to this predicate using the arguments from goal, followed by additionalArguments.
+            Note that goal will generally be a call to some other predicate
+            </summary>
+        </member>
         <member name="M:TED.TablePredicate.GetGoal(TED.Term[])">
             <summary>
             Returns a goal of the predicate applied to the specified arguments
@@ -6200,6 +6206,11 @@
         <member name="P:TED.TablePredicate.Inputs">
             <summary>
             Table predicates that this table predicate accumulates, if any.
+            </summary>
+        </member>
+        <member name="P:TED.TablePredicate.AddUntyped">
+            <summary>
+            Untyped interface to the .Add table.
             </summary>
         </member>
         <member name="P:TED.TablePredicate.InitialValueTable">
@@ -6412,6 +6423,9 @@
             A predicate that is automatically appended to this predicate on every update.
             </summary>
         </member>
+        <member name="P:TED.TablePredicate`1.AddUntyped">
+            <inheritdoc />
+        </member>
         <member name="P:TED.TablePredicate`1.Initially">
             <summary>
             A predicate that is automatically appended to this predicate on every update.
@@ -6538,6 +6552,9 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`2.AddUntyped">
+            <inheritdoc />
         </member>
         <member name="P:TED.TablePredicate`2.Initially">
             <summary>
@@ -6716,6 +6733,9 @@
             A predicate that is automatically appended to this predicate on every update.
             </summary>
         </member>
+        <member name="P:TED.TablePredicate`3.AddUntyped">
+            <inheritdoc />
+        </member>
         <member name="P:TED.TablePredicate`3.Initially">
             <summary>
             A predicate that is automatically appended to this predicate on every update.
@@ -6879,6 +6899,9 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`4.AddUntyped">
+            <inheritdoc />
         </member>
         <member name="P:TED.TablePredicate`4.Initially">
             <summary>
@@ -7048,6 +7071,9 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`5.AddUntyped">
+            <inheritdoc />
         </member>
         <member name="P:TED.TablePredicate`5.Initially">
             <summary>
@@ -7222,6 +7248,9 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`6.AddUntyped">
+            <inheritdoc />
         </member>
         <member name="P:TED.TablePredicate`6.Initially">
             <summary>
@@ -7401,6 +7430,9 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`7.AddUntyped">
+            <inheritdoc />
         </member>
         <member name="P:TED.TablePredicate`7.Initially">
             <summary>
@@ -7585,6 +7617,9 @@
             <summary>
             A predicate that is automatically appended to this predicate on every update.
             </summary>
+        </member>
+        <member name="P:TED.TablePredicate`8.AddUntyped">
+            <inheritdoc />
         </member>
         <member name="P:TED.TablePredicate`8.Initially">
             <summary>
@@ -7840,6 +7875,14 @@
             Tables are essentially a custom version of the List class that is optimized for this application.
             Tables are *not* TablePredicates, but each TablePredicate has a Table in it to hold its data.
             </summary>
+        </member>
+        <member name="P:TED.Tables.Table.Name">
+            <summary>
+            Name of table for debugging purposes
+            </summary>
+        </member>
+        <member name="M:TED.Tables.Table.ToString">
+            <inheritdoc />
         </member>
         <member name="T:TED.Tables.Table.Projection`2">
             <summary>
