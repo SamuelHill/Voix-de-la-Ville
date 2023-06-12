@@ -52,6 +52,7 @@ namespace TotT.Simulator {
         public static readonly Var<string> locationName = (Var<string>)"locationName";
 
         public static readonly Var<ActionType> actionType = (Var<ActionType>)"actionType";
+        public static readonly Var<InteractionType> interactionType = (Var<InteractionType>)"interactionType";
         public static readonly Var<int> distance = (Var<int>)"distance";
         public static readonly Var<int> count = (Var<int>)"count";
         public static readonly Var<float> score = (Var<float>)"score";

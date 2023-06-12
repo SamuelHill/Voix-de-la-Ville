@@ -44,7 +44,7 @@ namespace TotT.Unity {
                 _tileManager.Tilemap.RefreshAllTiles(); }
 
         // ************************************* Info Strings *************************************
-        public int Population => _talkOfTheTown.AgentsVitalStatusIndex.RowsMatching(VitalStatus.Alive).Count();
+        public int Population => _talkOfTheTown.PopulationCountIndex[VitalStatus.Alive].Item2;
 
         public string SelectedLocation() => _tileManager.SelectedLot is null ? null :
             SelectedLotToString((Vector2Int)_tileManager.SelectedLot);
