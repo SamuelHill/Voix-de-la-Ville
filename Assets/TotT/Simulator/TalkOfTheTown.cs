@@ -11,7 +11,7 @@ using static TED.Language;
 
 namespace TotT.Simulator {
     using AgentRow = ValueTuple<Person, int, Date, Sex, Sexuality, VitalStatus>;
-    using LocationRow = ValueTuple<Location, LocationType, LocationCategory, Vector2Int, TimePoint>;
+    using LocationDisplayRow = ValueTuple<Vector2Int, Location, LocationType, TimePoint>;
     using static Calendar;   // Prob per interval type
     using static CsvParsing; // DeclareParsers
     using static Functions;
@@ -34,11 +34,11 @@ namespace TotT.Simulator {
             this() => Time = new Time(year, month, day, time);
 
         // public Tables and Indexers for GUI purposes (see Unity.SimulationInfo for most uses)
-        public TablePredicate<Location, LocationType, Vector2Int, TimePoint> NewLocations;
-        public TablePredicate<Location, LocationType, Vector2Int, TimePoint> VacatedLocations;
+        public TablePredicate<Vector2Int, Location, LocationType, TimePoint> NewLocations;
+        public TablePredicate<Vector2Int> VacatedLocations;
         public TablePredicate<Person> Buried;
         public GeneralIndex<AgentRow, VitalStatus> AgentsVitalStatusIndex;
-        public KeyIndex<LocationRow, Vector2Int> LocationsPositionIndex;
+        public KeyIndex<LocationDisplayRow, Vector2Int> LocationsPositionIndex;
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
 
         public void InitSimulator() {
@@ -173,42 +173,50 @@ namespace TotT.Simulator {
             Increment(Agents, person, age, WhenToAge);
 
             // ************************************ Locations *************************************
-            // These tables are used for adding and removing tiles from the tilemap in unity efficiently -
-            // by not having to check over all Locations. VacatedLocations is currently UNUSED
-            NewLocations = Predicate("NewLocations", location, locationType, position, founding);
-            VacatedLocations = Predicate("VacatedLocations", location, locationType, position, founding);
 
-            var Locations = Predicate("Locations", location.Key, locationType.Indexed,
-                locationCategory.Indexed, position.Key, founding);
-            Locations.Initially.Where(PrimordialLocations, LocationInformation);
-            Locations.Add.If(NewLocations, LocationInformation);
-            LocationsPositionIndex = Locations.KeyIndex(position);
+            var Locations = Predicate("Locations", location.Key, 
+                locationType.Indexed, locationCategory.Indexed, position.Indexed, founding, businessStatus.Indexed);
+            Locations.Initially[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
+                     .Where(PrimordialLocations, LocationInformation);
 
-
-            var LocationStatus = Predicate("LocationStatus", location.Key, businessStatus.Indexed);
-            LocationStatus.Initially[location, BusinessStatus.InBusiness].Where(Locations.Initially);
-            LocationStatus.Add[location, BusinessStatus.InBusiness].If(Locations.Add);
-            LocationStatus.Set(location, businessStatus, BusinessStatus.OutOfBusiness)
-                          .If(Locations, Time.YearsOld[founding, age], age > 40, PerYear(0.3f));
+            // NewLocations is used for both adding tiles to the TileMap in Unity efficiently
+            // (not checking every row of the Locations table) and for collecting new locations
+            // with the minimal amount of information needed (excludes derivable columns).
+            NewLocations = Predicate("NewLocations", position, location, locationType, founding);
+            Locations.Add[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
+                     .If(NewLocations, LocationInformation);
 
             var InBusiness = Definition("InBusiness", location)
-               .Is(LocationStatus[location, BusinessStatus.InBusiness]);
+               .Is(Locations[location, __, __, __, __, BusinessStatus.InBusiness]);
 
+            // Closing businesses... This is to generic (don't close the hospital after 40 years?)
+            Locations.Set(location, businessStatus, BusinessStatus.OutOfBusiness)
+                     .If(Locations, Time.YearsOld[founding, age], age > 40, PerYear(0.3f));
             var JustClosed = Predicate("JustClosed", location)
-               .If(LocationStatus.Set(location, businessStatus));
+               .If(Locations.Set(location, businessStatus));
 
+            // VacatedLocations is used for removing tiles from the TileMap
+            VacatedLocations = Predicate("VacatedLocations", position);
+            VacatedLocations.If(Locations.Set(location, businessStatus), Locations);
+
+            // For tile hover info strings we only want the locations in business, and since each lot
+            // in town can only hold one in business location we can also key off of position here.
+            var DisplayLocations = Predicate("DisplayLocations", 
+                position.Key, location, locationType,  founding)
+               .If(Locations[location, locationType, __, position, founding, BusinessStatus.InBusiness]);
+            LocationsPositionIndex = DisplayLocations.KeyIndex(position);
 
             // Helper functions and definitions for creating new locations at a valid lot in town
             var NumLots = Length("NumLots", Locations); // NumLots helps expand town borders
             var IsVacant = Definition("IsVacant", position)
-                .Is(!Locations[__, __, __, position, __]);
+                .Is(!Locations[__, __, __, position, __, BusinessStatus.InBusiness]);
             var FreeLot = Definition("FreeLot", position)
                 .Is(RandomLot[NumLots, position], IsVacant[position]);
 
             // for efficient checks to see if a location category is present:
             var AvailableCategories = Predicate("AvailableCategories", locationCategory);
-            AvailableCategories.Initially.Where(Once[Locations.Initially[__, __, locationCategory, __, __]]);
-            AvailableCategories.Add.If(Once[Locations.Add[__, __, locationCategory, __, __]]);
+            AvailableCategories.Initially.Where(Once[Locations.Initially[__, __, locationCategory, __, __, __]]);
+            AvailableCategories.Add.If(Once[Locations.Add[__, __, locationCategory, __, __, __]]);
             // NO WAY TO REMOVE A CATEGORY TYPE IF : JustClosed has last location in category
 
             var AvailableActions = Predicate("AvailableActions", actionType)
@@ -224,10 +232,10 @@ namespace TotT.Simulator {
             var Homes = Predicate("Homes", occupant.Key, location.Indexed);
             Homes.Unique = true;
             var RealHomes = Predicate("RealHomes", occupant, location.Indexed)
-                .If(Locations[location, LocationType.House, __, __, __], InBusiness, Homes);
+                .If(Locations[location, LocationType.House, __, __, __, BusinessStatus.InBusiness], Homes);
             var Occupancy = CountsBy("Occupancy", RealHomes, location, count);
             var Unoccupied = Predicate("Unoccupied", location)
-                .If(Locations[location, LocationType.House, __, __, __], InBusiness, !Homes[__, location]);
+                .If(Locations[location, LocationType.House, __, __, __, BusinessStatus.InBusiness], !Homes[__, location]);
             var UnderOccupied = Predicate("UnderOccupied", location);
             UnderOccupied.If(Occupancy, count <= 5);
             UnderOccupied.If(Unoccupied);
@@ -241,10 +249,10 @@ namespace TotT.Simulator {
             Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
             Homes.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
 
-            Homes.Set(occupant, location).If(JustDied[occupant], InBusiness,
-                Locations[location, LocationType.Cemetery, __, __, __]);
+            Homes.Set(occupant, location).If(JustDied[occupant],
+                Locations[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness]);
             var BuriedAt = Predicate("BuriedAt", occupant, location)
-                .If(Locations[location, LocationType.Cemetery, __, __, __], InBusiness, Homes);
+                .If(Locations[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness], Homes);
             // with only the one cemetery for now, the follow will suffice for the GUI
             Buried = Predicate("Buried", person).If(BuriedAt[person, __]);
 
@@ -254,9 +262,9 @@ namespace TotT.Simulator {
             // Distance per person makes most sense when measured from either where the person is,
             // or where they live. This handles the latter:
             var DistanceFromHome = Definition("DistanceFromHome", person, location, distance)
-                .Is(Locations[location, __, __, position, __],
+                .Is(Locations[location, __, __, position, __, BusinessStatus.InBusiness],
                     Homes[person, otherLocation],
-                    Locations[otherLocation, __, __, otherPosition, __],
+                    Locations[otherLocation, __, __, otherPosition, __, BusinessStatus.InBusiness],
                     Distance[position, otherPosition, distance]);
             
             var WantToMove = Predicate("WantToMove", person)
@@ -270,12 +278,12 @@ namespace TotT.Simulator {
             
             // Needs the random lot to be available & 'construction' isn't instantaneous
             void AddOneLocation(LocationType locType, string name, Goal readyToAdd) => 
-                NewLocations[location, locType, position, Time.CurrentTimePoint].If(FreeLot, // assign position and check
-                    PerWeek(0.5f), !Locations[otherLocation, locType, __, __, __], 
-                    !InBusiness[otherLocation], readyToAdd, NewLocation[name, location]);
+                NewLocations[position, location, locType, Time.CurrentTimePoint].If(FreeLot, // assign position and check
+                    PerWeek(0.5f), !Locations[__, locType, __, __, __, BusinessStatus.InBusiness],
+                    readyToAdd, NewLocation[name, location]);
 
             void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
-                NewLocations[location, locType, position, Time.CurrentTimePoint].If(FreeLot, 
+                NewLocations[position, location, locType, Time.CurrentTimePoint].If(FreeLot, 
                     PerWeek(0.5f), readyToAdd, RandomElement(names, locationName), NewLocation[locationName, location]);
 
             AddNewLocation(LocationType.House, HouseNames, !!WantToMove[person]);
@@ -329,12 +337,12 @@ namespace TotT.Simulator {
             var NeedsDayCare = Predicate("NeedsDayCare", person).If(Kids, !NeedsSchooling[person]);
 
             var GoingToSchool = Predicate("GoingToSchool", person, location).If(
-                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.School], InBusiness,
-                Locations[location, LocationType.School, __, __, __], // only expecting one location...
+                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.School],
+                Locations[location, LocationType.School, __, __, __, BusinessStatus.InBusiness],
                 NeedsSchooling);
             var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
-                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.DayCare], InBusiness,
-                Locations[location, LocationType.DayCare, __, __, __], // only expecting one location...
+                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.DayCare],
+                Locations[location, LocationType.DayCare, __, __, __, BusinessStatus.InBusiness],
                 NeedsDayCare);
             
             var GoingToWork = Predicate("GoingToWork", person, location)

@@ -7,8 +7,7 @@ using TotT.ValueTypes;
 using UnityEngine;
 
 namespace TotT.Unity {
-    using LocationRow = ValueTuple<Location, LocationType, LocationCategory, Vector2Int, TimePoint>;
-    using NewLocationRow = ValueTuple<Location, LocationType, Vector2Int, TimePoint>;
+    using LocationRow = ValueTuple<Vector2Int, Location, LocationType, TimePoint>;
     using static StaticTables;
     using static StringProcessing;
 
@@ -24,25 +23,24 @@ namespace TotT.Unity {
         private const byte NumInRow = 3; // Used with ListWithRows
 
         // **************************************** Tiles *****************************************
-        private IEnumerable<Vector2Int> ToDelete() => 
-            from row in _talkOfTheTown.VacatedLocations select row.Item3;
-
         private static Color LocationColor(LocationType locationType) =>
             LocationColorsIndex[locationType].Item2;
-        private static (Vector2Int, Color)[] ToOccupyAndColor(IEnumerable<NewLocationRow> locations) =>
-            (from row in locations select (row.Item3, LocationColor(row.Item2))).ToArray();
 
-        private bool ProcessNewLocations() =>
-            _tileManager.OccupyAndColorLots(ToOccupyAndColor(_talkOfTheTown.NewLocations));
         private void ProcessPrimordialLocations() =>
-            _tileManager.OccupyAndColorLots(ToOccupyAndColor(PrimordialLocations));
+            _tileManager.OccupyAndColorLots((from row in PrimordialLocations
+                                             select (row.Item3, LocationColor(row.Item2))).ToArray());
+        private bool ProcessNewLocations() =>
+            _tileManager.OccupyAndColorLots((from row in _talkOfTheTown.NewLocations 
+                                             select (row.Item1, LocationColor(row.Item3))).ToArray());
+        private bool ProcessLocationDeletions() =>
+            _tileManager.DeleteLots(_talkOfTheTown.VacatedLocations);
 
         public void ProcessInitialLocations() {
             ProcessPrimordialLocations();
             ProcessNewLocations();
             _tileManager.Tilemap.RefreshAllTiles(); }
         public void ProcessLots() {
-            if (ProcessNewLocations() || _tileManager.DeleteLots(ToDelete()))
+            if (ProcessNewLocations() || ProcessLocationDeletions())
                 _tileManager.Tilemap.RefreshAllTiles(); }
 
         // ************************************* Info Strings *************************************
@@ -58,11 +56,11 @@ namespace TotT.Unity {
         private LocationRow RowAtLot(Vector2Int selectedLot) =>
             _talkOfTheTown.LocationsPositionIndex[selectedLot];
         private static string LocationInfo(LocationRow row) =>
-            $"{row.Item1} ({row.Item2}) located at x: {row.Item4.x}, y: {row.Item4.y}\n" +
-            $"Founded on {row.Item5} ({TalkOfTheTown.Time.YearsAgo(row.Item5)})\n";
+            $"{row.Item2} ({row.Item3}) located at x: {row.Item1.x}, y: {row.Item1.y}\n" +
+            $"Founded on {row.Item4} ({TalkOfTheTown.Time.YearsAgo(row.Item4)})\n";
 
         private string EveryoneAtLocation(LocationRow row) =>
-            PeopleAtLocation(row.Item1) + BuriedAtCemetery(row.Item2);
+            PeopleAtLocation(row.Item2) + BuriedAtCemetery(row.Item3);
 
         private IEnumerable<string> ListPeopleAtLocation(Location location) => 
             _talkOfTheTown.WhereTheyAtLocationIndex.RowsMatching(location).Select(p => p.Item1.FullName);
