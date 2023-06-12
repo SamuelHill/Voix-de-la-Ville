@@ -19,6 +19,9 @@ namespace TotT.ValueTypes {
             Calender = calender;
             Year = year;
         }
+
+        public static TimePoint Eschaton = new TimePoint(ushort.MaxValue, int.MaxValue);
+
         /// <summary>Constructor from component parts</summary>
         /// <remarks>Only used for FromString, default constructor hooks up to Time more easily</remarks>
         private TimePoint(Month month, byte day, TimeOfDay time, int year) :
