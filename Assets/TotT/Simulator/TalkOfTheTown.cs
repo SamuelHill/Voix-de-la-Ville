@@ -240,6 +240,8 @@ namespace TotT.Simulator {
             UnderOccupied.If(Occupancy, count <= 5);
             UnderOccupied.If(Unoccupied);
 
+            var Unhoused = Predicate("Unhoused", person).If(Alive, !Homes[person, __]);
+
             // Using this to randomly assign one house per primordial person...
             var PrimordialHouses = Predicate("PrimordialHouses", location)
                 .If(PrimordialLocations[location, LocationType.House, __, __]);
@@ -247,7 +249,9 @@ namespace TotT.Simulator {
                 RandomElement(PrimordialHouses, location));
 
             Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
+            // If no UnderOccupied homes this wont get set...
             Homes.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
+            Homes.Add.If(Unhoused[occupant], RandomElement(UnderOccupied, location));
 
             Homes.Set(occupant, location).If(JustDied[occupant],
                 Locations[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness]);
@@ -285,11 +289,10 @@ namespace TotT.Simulator {
             void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
                 NewLocations[position, location, locType, Time.CurrentTimePoint].If(FreeLot, 
                     PerWeek(0.5f), readyToAdd, RandomElement(names, locationName), NewLocation[locationName, location]);
-
-            AddNewLocation(LocationType.House, HouseNames, !!WantToMove[person]);
-            //AddNewLocation(LocationType.House, HouseNames, Once[WantToMove[__]]);
+            
+            AddNewLocation(LocationType.House, HouseNames, Once[WantToMove[__]]);
             // Currently the following only happens with drifters - everyone starts housed
-            AddNewLocation(LocationType.House, HouseNames, Count(Homes[person, location] & Alive[person]) < Count(Alive));
+            AddNewLocation(LocationType.House, HouseNames, Once[Unhoused[__]]);
 
             AddOneLocation(LocationType.Hospital, "St. Asmodeus",
                 Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);

@@ -37,54 +37,55 @@ v30 [ label = "NewLocations"];
 v31 [ label = "WantToMove"];
 v32 [ label = "Occupancy"];
 v33 [ label = "RealHomes" rank="min"];
-v34 [ label = "JustClosed"];
-v35 [ label = "VacatedLocations"];
-v36 [ label = "DisplayLocations" rank="min"];
-v37 [ label = "CategoryCount" rank="min"];
-v38 [ label = "AvailableCategories"];
-v39 [ label = "AvailableActions"];
-v40 [ label = "Homes" fillcolor="limegreen"];
-v41 [ label = "set location"];
-v42 [ label = "UnderOccupied"];
-v43 [ label = "Unoccupied" rank="min"];
-v44 [ label = "ForeclosedUpon"];
-v45 [ label = "MovingIn"];
-v46 [ label = "Add"];
-v47 [ label = "BuriedAt" rank="min"];
-v48 [ label = "Buried"];
-v49 [ label = "Vocations" fillcolor="limegreen"];
-v50 [ label = "Add"];
-v51 [ label = "SelectedCandidates"];
-v52 [ label = "FilteredCandidates"];
-v53 [ label = "CandidatesToFilter"];
-v54 [ label = "Candidates"];
-v55 [ label = "JobsToFill" rank="min"];
-v56 [ label = "VocationStatus" fillcolor="limegreen"];
-v57 [ label = "set state"];
-v58 [ label = "Add"];
-v59 [ label = "OpenLocationTypes" rank="min"];
-v60 [ label = "Kids" rank="min"];
-v61 [ label = "NeedsSchooling"];
-v62 [ label = "NeedsDayCare"];
-v63 [ label = "GoingToSchool"];
-v64 [ label = "GoingToDayCare"];
-v65 [ label = "GoingToWork"];
-v66 [ label = "WhereTheyAt"];
-v67 [ label = "RandomActionAssign"];
-v68 [ label = "AdultActions"];
-v69 [ label = "NeedsActionAssignment"];
-v70 [ label = "LocationByActionAssign"];
-v71 [ label = "OpenForBusinessByAction"];
-v72 [ label = "Interactions"];
-v73 [ label = "ChosenPositiveInteractions"];
-v74 [ label = "PositiveInteractions"];
-v75 [ label = "ScoredInteractions"];
-v76 [ label = "PotentialInteractions"];
-v77 [ label = "NotWorking"];
-v78 [ label = "ChosenNeutralInteractions"];
-v79 [ label = "NeutralInteractions"];
-v80 [ label = "ChosenNegativeInteractions"];
-v81 [ label = "NegativeInteractions"];
+v34 [ label = "Unhoused" rank="min"];
+v35 [ label = "JustClosed"];
+v36 [ label = "VacatedLocations"];
+v37 [ label = "DisplayLocations" rank="min"];
+v38 [ label = "CategoryCount" rank="min"];
+v39 [ label = "AvailableCategories"];
+v40 [ label = "AvailableActions"];
+v41 [ label = "Homes" fillcolor="limegreen"];
+v42 [ label = "set location"];
+v43 [ label = "UnderOccupied"];
+v44 [ label = "Unoccupied" rank="min"];
+v45 [ label = "ForeclosedUpon"];
+v46 [ label = "MovingIn"];
+v47 [ label = "Add"];
+v48 [ label = "BuriedAt" rank="min"];
+v49 [ label = "Buried"];
+v50 [ label = "Vocations" fillcolor="limegreen"];
+v51 [ label = "Add"];
+v52 [ label = "SelectedCandidates"];
+v53 [ label = "FilteredCandidates"];
+v54 [ label = "CandidatesToFilter"];
+v55 [ label = "Candidates"];
+v56 [ label = "JobsToFill" rank="min"];
+v57 [ label = "VocationStatus" fillcolor="limegreen"];
+v58 [ label = "set state"];
+v59 [ label = "Add"];
+v60 [ label = "OpenLocationTypes" rank="min"];
+v61 [ label = "Kids" rank="min"];
+v62 [ label = "NeedsSchooling"];
+v63 [ label = "NeedsDayCare"];
+v64 [ label = "GoingToSchool"];
+v65 [ label = "GoingToDayCare"];
+v66 [ label = "GoingToWork"];
+v67 [ label = "WhereTheyAt"];
+v68 [ label = "RandomActionAssign"];
+v69 [ label = "AdultActions"];
+v70 [ label = "NeedsActionAssignment"];
+v71 [ label = "LocationByActionAssign"];
+v72 [ label = "OpenForBusinessByAction"];
+v73 [ label = "Interactions"];
+v74 [ label = "ChosenPositiveInteractions"];
+v75 [ label = "PositiveInteractions"];
+v76 [ label = "ScoredInteractions"];
+v77 [ label = "PotentialInteractions"];
+v78 [ label = "NotWorking"];
+v79 [ label = "ChosenNeutralInteractions"];
+v80 [ label = "NeutralInteractions"];
+v81 [ label = "ChosenNegativeInteractions"];
+v82 [ label = "NegativeInteractions"];
 v1 -> v0 [ color="red" ]
 v2 -> v0 [ color="red" ]
 v3 -> v2
@@ -116,72 +117,74 @@ v30 -> v29
 v31 -> v30
 v32 -> v31
 v33 -> v32
+v34 -> v30
 v10 -> v30
-v28 -> v34
 v28 -> v35
-v37 -> v38
+v28 -> v36
 v38 -> v39
-v41 -> v40 [ color="red" ]
-v11 -> v41
-v42 -> v41
-v32 -> v42
+v39 -> v40
+v42 -> v41 [ color="red" ]
+v11 -> v42
 v43 -> v42
-v44 -> v41
-v34 -> v44
-v45 -> v41
-v31 -> v45
-v42 -> v45
-v46 -> v40 [ color="green" ]
-v3 -> v46
-v42 -> v46
-v5 -> v46
-v47 -> v48
-v50 -> v49 [ color="green" ]
-v51 -> v50
+v32 -> v43
+v44 -> v43
+v45 -> v42
+v35 -> v45
+v46 -> v42
+v31 -> v46
+v43 -> v46
+v47 -> v41 [ color="green" ]
+v3 -> v47
+v43 -> v47
+v5 -> v47
+v34 -> v47
+v48 -> v49
+v51 -> v50 [ color="green" ]
 v52 -> v51
 v53 -> v52
 v54 -> v53
 v55 -> v54
-v54 -> v51
-v57 -> v56 [ color="red" ]
-v11 -> v57
-v58 -> v56 [ color="green" ]
-v50 -> v58
-v60 -> v61
+v56 -> v55
+v55 -> v52
+v58 -> v57 [ color="red" ]
+v11 -> v58
+v59 -> v57 [ color="green" ]
+v51 -> v59
 v61 -> v62
-v60 -> v62
-v39 -> v63
-v59 -> v63
+v62 -> v63
 v61 -> v63
-v39 -> v64
-v59 -> v64
+v40 -> v64
+v60 -> v64
 v62 -> v64
-v59 -> v65
-v63 -> v66
-v64 -> v66
-v65 -> v66
-v67 -> v66
+v40 -> v65
+v60 -> v65
+v63 -> v65
+v60 -> v66
+v64 -> v67
+v65 -> v67
+v66 -> v67
 v68 -> v67
-v39 -> v68
-v69 -> v67
-v65 -> v69
-v64 -> v69
-v63 -> v69
-v70 -> v66
-v67 -> v70
-v71 -> v70
-v38 -> v71
-v59 -> v71
-v73 -> v72
+v69 -> v68
+v40 -> v69
+v70 -> v68
+v66 -> v70
+v65 -> v70
+v64 -> v70
+v71 -> v67
+v68 -> v71
+v72 -> v71
+v39 -> v72
+v60 -> v72
 v74 -> v73
 v75 -> v74
 v76 -> v75
 v77 -> v76
-v66 -> v77
-v78 -> v72
-v79 -> v78
-v75 -> v79
-v80 -> v72
-v81 -> v80
-v75 -> v81
+v78 -> v77
+v67 -> v78
+v79 -> v73
+v80 -> v79
+v76 -> v80
+v81 -> v73
+v82 -> v81
+v76 -> v82
 }
