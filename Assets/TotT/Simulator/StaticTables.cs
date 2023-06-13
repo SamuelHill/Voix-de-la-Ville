@@ -13,7 +13,7 @@ namespace TotT.Simulator {
     using static CsvParsing;
 
     /// <summary>
-    /// All static tables (Datalog style EDB's - in TED these can be extensional or intensional).
+    /// All static tables (Datalog style EDBs - in TED these can be extensional or intensional).
     /// </summary>
     public static class StaticTables {
         // ***************************************** Names ****************************************
@@ -30,14 +30,14 @@ namespace TotT.Simulator {
         public static TablePredicate<Vocation> Jobs;
 
         // ************************************* Primordial(s) ************************************
-        public static TablePredicate<Person, int, Date, Sex, Sexuality> PrimordialBeings;
-        public static TablePredicate<Location, LocationType, Vector2Int, TimePoint> PrimordialLocations;
+        public static TablePredicate<Person, int, Date, Sex, Sexuality> PrimordialBeing;
+        public static TablePredicate<Location, LocationType, Vector2Int, TimePoint> PrimordialLocation;
 
         // ************************************* General Info *************************************
         public static TablePredicate<LocationType, LocationCategory, DailyOperation, Schedule> LocationInformation;
         private static TablePredicate<Vocation, LocationType> _vocationLocations;
         private static TablePredicate<TimeOfDay, DailyOperation> _operatingTimes;
-        public static TablePredicate<LocationType, Vocation, TimeOfDay> VocationShifts;
+        public static TablePredicate<LocationType, Vocation, TimeOfDay> VocationShift;
         public static TablePredicate<Vocation, int> PositionsPerJob;
         public static TablePredicate<ActionType, LocationCategory> ActionToCategory;
         // for GUI:
@@ -59,17 +59,17 @@ namespace TotT.Simulator {
             Facets = EnumTable("Facets", facet);
             Jobs = EnumTable("Jobs", job);
 
-            PrimordialBeings = FromCsv("PrimordialBeings", Csv("agents"), 
+            PrimordialBeing = FromCsv("PrimordialBeing", Csv("agents"), 
                 person, age, dateOfBirth, sex, sexuality);
-            PrimordialLocations = FromCsv("PrimordialLocations", Csv("locations"),
+            PrimordialLocation = FromCsv("PrimordialLocation", Csv("locations"),
                 location, locationType, position, founding);
 
             LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"),
                 locationType.Key, locationCategory.Indexed, operation, schedule);
             _vocationLocations = FromCsv("VocationLocations", Csv("vocationLocations"), job.Indexed, locationType.Indexed);
             _operatingTimes = FromCsv("OperatingTimes", Csv("operatingTimes"), timeOfDay, operation);
-            VocationShifts = Predicate("VocationShifts", locationType.Indexed, job.Indexed, timeOfDay);
-            VocationShifts.Initially.Where(_vocationLocations, LocationInformation, _operatingTimes);
+            VocationShift = Predicate("VocationShift", locationType.Indexed, job.Indexed, timeOfDay);
+            VocationShift.Initially.Where(_vocationLocations, LocationInformation, _operatingTimes);
             PositionsPerJob = FromCsv("PositionsPerJob", Csv("positionsPerJob"), job.Key, positions); // per time of day
             ActionToCategory = FromCsv("ActionToCategory", Csv("actionCategories"), actionType, locationCategory);
 

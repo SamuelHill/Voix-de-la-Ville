@@ -1,7 +1,5 @@
 digraph {
 splines=true
-overlap=false
-maxiter=1000
 node [ style="filled"]
 subgraph "cluster_BarNames"{
 v4 [ label = "BarNames" fillcolor="gold" shape="diamond"];
@@ -11,16 +9,16 @@ subgraph "cluster_HouseNames"{
 v6 [ label = "HouseNames" fillcolor="gold" shape="diamond"];
 v7 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
-subgraph "cluster_VocationShifts"{
-v15 [ label = "VocationShifts" fillcolor="gold" shape="diamond"];
+subgraph "cluster_VocationShift"{
+v15 [ label = "VocationShift" fillcolor="gold" shape="diamond"];
 v16 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_LocationColors"{
 v20 [ label = "LocationColors" fillcolor="gold" shape="diamond"];
 v21 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
-subgraph "cluster_Agents"{
-v22 [ label = "Agents" fillcolor="limegreen"];
+subgraph "cluster_Agent"{
+v22 [ label = "Agent" fillcolor="limegreen"];
 v23 [ label = "Add"];
 v41 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 v42 [ label = "set vitalStatus"];
@@ -45,29 +43,29 @@ v26 [ label = "Gestation" fillcolor="limegreen"];
 v27 [ label = "Add"];
 v40 [ label = "set state"];
 }
-subgraph "cluster_Parents"{
-v38 [ label = "Parents" fillcolor="limegreen"];
+subgraph "cluster_Parent"{
+v38 [ label = "Parent" fillcolor="limegreen"];
 v39 [ label = "Add"];
 }
-subgraph "cluster_Locations"{
-v52 [ label = "Locations" fillcolor="limegreen"];
+subgraph "cluster_Location"{
+v52 [ label = "Location" fillcolor="limegreen"];
 v53 [ label = "Add"];
 v68 [ label = "set businessStatus"];
 v70 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
-subgraph "cluster_Homes"{
-v56 [ label = "Homes" fillcolor="limegreen"];
+subgraph "cluster_Home"{
+v56 [ label = "Home" fillcolor="limegreen"];
 v57 [ label = "Add"];
 v63 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 v65 [ label = "set location"];
 }
-subgraph "cluster_VocationStatus"{
-v85 [ label = "VocationStatus" fillcolor="limegreen"];
+subgraph "cluster_EmploymentStatus"{
+v85 [ label = "EmploymentStatus" fillcolor="limegreen"];
 v86 [ label = "Add"];
 v87 [ label = "set state"];
 }
-subgraph "cluster_Vocations"{
-v78 [ label = "Vocations" fillcolor="limegreen"];
+subgraph "cluster_Employment"{
+v78 [ label = "Employment" fillcolor="limegreen"];
 v79 [ label = "Add"];
 }
 v0 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
@@ -76,8 +74,8 @@ v2 [ label = "Surnames" fillcolor="gold" shape="diamond"];
 v3 [ label = "LocationNames" fillcolor="gold" shape="diamond"];
 v8 [ label = "Facets" fillcolor="gold" shape="diamond"];
 v9 [ label = "Jobs" fillcolor="gold" shape="diamond"];
-v10 [ label = "PrimordialBeings" fillcolor="gold" shape="diamond"];
-v11 [ label = "PrimordialLocations" fillcolor="gold" shape="diamond"];
+v10 [ label = "PrimordialBeing" fillcolor="gold" shape="diamond"];
+v11 [ label = "PrimordialLocation" fillcolor="gold" shape="diamond"];
 v12 [ label = "LocationInformation" fillcolor="gold" shape="diamond"];
 v13 [ label = "VocationLocations" fillcolor="gold" shape="diamond"];
 v14 [ label = "OperatingTimes" fillcolor="gold" shape="diamond"];
@@ -90,58 +88,58 @@ v28 [ label = "SuccessfulProcreation"];
 v29 [ label = "PotentialProcreation"];
 v30 [ label = "Pregnant"];
 v33 [ label = "PairForProcreate"];
-v34 [ label = "ScoredPairings"];
-v35 [ label = "PotentialPairings"];
+v34 [ label = "ScoredPairing"];
+v35 [ label = "PotentialPairing"];
 v36 [ label = "Women"];
 v37 [ label = "Men"];
 v50 [ label = "PopulationCount"];
 v51 [ label = "JustDied"];
-v54 [ label = "NewLocations"];
+v54 [ label = "NewLocation"];
 v55 [ label = "WantToMove"];
 v58 [ label = "UnderOccupied"];
 v59 [ label = "Occupancy"];
-v60 [ label = "RealHomes"];
+v60 [ label = "InBusinessHome"];
 v61 [ label = "Unoccupied"];
 v62 [ label = "Unhoused"];
-v64 [ label = "PrimordialHouses" fillcolor="deepskyblue" shape="diamond"];
+v64 [ label = "PrimordialHouse" fillcolor="deepskyblue" shape="diamond"];
 v66 [ label = "ForeclosedUpon"];
 v67 [ label = "JustClosed"];
 v69 [ label = "MovingIn"];
-v71 [ label = "VacatedLocations"];
+v71 [ label = "VacatedLocation"];
 v72 [ label = "DisplayLocations"];
 v73 [ label = "CategoryCount"];
-v74 [ label = "AvailableCategories"];
-v75 [ label = "AvailableActions"];
+v74 [ label = "AvailableCategory"];
+v75 [ label = "AvailableAction"];
 v76 [ label = "BuriedAt"];
 v77 [ label = "Buried"];
 v80 [ label = "SelectedCandidates"];
-v81 [ label = "FilteredCandidates"];
-v82 [ label = "CandidatesToFilter"];
-v83 [ label = "Candidates"];
+v81 [ label = "FilteredCandidate"];
+v82 [ label = "CandidateToFilter"];
+v83 [ label = "Candidate"];
 v84 [ label = "JobsToFill"];
-v88 [ label = "OpenLocationTypes"];
-v89 [ label = "Kids"];
-v90 [ label = "NeedsSchooling"];
-v91 [ label = "NeedsDayCare"];
+v88 [ label = "OpenLocationType"];
+v89 [ label = "Kid"];
+v90 [ label = "NeedSchooling"];
+v91 [ label = "NeedDayCare"];
 v92 [ label = "GoingToSchool"];
 v93 [ label = "GoingToDayCare"];
 v94 [ label = "GoingToWork"];
 v95 [ label = "WhereTheyAt"];
 v96 [ label = "RandomActionAssign"];
-v97 [ label = "AdultActions"];
+v97 [ label = "AdultAction"];
 v98 [ label = "NeedsActionAssignment"];
 v99 [ label = "LocationByActionAssign"];
 v100 [ label = "OpenForBusinessByAction"];
-v101 [ label = "Interactions"];
-v102 [ label = "ChosenPositiveInteractions"];
-v103 [ label = "PositiveInteractions"];
-v104 [ label = "ScoredInteractions"];
-v105 [ label = "PotentialInteractions"];
+v101 [ label = "Interaction"];
+v102 [ label = "ChosenPositiveInteraction"];
+v103 [ label = "PositiveInteraction"];
+v104 [ label = "ScoredInteraction"];
+v105 [ label = "PotentialInteraction"];
 v106 [ label = "NotWorking"];
-v107 [ label = "ChosenNeutralInteractions"];
-v108 [ label = "NeutralInteractions"];
-v109 [ label = "ChosenNegativeInteractions"];
-v110 [ label = "NegativeInteractions"];
+v107 [ label = "ChosenNeutralInteraction"];
+v108 [ label = "NeutralInteraction"];
+v109 [ label = "ChosenNegativeInteraction"];
+v110 [ label = "NegativeInteraction"];
 v5 -> v4 [ color="blue" ]
 v3 -> v5 [ constraint="false" ]
 v7 -> v6 [ color="blue" ]

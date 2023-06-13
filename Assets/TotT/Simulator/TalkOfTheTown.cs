@@ -34,8 +34,8 @@ namespace TotT.Simulator {
             this() => Time = new Time(year, month, day, time);
 
         // public Tables and Indexers for GUI purposes (see Unity.SimulationInfo for most uses)
-        public TablePredicate<Vector2Int, Location, LocationType, TimePoint> NewLocations;
-        public TablePredicate<Vector2Int> VacatedLocations;
+        public TablePredicate<Vector2Int, Location, LocationType, TimePoint> NewLocation;
+        public TablePredicate<Vector2Int> VacatedLocation;
         public TablePredicate<Person> Buried;
         public KeyIndex<(VitalStatus, int), VitalStatus> PopulationCountIndex;
         public KeyIndex<LocationDisplayRow, Vector2Int> LocationsPositionIndex;
@@ -52,29 +52,29 @@ namespace TotT.Simulator {
             // TODO : Cue drifters when new jobs need filling that the township can't meet requirements for
 
             // Primordial beings init -
-            var Agents = Predicate("Agents", person.Key, 
+            var Agent = Predicate("Agent", person.Key, 
                 age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
-            Agents.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeings);
+            Agent.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
             // ditto for agents associated tables -
             var Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
-            Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeings, Facets);
+            Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeing, Facets);
             var Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
-            Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeings, Jobs);
+            Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeing, Jobs);
 
-            var PopulationCount = CountsBy("PopulationCount", Agents, vitalStatus, count);
+            var PopulationCount = CountsBy("PopulationCount", Agent, vitalStatus, count);
             PopulationCount.IndexByKey(vitalStatus);
             PopulationCountIndex = (KeyIndex<(VitalStatus, int), VitalStatus>)PopulationCount.IndexFor(vitalStatus, true);
 
             var Alive = Definition("Alive", person)
-                .Is(Agents[person, __, __, __, __, VitalStatus.Alive]);
+                .Is(Agent[person, __, __, __, __, VitalStatus.Alive]);
             // special case Alive check where we also bind age
             var Age = Definition("Age", person, age)
-                .Is(Agents[person, age, __, __, __, VitalStatus.Alive]);
+                .Is(Agent[person, age, __, __, __, VitalStatus.Alive]);
 
-            Agents.Set(person, vitalStatus, VitalStatus.Dead) // Dying
+            Agent.Set(person, vitalStatus, VitalStatus.Dead) // Dying
                 .If(Age, age > 60, PerMonth(0.003f));
             var JustDied = Predicate("JustDied", person)
-                .If(Agents.Set(person, vitalStatus)); // Assumes set only used for dying (two vitalStatus values)
+                .If(Agent.Set(person, vitalStatus)); // Assumes set only used for dying (two vitalStatus values)
 
             // Person Name helpers -
             var RandomFirstName = Definition("RandomFirstName", sex, firstName);
@@ -88,11 +88,11 @@ namespace TotT.Simulator {
             var Drifter = Predicate("Drifter", person, sex, sexuality);
             Drifter[person, RandomSex, sexuality].If(PerYear(0.05f),
                 RandomPerson, RandomSexuality[sex, sexuality]);
-            Agents.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
+            Agent.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
 
             // Add associated info that is needed for a new agent -
-            Personality.Add[person, facet, RandomNormalSByte].If(Agents.Add, Facets);
-            Aptitude.Add[person, job, RandomNormalSByte].If(Agents.Add, Jobs);
+            Personality.Add[person, facet, RandomNormalSByte].If(Agent.Add, Facets);
+            Aptitude.Add[person, job, RandomNormalSByte].If(Agent.Add, Jobs);
             // Agents.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
             // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
 
@@ -108,31 +108,31 @@ namespace TotT.Simulator {
             // TODO : Married couples separate from ProcreativePair - last name changes in 'nickname' like table
 
             // Need Parents before parenting logic to prevent procreative relationships between parents and kids
-            var Parents = Predicate("Parents", parent, child);
+            var Parent = Predicate("Parent", parent, child);
             var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
-                .Is(Parents[person, otherPerson] | Parents[otherPerson, person]); // only immediate family
+                .Is(Parent[person, otherPerson] | Parent[otherPerson, person]); // only immediate family
 
             var PersonSex = Definition("PersonSex", person, sex)
-                .Is(Agents[person, __, __, sex, __, VitalStatus.Alive]);
+                .Is(Agent[person, __, __, sex, __, VitalStatus.Alive]);
             var PersonSexuality = Definition("PersonSexuality", person, sexuality)
-                .Is(Agents[person, __, __, __, sexuality, VitalStatus.Alive]);
+                .Is(Agent[person, __, __, __, sexuality, VitalStatus.Alive]);
             var SexualAttraction = Definition("SexualAttraction", person, partner)
                 .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], SexualityAttracted[sexuality, sexOfPartner],
                     PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], SexualityAttracted[sexualOfPartner, sex]);
             
-            var Men = Predicate("Men", man).If(
-                Agents[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
-            var Women = Predicate("Women", woman).If(
-                Agents[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
+            var Man = Predicate("Men", man).If(
+                Agent[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
+            var Woman = Predicate("Women", woman).If(
+                Agent[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
 
             var ProcreativePair = Predicate("ProcreativePair", woman.Indexed, man.Indexed);
             ProcreativePair.Unique = true;
-            var PotentialPairings = Predicate("PotentialPairings", woman.Indexed, man.Indexed)
-                .If(Women, !ProcreativePair[woman, __], Men, !ProcreativePair[__, man],
+            var PotentialPairing = Predicate("PotentialPairing", woman.Indexed, man.Indexed)
+                .If(Woman, !ProcreativePair[woman, __], Man, !ProcreativePair[__, man],
                     SexualAttraction[woman, man], !FamilialRelation[woman, man]);
-            var ScoredPairings = Predicate("ScoredPairings", woman.Indexed, man.Indexed, score);
-            ScoredPairings[woman, man, RandomNormalFloat].If(PotentialPairings);
-            var PairForProcreate = MatchGreedily("PairForProcreate", ScoredPairings);
+            var ScoredPairing = Predicate("ScoredPairing", woman.Indexed, man.Indexed, score);
+            ScoredPairing[woman, man, RandomNormalFloat].If(PotentialPairing);
+            var PairForProcreate = MatchGreedily("PairForProcreate", ScoredPairing);
             ProcreativePair.Add.If(PairForProcreate);
             
             var PotentialProcreation = Predicate("PotentialProcreation", woman.Indexed, man);
@@ -153,37 +153,37 @@ namespace TotT.Simulator {
                 Time.NineMonthsPast[conception], Prob[0.8f]); // Birth after 9 months with 'labor'
             Gestation.Set(child, state, false).If(BirthTo);
 
-            Agents.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
+            Agent.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
                 BirthTo[__, __, sex, person], RandomSexuality[sex, sexuality]);
 
-            Parents.Add.If(BirthTo[parent, __, __, child]);
-            Parents.Add.If(BirthTo[__, parent, __, child]);
+            Parent.Add.If(BirthTo[parent, __, __, child]);
+            Parent.Add.If(BirthTo[__, parent, __, child]);
 
             // Increment age once per birthday (in the AM, if you weren't just born)
             var WhenToAge = Definition("WhenToAge", person, age).Is(
-                Agents[person, age, dateOfBirth, __, __, VitalStatus.Alive],
+                Agent[person, age, dateOfBirth, __, __, VitalStatus.Alive],
                 Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !BirthTo[__, __, __, person]);
-            Increment(Agents, person, age, WhenToAge);
+            Increment(Agent, person, age, WhenToAge);
 
             // ************************************ Locations *************************************
 
-            var Locations = Predicate("Locations", location.Key, 
+            var Location = Predicate("Location", location.Key, 
                 locationType.Indexed, locationCategory.Indexed, position.Indexed, founding, businessStatus.Indexed);
-            Locations.Initially[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
-                     .Where(PrimordialLocations, LocationInformation);
+            Location.Initially[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
+                     .Where(PrimordialLocation, LocationInformation);
 
-            // NewLocations is used for both adding tiles to the TileMap in Unity efficiently
+            // NewLocation is used for both adding tiles to the TileMap in Unity efficiently
             // (not checking every row of the Locations table) and for collecting new locations
             // with the minimal amount of information needed (excludes derivable columns).
-            NewLocations = Predicate("NewLocations", position, location, locationType, founding);
-            Locations.Add[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
-                     .If(NewLocations, LocationInformation);
+            NewLocation = Predicate("NewLocation", position, location, locationType, founding);
+            Location.Add[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
+                     .If(NewLocation, LocationInformation);
 
             var InBusiness = Definition("InBusiness", location)
-               .Is(Locations[location, __, __, __, __, BusinessStatus.InBusiness]);
+               .Is(Location[location, __, __, __, __, BusinessStatus.InBusiness]);
             
-            Locations.Set(location, businessStatus, BusinessStatus.OutOfBusiness)
-                     .If(Locations, 
+            Location.Set(location, businessStatus, BusinessStatus.OutOfBusiness)
+                     .If(Location, 
                          !In(locationType, new[] {
                              LocationType.Cemetery,
                              LocationType.CityHall,
@@ -194,101 +194,100 @@ namespace TotT.Simulator {
                          }), 
                          Time.YearsOld[founding, age], age > 40, PerYear(0.1f));
             var JustClosed = Predicate("JustClosed", location)
-               .If(Locations.Set(location, businessStatus));
+               .If(Location.Set(location, businessStatus));
 
-            // VacatedLocations is used for removing tiles from the TileMap
-            VacatedLocations = Predicate("VacatedLocations", position);
-            VacatedLocations.If(Locations.Set(location, businessStatus), Locations);
+            // VacatedLocation is used for removing tiles from the TileMap
+            VacatedLocation = Predicate("VacatedLocation", position);
+            VacatedLocation.If(Location.Set(location, businessStatus), Location);
 
             // For tile hover info strings we only want the locations in business, and since we will be
             // using this table for GUI interactions we need to be able to access a location by position.
             // Each lot in town can only hold one active location so this works out nicely.
             var DisplayLocations = Predicate("DisplayLocations", 
                 position.Key, location, locationType,  founding)
-               .If(Locations[location, locationType, __, position, founding, BusinessStatus.InBusiness]);
+               .If(Location[location, locationType, __, position, founding, BusinessStatus.InBusiness]);
+            // DisplayLocations is a collection - not intended to be used as a predicate - thus the plural naming
             LocationsPositionIndex = DisplayLocations.KeyIndex(position);
 
             // Helper functions and definitions for creating new locations at a valid lot in town
-            var NumLots = Length("NumLots", Locations); // NumLots helps expand town borders
+            var NumLots = Length("NumLots", Location); // NumLots helps expand town borders
             var IsVacant = Definition("IsVacant", position)
-                .Is(!Locations[__, __, __, position, __, BusinessStatus.InBusiness]);
+                .Is(!Location[__, __, __, position, __, BusinessStatus.InBusiness]);
             var FreeLot = Definition("FreeLot", position)
                 .Is(RandomLot[NumLots, position], IsVacant[position]);
 
-
-            var CategoryCount = CountsBy("CategoryCount", Locations, locationCategory, count);
-            var AvailableCategories = Predicate("AvailableCategories", locationCategory).If(CategoryCount);
-            
-
-            var AvailableActions = Predicate("AvailableActions", actionType)
-                .If(ActionToCategory, AvailableCategories); // need one to one from this, too many staying in and visiting entries currently
+            var CategoryCount = CountsBy("CategoryCount", Location, locationCategory, count);
+            var AvailableCategory = Predicate("AvailableCategory", locationCategory).If(CategoryCount);
+            var AvailableAction = Predicate("AvailableAction", actionType)
+                .If(ActionToCategory, AvailableCategory); // need one to one from this, too many staying in and visiting entries currently
 
             // ************************************** Housing *************************************
             // TODO : Include ApartmentComplex locations in Housing logic
-            // TODO : Include Inn locations in Housing logic - drifters start at an Inn ?
+            // TODO : Include Inn locations in Housing logic - drifters start at an Inn if no available homes
             // TODO : Families move in and out of houses together
             // TODO : Initialize Homes first based on primordial couples, then on all single agents
 
-            var Homes = Predicate("Homes", occupant.Key, location.Indexed);
-            Homes.Unique = true;
-            var RealHomes = Predicate("RealHomes", occupant, location.Indexed)
-                .If(Locations[location, LocationType.House, __, __, __, BusinessStatus.InBusiness], Homes);
-            var Occupancy = CountsBy("Occupancy", RealHomes, location, count);
+            var Home = Predicate("Home", occupant.Key, location.Indexed);
+            Home.Unique = true;
+            var InBusinessHome = Predicate("InBusinessHome", occupant, location.Indexed)
+                .If(Location[location, LocationType.House, __, __, __, BusinessStatus.InBusiness], Home);
+            var Occupancy = CountsBy("Occupancy", InBusinessHome, location, count);
             var Unoccupied = Predicate("Unoccupied", location)
-                .If(Locations[location, LocationType.House, __, __, __, BusinessStatus.InBusiness], !Homes[__, location]);
+                .If(Location[location, LocationType.House, __, __, __, BusinessStatus.InBusiness], !Home[__, location]);
             var UnderOccupied = Predicate("UnderOccupied", location);
             UnderOccupied.If(Occupancy, count <= 5);
             UnderOccupied.If(Unoccupied);
 
-            var Unhoused = Predicate("Unhoused", person).If(Alive, !Homes[person, __]);
+            var Unhoused = Predicate("Unhoused", person).If(Alive, !Home[person, __]);
 
             // Using this to randomly assign one house per primordial person...
-            var PrimordialHouses = Predicate("PrimordialHouses", location)
-                .If(PrimordialLocations[location, LocationType.House, __, __]);
-            Homes.Initially.Where(PrimordialBeings[occupant, __, __, __, __], 
-                RandomElement(PrimordialHouses, location));
+            var PrimordialHouse = Predicate("PrimordialHouse", location)
+                .If(PrimordialLocation[location, LocationType.House, __, __]);
+            Home.Initially.Where(PrimordialBeing[occupant, __, __, __, __], 
+                RandomElement(PrimordialHouse, location));
 
-            Homes.Add.If(BirthTo[man, woman, sex, occupant], Homes[woman, location]); // Move in with mom
+            Home.Add.If(BirthTo[man, woman, sex, occupant], Home[woman, location]); // Move in with mom
             // If no UnderOccupied homes this wont get set...
-            Homes.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
-            Homes.Add.If(Unhoused[occupant], RandomElement(UnderOccupied, location));
+            Home.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
+            Home.Add.If(Unhoused[occupant], RandomElement(UnderOccupied, location));
 
-            Homes.Set(occupant, location).If(JustDied[occupant],
-                Locations[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness]);
+            Home.Set(occupant, location).If(JustDied[occupant],
+                Location[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness]);
             var BuriedAt = Predicate("BuriedAt", occupant, location)
-                .If(Locations[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness], Homes);
+                .If(Location[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness], Home);
             // with only the one cemetery for now, the follow will suffice for the GUI
             Buried = Predicate("Buried", person).If(BuriedAt[person, __]);
 
-            var ForeclosedUpon = Predicate("ForeclosedUpon", occupant).If(Homes, JustClosed);
-            Homes.Set(occupant, location).If(ForeclosedUpon, RandomElement(UnderOccupied, location));
+            var ForeclosedUpon = Predicate("ForeclosedUpon", occupant).If(Home, JustClosed);
+            Home.Set(occupant, location).If(ForeclosedUpon, RandomElement(UnderOccupied, location));
 
             // Distance per person makes most sense when measured from either where the person is,
             // or where they live. This handles the latter:
             var DistanceFromHome = Definition("DistanceFromHome", person, location, distance)
-                .Is(Locations[location, __, __, position, __, BusinessStatus.InBusiness],
-                    Homes[person, otherLocation],
-                    Locations[otherLocation, __, __, otherPosition, __, BusinessStatus.InBusiness],
+                .Is(Location[location, __, __, position, __, BusinessStatus.InBusiness],
+                    Home[person, otherLocation],
+                    Location[otherLocation, __, __, otherPosition, __, BusinessStatus.InBusiness],
                     Distance[position, otherPosition, distance]);
             
             var WantToMove = Predicate("WantToMove", person)
-                .If(Homes[person, location], Occupancy, count >= 8);
+                .If(Home[person, location], Occupancy, count >= 8);
             var MovingIn = Predicate("MovingIn", person, location)
                 .If(Once[WantToMove[__]], RandomElement(WantToMove, person), RandomElement(UnderOccupied, location));
-            Homes.Set(occupant, location).If(MovingIn[occupant, location]);
+            Home.Set(occupant, location).If(MovingIn[occupant, location]);
 
             // ********************************** New Locations ***********************************
-            // TODO : Add more new locations for each location type
-            
-            // Needs the random lot to be available & 'construction' isn't instantaneous
-            void AddOneLocation(LocationType locType, string name, Goal readyToAdd) => 
-                NewLocations[position, location, locType, Time.CurrentTimePoint].If(FreeLot, // assign position and check
-                    PerWeek(0.5f), !Locations[__, locType, __, __, __, BusinessStatus.InBusiness],
-                    readyToAdd, NewLocation[name, location]);
 
-            void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd) =>
-                NewLocations[position, location, locType, Time.CurrentTimePoint].If(FreeLot, 
-                    PerWeek(0.5f), readyToAdd, RandomElement(names, locationName), NewLocation[locationName, location]);
+            // Needs the random lot to be available & 'construction' isn't instantaneous
+            void NewLocationByType(LocationType locType, Goal readyToAdd, Goal newLocation, bool oneOfAKind) => 
+                NewLocation[position, location, locType, Time.CurrentTimePoint]
+                   .If(FreeLot, PerWeek(0.5f), oneOfAKind ? 
+                           !Location[__, locType, __, __, __, BusinessStatus.InBusiness] & readyToAdd : readyToAdd, newLocation);
+            
+            void AddOneLocation(LocationType locType, string name, Goal readyToAdd, bool oneOfAKind = true) => 
+                NewLocationByType(locType, readyToAdd, Functions.NewLocation[name, location], oneOfAKind);
+
+            void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd, bool oneOfAKind = false) =>
+                NewLocationByType(locType, readyToAdd, RandomElement(names, locationName) & Functions.NewLocation[locationName, location], oneOfAKind);
             
             AddNewLocation(LocationType.House, HouseNames, Once[WantToMove[__]]);
             // Currently the following only happens with drifters - everyone starts housed
@@ -297,7 +296,7 @@ namespace TotT.Simulator {
             AddOneLocation(LocationType.Hospital, "St. Asmodeus",
                 Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
 
-            AddOneLocation(LocationType.Cemetery, "The Old Cemetery", Once[Goals(Alive, Age, age >= 60)]);
+            AddOneLocation(LocationType.Cemetery, "The Old Cemetery", Once[Goals(Alive, Age, age >= 60)]); // before anyone can die
 
             AddOneLocation(LocationType.DayCare, "Pumpkin Preschool", Count(Age & (age < 6)) > 5);
 
@@ -315,74 +314,74 @@ namespace TotT.Simulator {
 
             // ************************************ Vocations: ************************************
 
-            var Vocations = Predicate("Vocations", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
+            var Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
 
-            var VocationStatus = Predicate("VocationStatus", employee.Key, state.Indexed);
-            VocationStatus.Add[employee, true].If(Vocations.Add);
-            VocationStatus.Set(employee, state, false).If(JustDied[employee], VocationStatus[employee, true]);
+            var EmploymentStatus = Predicate("EmploymentStatus", employee.Key, state.Indexed);
+            EmploymentStatus.Add[employee, true].If(Employment.Add);
+            EmploymentStatus.Set(employee, state, false).If(JustDied[employee], EmploymentStatus[employee, true]);
 
-            var StillEmployed = Definition("StillEmployed", person).Is(VocationStatus[person, true]);
+            var StillEmployed = Definition("StillEmployed", person).Is(EmploymentStatus[person, true]);
 
-            var JobsToFill = Predicate("JobsToFill", location, job)
-                .If(Time.CurrentTimeOfDay[timeOfDay], InBusiness, Locations, VocationShifts,
-                    PositionsPerJob, Count(Vocations & VocationStatus[employee, true]) < positions);
+            var JobToFill = Predicate("JobsToFill", location, job)
+                .If(Time.CurrentTimeOfDay[timeOfDay], InBusiness, Location, VocationShift,
+                    PositionsPerJob, Count(Employment & EmploymentStatus[employee, true]) < positions);
 
-            var Candidates = Predicate("Candidates", person, job, location)
-                .If(JobsToFill, Maximal(person, aptitude, 
+            var Candidate = Predicate("Candidate", person, job, location)
+                .If(JobToFill, Maximal(person, aptitude, 
                                         Goals(Alive, !StillEmployed[person], Age, age >= 18, Aptitude)));
 
-            var CandidatesToFilter = Predicate("CandidatesToFilter", person.Indexed, job).If(Candidates);
-            var FilteredCandidates = AssignRandomly("FilteredCandidates", CandidatesToFilter);
-            var SelectedCandidates = Predicate("SelectedCandidates", 
-                person, job, location).If(FilteredCandidates, Candidates);
+            var CandidateToFilter = Predicate("CandidateToFilter", person.Indexed, job).If(Candidate);
+            var FilteredCandidate = AssignRandomly("FilteredCandidate", CandidateToFilter);
+            var SelectedCandidate = Predicate("SelectedCandidates", 
+                person, job, location).If(FilteredCandidate, Candidate);
 
-            Vocations.Add[job, person, location, Time.CurrentTimeOfDay].If(SelectedCandidates);
+            Employment.Add[job, person, location, Time.CurrentTimeOfDay].If(SelectedCandidate);
 
             // ************************************* Movement: ************************************
             // TODO : Visiting action choose location of relative or partner (future friends)
-            // TODO : Couple movements
             // TODO : Babies not in daycare follow mom
+            // TODO : Couple movements
 
             // for more complex scheduling include an extra table of non-default schedule/operation per location
-            var OpenLocationTypes = Predicate("OpenLocationTypes", locationType)
+            var OpenLocationType = Predicate("OpenLocationType", locationType)
                 .If(LocationInformation, Time.CurrentlyOperating[operation], Time.CurrentlyOpen[schedule]);
             
-            var Kids = Predicate("Kids", person).If(Alive, Age, age < 18);
-            var NeedsSchooling = Predicate("NeedsSchooling", person).If(Kids, Age, age > 6);
-            var NeedsDayCare = Predicate("NeedsDayCare", person).If(Kids, !NeedsSchooling[person]);
+            var Kid = Predicate("Kid", person).If(Alive, Age, age < 18);
+            var NeedSchooling = Predicate("NeedSchooling", person).If(Kid, Age, age > 6);
+            var NeedDayCare = Predicate("NeedDayCare", person).If(Kid, !NeedSchooling[person]);
 
             var GoingToSchool = Predicate("GoingToSchool", person, location).If(
-                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.School],
-                Locations[location, LocationType.School, __, __, __, BusinessStatus.InBusiness],
-                NeedsSchooling);
+                AvailableAction[ActionType.GoingToSchool], OpenLocationType[LocationType.School],
+                Location[location, LocationType.School, __, __, __, BusinessStatus.InBusiness],
+                NeedSchooling);
             var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
-                AvailableActions[ActionType.GoingToSchool], OpenLocationTypes[LocationType.DayCare],
-                Locations[location, LocationType.DayCare, __, __, __, BusinessStatus.InBusiness],
-                NeedsDayCare);
+                AvailableAction[ActionType.GoingToSchool], OpenLocationType[LocationType.DayCare],
+                Location[location, LocationType.DayCare, __, __, __, BusinessStatus.InBusiness],
+                NeedDayCare);
             
             var GoingToWork = Predicate("GoingToWork", person, location)
-                .If(OpenLocationTypes, InBusiness, Locations, StillEmployed, Vocations[__, person, location, Time.CurrentTimeOfDay]);
+                .If(OpenLocationType, InBusiness, Location, StillEmployed, Employment[__, person, location, Time.CurrentTimeOfDay]);
 
             var WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType.Indexed, location.Indexed);
             WhereTheyAt.Unique = true;
             WhereTheyAtLocationIndex = (GeneralIndex<(Person, ActionType, Location), Location>)WhereTheyAt.IndexFor(location, false);
 
-            var AdultActions = Predicate("AdultActions", actionType)
-                .If(AvailableActions, actionType != ActionType.GoingToSchool);
+            var AdultAction = Predicate("AdultAction", actionType)
+                .If(AvailableAction, actionType != ActionType.GoingToSchool);
             var NeedsActionAssignment = Predicate("NeedsActionAssignment", person).If(Alive,
                 !GoingToWork[person, __],
                 !GoingToDayCare[person, __],
                 !GoingToSchool[person, __]);
             var RandomActionAssign = Predicate("RandomActionAssign", person, actionType)
-                .If(NeedsActionAssignment, RandomElement(AdultActions, actionType));
+                .If(NeedsActionAssignment, RandomElement(AdultAction, actionType));
 
             var LocationByActionAssign = Predicate("LocationByActionAssign", person, location);
-            LocationByActionAssign.If(RandomActionAssign[person, ActionType.StayingIn], Homes[person, location]);
-            LocationByActionAssign.If(RandomActionAssign[person, ActionType.Visiting], Homes[person, location]);
+            LocationByActionAssign.If(RandomActionAssign[person, ActionType.StayingIn], Home[person, location]);
+            LocationByActionAssign.If(RandomActionAssign[person, ActionType.Visiting], Home[person, location]);
 
             // Choose the closest location with the action type assigned
             var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
-                .If(ActionToCategory, AvailableCategories, OpenLocationTypes, InBusiness, Locations);
+                .If(ActionToCategory, AvailableCategory, OpenLocationType, InBusiness, Location);
             LocationByActionAssign.If(RandomActionAssign, actionType != ActionType.StayingIn, actionType != ActionType.Visiting,
                 Minimal(location, distance, OpenForBusinessByAction & DistanceFromHome[person, location, distance]));
 
@@ -393,38 +392,38 @@ namespace TotT.Simulator {
 
             // *********************************** Interactions: **********************************
 
-            var Interactions = Predicate("Interactions", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
+            var Interaction = Predicate("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
 
             var NotWorking = Predicate("NotWorking", person.Key, location.Indexed)
                .If(WhereTheyAt[person, actionType, location], actionType != ActionType.GoingToWork);
 
-            var PotentialInteractions = Predicate("PotentialInteractions", person, otherPerson);
-            PotentialInteractions.If(NotWorking[person, location], NotWorking[otherPerson, location]);
+            var PotentialInteraction = Predicate("PotentialInteraction", person, otherPerson);
+            PotentialInteraction.If(NotWorking[person, location], NotWorking[otherPerson, location]);
 
-            var ScoredInteractions = Predicate("ScoredInteractions", person.Indexed, otherPerson.Indexed, score);
-            ScoredInteractions[person, otherPerson, RandomNormalFloat].If(PotentialInteractions);
+            var ScoredInteraction = Predicate("ScoredInteraction", person.Indexed, otherPerson.Indexed, score);
+            ScoredInteraction[person, otherPerson, RandomNormalFloat].If(PotentialInteraction);
 
-            var PositiveInteractions = Predicate("PositiveInteractions", 
-                person.Indexed, otherPerson.Indexed).If(ScoredInteractions, score > 10);
-            var NeutralInteractions = Predicate("NeutralInteractions", 
-                person.Indexed, otherPerson.Indexed).If(ScoredInteractions, score >= -15, score <= 10);
-            var NegativeInteractions = Predicate("NegativeInteractions", 
-                person.Indexed, otherPerson.Indexed).If(ScoredInteractions, score < -15);
+            var PositiveInteraction = Predicate("PositiveInteraction", 
+                person.Indexed, otherPerson.Indexed).If(ScoredInteraction, score > 10);
+            var NeutralInteraction = Predicate("NeutralInteraction", 
+                person.Indexed, otherPerson.Indexed).If(ScoredInteraction, score >= -15, score <= 10);
+            var NegativeInteraction = Predicate("NegativeInteraction", 
+                person.Indexed, otherPerson.Indexed).If(ScoredInteraction, score < -15);
 
-            var ChosenPositiveInteractions = AssignRandomly("ChosenPositiveInteractions", PositiveInteractions);
-            var ChosenNeutralInteractions = AssignRandomly("ChosenNeutralInteractions", NeutralInteractions);
-            var ChosenNegativeInteractions = AssignRandomly("ChosenNegativeInteractions", NegativeInteractions);
+            var ChosenPositiveInteraction = AssignRandomly("ChosenPositiveInteraction", PositiveInteraction);
+            var ChosenNeutralInteraction = AssignRandomly("ChosenNeutralInteraction", NeutralInteraction);
+            var ChosenNegativeInteraction = AssignRandomly("ChosenNegativeInteraction", NegativeInteraction);
 
-            Interactions[person, partner, InteractionType.Flirting].If(ChosenPositiveInteractions[person, partner], SexualAttraction);
-            Interactions[person, partner, InteractionType.Assisting].If(ChosenPositiveInteractions[person, partner], !SexualAttraction[person, partner]);
-            Interactions[person, otherPerson, InteractionType.Chatting].If(ChosenNeutralInteractions);
-            Interactions[person, otherPerson, InteractionType.Arguing].If(ChosenNegativeInteractions);
+            Interaction[person, partner, InteractionType.Flirting].If(ChosenPositiveInteraction[person, partner], SexualAttraction);
+            Interaction[person, partner, InteractionType.Assisting].If(ChosenPositiveInteraction[person, partner], !SexualAttraction[person, partner]);
+            Interaction[person, otherPerson, InteractionType.Chatting].If(ChosenNeutralInteraction);
+            Interaction[person, otherPerson, InteractionType.Arguing].If(ChosenNegativeInteraction);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
-            DataflowVisualizer.MakeGraph(Simulation, "TotT.dot");
-            UpdateFlowVisualizer.MakeGraph(Simulation, "TotTupdate.dot");
+            DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
+            UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
         } 
 

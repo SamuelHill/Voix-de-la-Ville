@@ -27,13 +27,13 @@ namespace TotT.Unity {
             LocationColorsIndex[locationType].Item2;
 
         private void ProcessPrimordialLocations() =>
-            _tileManager.OccupyAndColorLots((from row in PrimordialLocations
+            _tileManager.OccupyAndColorLots((from row in PrimordialLocation
                                              select (row.Item3, LocationColor(row.Item2))).ToArray());
         private bool ProcessNewLocations() =>
-            _tileManager.OccupyAndColorLots((from row in _talkOfTheTown.NewLocations 
+            _tileManager.OccupyAndColorLots((from row in _talkOfTheTown.NewLocation 
                                              select (row.Item1, LocationColor(row.Item3))).ToArray());
         private bool ProcessLocationDeletions() =>
-            _tileManager.DeleteLots(_talkOfTheTown.VacatedLocations);
+            _tileManager.DeleteLots(_talkOfTheTown.VacatedLocation);
 
         public void ProcessInitialLocations() {
             ProcessPrimordialLocations();
