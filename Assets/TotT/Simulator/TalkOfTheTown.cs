@@ -283,37 +283,38 @@ namespace TotT.Simulator {
                    .If(FreeLot, PerWeek(0.5f), oneOfAKind ? 
                            !Location[__, locType, __, __, __, BusinessStatus.InBusiness] & readyToAdd : readyToAdd, newLocation);
             
-            void AddOneLocation(LocationType locType, string name, Goal readyToAdd, bool oneOfAKind = true) => 
+            void AddNamedLocation(LocationType locType, string name, Goal readyToAdd) => 
+                NewLocationByType(locType, readyToAdd, Functions.NewLocation[name, location], true);
+
+            void AddLocationByCFG(LocationType locType, Function<string> name, Goal readyToAdd, bool oneOfAKind = true) =>
                 NewLocationByType(locType, readyToAdd, Functions.NewLocation[name, location], oneOfAKind);
 
-            void AddCfgLocation(LocationType locType, Function<string> name, Goal readyToAdd, bool oneOfAKind = true) =>
-                NewLocationByType(locType, readyToAdd, Functions.NewLocation[name, location], oneOfAKind);
-
-            void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd, bool oneOfAKind = false) =>
-                NewLocationByType(locType, readyToAdd, RandomElement(names, locationName) & Functions.NewLocation[locationName, location], oneOfAKind);
+            void AddLocationFromNames(LocationType locType, TablePredicate<string> names, Goal readyToAdd, bool oneOfAKind = false) =>
+                NewLocationByType(locType, readyToAdd, RandomElement(names, locationName) & 
+                                                       Functions.NewLocation[locationName, location], oneOfAKind);
             
-            AddNewLocation(LocationType.House, HouseNames, Once[WantToMove[__]]);
+            AddLocationFromNames(LocationType.House, HouseNames, Once[WantToMove[__]]);
             // Currently the following only happens with drifters - everyone starts housed
-            AddNewLocation(LocationType.House, HouseNames, Once[Unhoused[__]]);
+            AddLocationFromNames(LocationType.House, HouseNames, Once[Unhoused[__]]);
 
-            AddCfgLocation(LocationType.Hospital, HospitalName,
+            AddLocationByCFG(LocationType.Hospital, HospitalName,
                            Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
 
-            AddOneLocation(LocationType.Cemetery, "The Old Cemetery", Once[Goals(Alive, Age, age >= 60)]); // before anyone can die
+            AddNamedLocation(LocationType.Cemetery, "The Old Cemetery", Once[Goals(Alive, Age, age >= 60)]); // before anyone can die
 
-            AddOneLocation(LocationType.DayCare, "Pumpkin Preschool", Count(Age & (age < 6)) > 5);
+            AddLocationByCFG(LocationType.DayCare, DaycareName, Count(Age & (age < 6)) > 5);
 
-            AddOneLocation(LocationType.School, "Talk of the Township High", Count(Age & (age >= 5) & (age < 18)) > 5);
+            AddNamedLocation(LocationType.School, "Talk of the Township High", Count(Age & (age >= 5) & (age < 18)) > 5);
 
-            AddOneLocation(LocationType.CityHall, "Big City Hall", Goals(PopulationCount[VitalStatus.Alive, count], count > 200));
+            AddNamedLocation(LocationType.CityHall, "Big City Hall", Goals(PopulationCount[VitalStatus.Alive, count], count > 200));
 
-            AddOneLocation(LocationType.GeneralStore, "Big Box Store", Goals(PopulationCount[VitalStatus.Alive, count], count > 150));
+            AddNamedLocation(LocationType.GeneralStore, "Big Box Store", Goals(PopulationCount[VitalStatus.Alive, count], count > 150));
 
-            AddOneLocation(LocationType.Bar, "Triple Crossing", Goals(PopulationCount[VitalStatus.Alive, count], count > 125));
+            AddNamedLocation(LocationType.Bar, "Triple Crossing", Goals(PopulationCount[VitalStatus.Alive, count], count > 125));
 
-            AddOneLocation(LocationType.GroceryStore, "Trader Jewels", Goals(PopulationCount[VitalStatus.Alive, count], count > 100));
+            AddNamedLocation(LocationType.GroceryStore, "Trader Jewels", Goals(PopulationCount[VitalStatus.Alive, count], count > 100));
 
-            AddOneLocation(LocationType.TattooParlor, "Heroes and Ghosts", Goals(PopulationCount[VitalStatus.Alive, count], count > 250));
+            AddNamedLocation(LocationType.TattooParlor, "Heroes and Ghosts", Goals(PopulationCount[VitalStatus.Alive, count], count > 250));
 
             // ************************************ Vocations: ************************************
 
