@@ -6,36 +6,34 @@ namespace TotT.TextGenerator
 {
     public abstract class TextGenerator
     {
-        public string Random 
+        public string Random => Generate(null);
+
+        public string RandomUnique => GenerateUnique(null);
+
+        public string Generate(BindingList parameters)
         {
-            get
-            {
-                var b = new StringBuilder();
-                Generate(b, null);
-                return b.ToString();
-            }
+            var b = new StringBuilder();
+            Generate(b, parameters);
+            return b.ToString();
         }
 
-        public string RandomUnique
+        public string GenerateUnique(BindingList parameters)
         {
-            get
+            previouslyGenerated ??= new HashSet<string>();
+
+            var b = new StringBuilder();
+            string generated;
+            do
             {
-                previouslyGenerated ??= new HashSet<string>();
+                b.Clear();
+                Generate(b, parameters);
+                generated = b.ToString();
+            } while (previouslyGenerated.Contains(generated));
 
-                var b = new StringBuilder();
-                string generated;
-                do
-                {
-                    b.Clear();
-                    Generate(b, null);
-                    generated = b.ToString();
-                } while (previouslyGenerated.Contains(generated));
-
-                previouslyGenerated.Add(generated);
+            previouslyGenerated.Add(generated);
 
 
-                return b.ToString();
-            }
+            return b.ToString();
         }
 
         private HashSet<string> previouslyGenerated;
