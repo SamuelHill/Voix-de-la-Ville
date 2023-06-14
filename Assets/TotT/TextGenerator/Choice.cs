@@ -27,12 +27,10 @@ namespace TotT.TextGenerator
 
         private readonly Option[] choices;
         private double totalWeight;
-        public Choice(string name, params Option[] choices) : base(name)
+        public Choice(params Option[] choices)
         {
             this.choices = choices;
         }
-
-        public Choice(params Option[] choices) : this("Choice", choices) { }
 
         public override bool Generate(StringBuilder output, BindingList b)
         {

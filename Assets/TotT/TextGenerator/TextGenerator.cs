@@ -1,22 +1,44 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
+using JetBrains.Annotations;
 
 namespace TotT.TextGenerator
 {
     public abstract class TextGenerator
     {
-        public readonly string Name;
-
-        protected TextGenerator(string name)
+        public string Random 
         {
-            Name = name;
+            get
+            {
+                var b = new StringBuilder();
+                Generate(b, null);
+                return b.ToString();
+            }
         }
 
-        public string Generate()
+        public string RandomUnique
         {
-            var b = new StringBuilder();
-            Generate(b, null);
-            return b.ToString();
+            get
+            {
+                previouslyGenerated ??= new HashSet<string>();
+
+                var b = new StringBuilder();
+                string generated;
+                do
+                {
+                    b.Clear();
+                    Generate(b, null);
+                    generated = b.ToString();
+                } while (previouslyGenerated.Contains(generated));
+
+                previouslyGenerated.Add(generated);
+
+
+                return b.ToString();
+            }
         }
+
+        private HashSet<string> previouslyGenerated;
 
         public abstract bool Generate(StringBuilder output, BindingList b);
 

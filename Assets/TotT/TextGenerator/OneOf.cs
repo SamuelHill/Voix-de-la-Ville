@@ -26,7 +26,7 @@ namespace TotT.TextGenerator
         private readonly Choice[] choices;
         private readonly double[] cumulative;
         private double totalWeight;
-        public OneOf(string name, params Choice[] choices) : base(name)
+        public OneOf(string name, params Choice[] choices)
         {
             this.choices = choices;
             cumulative = new double[choices.Length];

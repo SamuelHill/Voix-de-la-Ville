@@ -5,7 +5,7 @@ namespace TotT.TextGenerator
 {
     public abstract class Parameter : TextGenerator
     {
-        protected Parameter(string name) : base(name)
+        protected Parameter(string name)
         {
         }
     }
