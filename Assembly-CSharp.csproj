@@ -114,6 +114,12 @@
     <Compile Include="Assets\TotT\TextGenerator\Choice.cs" />
     <Compile Include="Assets\TotT\TextGenerator\OneOf.cs" />
     <Compile Include="Assets\TotT\TextGenerator\Generators.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Constant.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Terminal.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Production.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\ITerminal.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Grammar.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\NameGrammars.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

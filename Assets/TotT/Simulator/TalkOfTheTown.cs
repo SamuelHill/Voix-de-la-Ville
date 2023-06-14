@@ -286,6 +286,9 @@ namespace TotT.Simulator {
             void AddOneLocation(LocationType locType, string name, Goal readyToAdd, bool oneOfAKind = true) => 
                 NewLocationByType(locType, readyToAdd, Functions.NewLocation[name, location], oneOfAKind);
 
+            void AddCfgLocation(LocationType locType, Function<string> name, Goal readyToAdd, bool oneOfAKind = true) =>
+                NewLocationByType(locType, readyToAdd, Functions.NewLocation[name, location], oneOfAKind);
+
             void AddNewLocation(LocationType locType, TablePredicate<string> names, Goal readyToAdd, bool oneOfAKind = false) =>
                 NewLocationByType(locType, readyToAdd, RandomElement(names, locationName) & Functions.NewLocation[locationName, location], oneOfAKind);
             
@@ -293,8 +296,8 @@ namespace TotT.Simulator {
             // Currently the following only happens with drifters - everyone starts housed
             AddNewLocation(LocationType.House, HouseNames, Once[Unhoused[__]]);
 
-            AddOneLocation(LocationType.Hospital, "St. Asmodeus",
-                Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
+            AddCfgLocation(LocationType.Hospital, HospitalName,
+                           Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
 
             AddOneLocation(LocationType.Cemetery, "The Old Cemetery", Once[Goals(Alive, Age, age >= 60)]); // before anyone can die
 

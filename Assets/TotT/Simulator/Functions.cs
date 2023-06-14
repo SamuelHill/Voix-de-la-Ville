@@ -1,11 +1,13 @@
 ﻿using TED;
 using TED.Primitives;
 using TotT.Utilities;
+using TotT.Utilities.CFG;
 using TotT.ValueTypes;
 using UnityEngine;
 using static TED.Language;
 
 namespace TotT.Simulator {
+    using static NameGrammars;
     using static Randomize;
 
     /// <summary>TED.Functions and TED.PrimitiveTests wrappers for Utility and ValueType functionality.</summary>
@@ -31,5 +33,9 @@ namespace TotT.Simulator {
 
         public static readonly PrimitiveTest<Sexuality, Sex> SexualityAttracted = Test<Sexuality, Sex>(
             "SexualityAttracted", (se, s) => se.IsAttracted(s));
+
+        public static readonly Function<string> HospitalName = Method(HospitalNames.Generate, false);
+
+
     }
 }
