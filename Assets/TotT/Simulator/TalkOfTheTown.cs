@@ -428,9 +428,6 @@ namespace TotT.Simulator {
             Simulation.EndPredicates();
             DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
             UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
-
-            for (var i = 0; i < 10; i++)
-                Debug.Log(TotT.TextGenerator.Generators.Church.RandomUnique);
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
         } 
 

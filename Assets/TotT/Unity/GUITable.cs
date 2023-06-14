@@ -28,6 +28,7 @@ namespace TotT.Unity {
         private readonly TablePredicate _predicate;
         private string[][] _buffer;
         private int[] _longestBufferStrings;
+        private float[] _columnWidths;
         private readonly string[] _headings;
         private int[] _headingLengths;
         private GUIContent _noEntries;
@@ -45,6 +46,7 @@ namespace TotT.Unity {
             _headingLengths = new int[_headings.Length];
             BuildBuffer(numRows);
             _longestBufferStrings = new int[NumColumns];
+            _columnWidths = new float[NumColumns];
         }
 
         public void NewNumRows(int numRows) {
@@ -86,8 +88,16 @@ namespace TotT.Unity {
         private bool RowCountChange => !_usingScroll && UpdateRowCount();
 
         private GUILayoutOption ScrollHeight => GUILayout.Height((NumDisplayRows + 3) * LabelHeight);
-        private GUILayoutOption ColumnWidth(int i) => GUILayout.Width(LongestStrings[i] + ColumnPadding);
-        
+        private GUILayoutOption ColumnWidth(int i)
+        {
+            var len = LongestStrings[i];
+            if (len > _columnWidths[i])
+                _columnWidths[i] = len;
+            else if (len < _columnWidths[i]-2)
+                _columnWidths[i] -= 0.05f;
+            return GUILayout.Width(_columnWidths[i] + ColumnPadding);
+        }
+
         private Rect TableRect(int x, int y, int height) => // no width control - size of columns is calculated
             new(x, y, TableWidth + TableWidthOffset, height); // height control via num rows
         private Rect LeftSideTables(int tableNum) => // special case for the 4 tables on the left side
@@ -144,7 +154,7 @@ namespace TotT.Unity {
         private void OnGUI(Rect screenRect, int tableNum = -1) {
             GUILayout.BeginArea(screenRect); // table area
             // Title and Header:
-            TableTitle(tableNum, Name);
+            TableTitle(tableNum, $"{Name} ({_predicate.Length})");
             LayoutRow(_headings, true);
             GUILayout.BeginHorizontal(); // table and scroll bar area
             // Table contents:

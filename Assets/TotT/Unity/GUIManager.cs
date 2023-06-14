@@ -128,8 +128,10 @@ namespace TotT.Unity {
 
         private static void BoldLabel(string label, params GUILayoutOption[] options) {
             GUI.skin.label.fontStyle = FontStyle.Bold;
+            GUI.skin.label.normal.background = Texture2D.grayTexture;
             GUILayout.Label(label, options);
             GUI.skin.label.fontStyle = FontStyle.Normal;
+            GUI.skin.label.normal.background = Texture2D.blackTexture;
         }
         public static void Label(string label, bool bold, params GUILayoutOption[] options) {
             if (bold) BoldLabel(label, options);
