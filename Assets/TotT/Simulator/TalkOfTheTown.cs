@@ -5,6 +5,7 @@ using TED.Interpreter;
 using TED.Tables;
 using TED.Utilities;
 using TotT.Simulog;
+using TotT.Unity;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -55,6 +56,8 @@ namespace TotT.Simulator {
             var Agent = Predicate("Agent", person.Key, 
                 age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
             Agent.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
+            GUIManager.Colorize(Agent, vitalStatus, s => s==VitalStatus.Alive?Color.white:Color.gray);
+
             // ditto for agents associated tables -
             var Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
             Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeing, Facets);

@@ -39,6 +39,16 @@ namespace TotT.Unity {
         private static readonly Rect ShowTablesRect = 
             new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
 
+        public static void Colorize(TablePredicate p, Func<uint, Color> colorizer) =>
+            p.Property["Colorizer"] = colorizer;
+
+        public static void Colorize<TColumn>(TablePredicate p, Var<TColumn> column, Func<TColumn, Color> colorizer)
+            => Colorize(p, rowNumber =>
+            {
+                var lookup = p.ColumnValueFromRowNumber(column);
+                return colorizer(lookup(rowNumber));
+            });
+
         // *************************************** GUI setup **************************************
 
         public static void AvailableTables(List<TablePredicate> tables) {
