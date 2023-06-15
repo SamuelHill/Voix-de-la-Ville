@@ -1,4 +1,6 @@
-﻿namespace TotT.TextGenerator
+﻿using UnityEngine.Animations;
+
+namespace TotT.TextGenerator
 {
     public static class Generators
     {
@@ -7,6 +9,17 @@
         public static TextGenerator OneOf(params OneOf.Choice[] choices) => new OneOf(choices);
 
         public static TextGenerator Sequence(params TextGenerator[] segments) => new Sequence(segments);
+
+        public static Parameter<string> TownName = new Parameter<string>(nameof(TownName));
+
+        public static TextGenerator Animal = OneOf("Bear", "Deer", "Beaver", "Elk", "Squirrel", "Eagle");
+        
+        private static TextGenerator TopographicFeature
+            = OneOf("Crossing", "Fork", "Bend", "Hill", "Mound", "River", "Creek", "Lake", "Landing");
+
+        public static readonly TextGenerator PossibleTownName =
+            Choice(Sequence(Animal, OneOf("ville", "ton")),
+                Sequence(Animal, " ", TopographicFeature));
 
         public static readonly TextGenerator CatholicLiturgicalName = 
                         Choice(

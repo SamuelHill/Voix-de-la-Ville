@@ -5,8 +5,11 @@ namespace TotT.TextGenerator
 {
     public abstract class Parameter : TextGenerator
     {
+        public readonly string Name;
+
         protected Parameter(string name)
         {
+            Name = name;
         }
     }
 

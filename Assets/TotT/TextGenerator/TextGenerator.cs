@@ -6,9 +6,9 @@ namespace TotT.TextGenerator
 {
     public abstract class TextGenerator
     {
-        public string Random => Generate(null);
+        public string Random => Generate(BindingList.Global);
 
-        public string RandomUnique => GenerateUnique(null);
+        public string RandomUnique => GenerateUnique(BindingList.Global);
 
         public string Generate(BindingList parameters)
         {

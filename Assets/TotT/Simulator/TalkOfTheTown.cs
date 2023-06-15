@@ -5,11 +5,13 @@ using TED.Interpreter;
 using TED.Tables;
 using TED.Utilities;
 using TotT.Simulog;
+using TotT.TextGenerator;
 using TotT.Unity;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
 using static TED.Language;
+using static TotT.TextGenerator.Generators;
 
 namespace TotT.Simulator {
     using LocationDisplayRow = ValueTuple<Vector2Int, Location, LocationType, TimePoint>;
@@ -41,9 +43,13 @@ namespace TotT.Simulator {
         public KeyIndex<(VitalStatus, int), VitalStatus> PopulationCountIndex;
         public KeyIndex<LocationDisplayRow, Vector2Int> LocationsPositionIndex;
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
+        public string TownName;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
+            TownName = PossibleTownName.Random;
+            TextGenerator.BindingList.BindGlobal(Generators.TownName, PossibleTownName.Random);
+            Debug.Log(TownName);
             Simulation.BeginPredicates();
             InitStaticTables();
             // ReSharper disable InconsistentNaming
@@ -431,8 +437,8 @@ namespace TotT.Simulator {
 
             Spark.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Flirting], 
                                                              !Spark[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Flirting], 
-                                                Spark[pairing, person, otherPerson, spark], spark == spark + 500);
+            Spark.Set(pairing, spark, count).If(Interaction[person, otherPerson, InteractionType.Flirting], 
+                                                Spark[pairing, person, otherPerson, spark], count == spark + 500);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
