@@ -398,6 +398,9 @@ namespace TotT.Simulator {
 
             var Interaction = Predicate("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
 
+            var Spark = Predicate("Spark", pairing.Key, person.Indexed, otherPerson.Indexed, spark.Indexed);
+            var Charge = Predicate("Charge", pairing.Key, person.Indexed, otherPerson.Indexed, charge.Indexed);
+
             var NotWorking = Predicate("NotWorking", person.Key, location.Indexed)
                .If(WhereTheyAt[person, actionType, location], actionType != ActionType.GoingToWork);
 
@@ -422,6 +425,11 @@ namespace TotT.Simulator {
             Interaction[person, partner, InteractionType.Assisting].If(ChosenPositiveInteraction[person, partner], !SexualAttraction[person, partner]);
             Interaction[person, otherPerson, InteractionType.Chatting].If(ChosenNeutralInteraction);
             Interaction[person, otherPerson, InteractionType.Arguing].If(ChosenNegativeInteraction);
+
+            Spark.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Flirting], 
+                                                             !Spark[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
+            Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Flirting], 
+                                                Spark[pairing, person, otherPerson, spark], spark == spark + 500);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
