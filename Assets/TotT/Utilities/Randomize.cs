@@ -55,6 +55,8 @@ namespace TotT.Utilities {
         public static float Float(float max) => Float(0.0F, max);
         public static float Probability() => Float(1.0F);
 
+        public static double Double(double max) => RNG.NextDouble() * max;
+
         public static int BellCurve() => NormalDistribution(-50, 50);
         public static sbyte SByteBellCurve() => (sbyte)BellCurve();
         public static float FloatBellCurve() => NormalDistribution(-50f, 50f);
