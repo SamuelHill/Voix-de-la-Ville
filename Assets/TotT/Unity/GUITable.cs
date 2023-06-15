@@ -28,7 +28,7 @@ namespace TotT.Unity {
         private readonly TablePredicate _predicate;
         private string[][] _buffer;
         private int[] _longestBufferStrings;
-        private float[] _columnWidths;
+        private readonly float[] _columnWidths;
         private readonly string[] _headings;
         private int[] _headingLengths;
         private GUIContent _noEntries;
@@ -39,6 +39,8 @@ namespace TotT.Unity {
         private float _scrollPosition;
         private float _oldScroll;
         private Month _lastMonth;
+        private Comparison<uint> _sortComparer;
+        private uint[] _sortBuffer;
 
         public GUITable(TablePredicate predicate, int numRows = DefaultNumRowsToDisplay) {
             _predicate = predicate;
@@ -47,6 +49,7 @@ namespace TotT.Unity {
             BuildBuffer(numRows);
             _longestBufferStrings = new int[NumColumns];
             _columnWidths = new float[NumColumns];
+            //_sortComparer = predicate.RowComparison(0);
         }
 
         public void NewNumRows(int numRows) {
@@ -129,10 +132,27 @@ namespace TotT.Unity {
         }
 
         private void Update() {
-            _bufferedRows = _predicate.RowRangeToStrings(ScrollRow, _buffer);
+            if (_sortComparer != null)
+            {
+                if (_sortBuffer == null || _sortBuffer.Length < _predicate.Length)
+                    _sortBuffer = new uint[_predicate.Length * 2];
+                for (uint i = 0; i < _predicate.Length; i++)
+                    _sortBuffer[i] = i;
+                Array.Sort(_sortBuffer, _sortComparer);
+
+                _bufferedRows = 0;
+                for (int i = 0; i < _buffer.Length && ScrollRow + i < _predicate.Length; i++)
+                {
+                    _predicate.RowToStrings(_sortBuffer[ScrollRow + i], _buffer[i]);
+                    _bufferedRows++;
+                }
+            } else 
+                _bufferedRows = _predicate.RowRangeToStrings(ScrollRow, _buffer);
+
             // update string lengths per tick - prevents permanent growth due to singular long entries
             var updatedBufferStrings = new int[NumColumns];
-            for (var i = 0; i < _bufferedRows; i++) CalcStringLengths(_buffer[i], ref updatedBufferStrings);
+            for (var i = 0; i < _bufferedRows; i++)
+                CalcStringLengths(_buffer[i], ref updatedBufferStrings);
             // overwrite the longest strings for per tick update, pass in to CalcStringLength for permanent growth
             _longestBufferStrings = updatedBufferStrings;
         }
@@ -144,10 +164,18 @@ namespace TotT.Unity {
             }
         }
 
-        private void LayoutRow(IReadOnlyList<string> strings, bool header = false) {
+        private void LayoutRow(IReadOnlyList<string> strings) {
             GUILayout.BeginHorizontal();
             for (var i = 0; i < NumColumns; i++)
-                Label(strings[i], header, ColumnWidth(i));
+                Label(strings[i], false, ColumnWidth(i));
+            GUILayout.EndHorizontal();
+        }
+
+        private void LayoutHeaderRow(IReadOnlyList<string> strings) {
+            GUILayout.BeginHorizontal();
+            for (var i = 0; i < NumColumns; i++)
+                if (HeaderButton(strings[i], ColumnWidth(i)))
+                    _sortComparer = _predicate.RowComparison(i);
             GUILayout.EndHorizontal();
         }
 
@@ -155,7 +183,7 @@ namespace TotT.Unity {
             GUILayout.BeginArea(screenRect); // table area
             // Title and Header:
             TableTitle(tableNum, $"{Name} ({_predicate.Length})");
-            LayoutRow(_headings, true);
+            LayoutHeaderRow(_headings);
             GUILayout.BeginHorizontal(); // table and scroll bar area
             // Table contents:
             GUILayout.BeginVertical();

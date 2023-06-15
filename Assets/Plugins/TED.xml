@@ -6260,6 +6260,11 @@
             <typeparam name="TKey">Data type of the key</typeparam>
             <returns>The accessor that lets you read and write column data</returns>
         </member>
+        <member name="M:TED.TablePredicate.RowComparison``2(TED.Tables.Table{``0},System.Int32)">
+            <summary>
+            Returns a comparison that given the indices of two rows in the table, compares the specified column for the two rows.
+            </summary>
+        </member>
         <member name="E:TED.TablePredicate.OnUpdateColumns">
             <summary>
             List of procedures to call when the table is updated.

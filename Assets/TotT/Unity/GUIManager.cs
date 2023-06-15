@@ -138,6 +138,15 @@ namespace TotT.Unity {
             else GUILayout.Label(label, options);
         }
 
+        public static bool HeaderButton(string label, params GUILayoutOption[] options) {
+            GUI.skin.label.fontStyle = FontStyle.Bold;
+            GUI.skin.label.normal.background = Texture2D.grayTexture;
+            var pressed = GUILayout.Button(label, GUI.skin.label, options);
+            GUI.skin.label.fontStyle = FontStyle.Normal;
+            GUI.skin.label.normal.background = Texture2D.blackTexture;
+            return pressed;
+        }
+
         private static void ButtonLabel(string label, out bool pressed, params GUILayoutOption[] options) {
             GUI.skin.label.fontStyle = FontStyle.BoldAndItalic;
             pressed = GUILayout.Button(label, GUI.skin.label, options);
