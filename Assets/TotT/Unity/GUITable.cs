@@ -120,11 +120,8 @@ namespace TotT.Unity {
 
         private void Update() {
             _bufferedRows = _predicate.RowRangeToStrings(ScrollRow, _buffer);
-            // update string lengths per tick - prevents permanent growth due to singular long entries
-            var updatedBufferStrings = new int[NumColumns];
-            for (var i = 0; i < _bufferedRows; i++) CalcStringLengths(_buffer[i], ref updatedBufferStrings);
-            // overwrite the longest strings for per tick update, pass in to CalcStringLength for permanent growth
-            _longestBufferStrings = updatedBufferStrings;
+            for (var i = 0; i < _bufferedRows; i++) 
+                CalcStringLengths(_buffer[i], ref _longestBufferStrings);
         }
 
         private void CalcStringLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
@@ -144,7 +141,7 @@ namespace TotT.Unity {
         private void OnGUI(Rect screenRect, int tableNum = -1) {
             GUILayout.BeginArea(screenRect); // table area
             // Title and Header:
-            TableTitle(tableNum, Name);
+            TableTitle(tableNum, $"{Name} ({RowCount})");
             LayoutRow(_headings, true);
             GUILayout.BeginHorizontal(); // table and scroll bar area
             // Table contents:

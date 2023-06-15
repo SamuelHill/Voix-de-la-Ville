@@ -68,6 +68,11 @@ subgraph "cluster_Employment"{
 v78 [ label = "Employment" fillcolor="limegreen"];
 v79 [ label = "Add"];
 }
+subgraph "cluster_Spark"{
+v111 [ label = "Spark" fillcolor="limegreen"];
+v112 [ label = "Add"];
+v113 [ label = "set spark"];
+}
 v0 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
 v1 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
 v2 [ label = "Surnames" fillcolor="gold" shape="diamond"];
@@ -140,6 +145,7 @@ v107 [ label = "ChosenNeutralInteraction"];
 v108 [ label = "NeutralInteraction"];
 v109 [ label = "ChosenNegativeInteraction"];
 v110 [ label = "NegativeInteraction"];
+v114 [ label = "Charge" fillcolor="gold" shape="diamond"];
 v5 -> v4 [ color="blue" ]
 v3 -> v5 [ constraint="false" ]
 v7 -> v6 [ color="blue" ]
@@ -331,4 +337,10 @@ v104 -> v108
 v109 -> v101
 v110 -> v109
 v104 -> v110
+v112 -> v111 [ color="green" ]
+v111 -> v112 [ constraint="false" ]
+v101 -> v112 [ constraint="false" ]
+v113 -> v111 [ color="red" ]
+v101 -> v113 [ constraint="false" ]
+v111 -> v113 [ constraint="false" ]
 }

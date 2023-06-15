@@ -84,6 +84,9 @@ v79 [ label = "ChosenNeutralInteraction"];
 v80 [ label = "NeutralInteraction"];
 v81 [ label = "ChosenNegativeInteraction"];
 v82 [ label = "NegativeInteraction"];
+v83 [ label = "Spark" fillcolor="limegreen"];
+v84 [ label = "set spark"];
+v85 [ label = "Add"];
 v1 -> v0 [ color="red" ]
 v2 -> v0 [ color="red" ]
 v3 -> v2
@@ -185,4 +188,8 @@ v76 -> v80
 v81 -> v73
 v82 -> v81
 v76 -> v82
+v84 -> v83 [ color="red" ]
+v73 -> v84
+v85 -> v83 [ color="green" ]
+v73 -> v85
 }

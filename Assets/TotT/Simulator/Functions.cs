@@ -37,5 +37,7 @@ namespace TotT.Simulator {
         public static readonly Function<string> HospitalName = Function(nameof(HospitalName), HospitalNames.Generate, false);
         public static readonly Function<string> DaycareName = Function(nameof(DaycareName), DaycareNames.Generate, false);
 
+        public static readonly Function<Person, Person, RelationshipId<Person>> NewRelationship =
+            Function<Person, Person, RelationshipId<Person>>(nameof(NewRelationship), (main, other) => new RelationshipId<Person>(main, other));
     }
 }
