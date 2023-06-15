@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\TotT\Unity\GUIString.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Grammar.cs" />
     <Compile Include="Assets\TotT\Utilities\GridComparer.cs" />
     <Compile Include="Assets\TotT\Utilities\CsvParsing.cs" />
     <Compile Include="Assets\TotT\Unity\GUIManager.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Assets\TotT\ValueTypes\Location.cs" />
     <Compile Include="Assets\TotT\Simulator\Variables.cs" />
     <Compile Include="Assets\TotT\Simulator\Time.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Constant.cs" />
     <Compile Include="Assets\TotT\ValueTypes\LocationType.cs" />
     <Compile Include="Assets\TotT\ValueTypes\BusinessStatus.cs" />
     <Compile Include="Assets\TotT\ValueTypes\Date.cs" />
@@ -90,6 +92,7 @@
     <Compile Include="Assets\TotT\Simulator\StaticTables.cs" />
     <Compile Include="Assets\TotT\ValueTypes\Facet.cs" />
     <Compile Include="Assets\TotT\Simulog\TEDHelpers.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\ITerminal.cs" />
     <Compile Include="Assets\TotT\Unity\SimulationController.cs" />
     <Compile Include="Assets\TotT\ValueTypes\VitalStatus.cs" />
     <Compile Include="Assets\TotT\ValueTypes\Sexuality.cs" />
