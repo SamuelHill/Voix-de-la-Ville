@@ -44,11 +44,13 @@ namespace TotT.Simulator {
         public KeyIndex<LocationDisplayRow, Vector2Int> LocationsPositionIndex;
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
         public string TownName;
+        private ColumnAccessor<LocationType, Location> _locationToType;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
             TownName = PossibleTownName.Random;
             TextGenerator.BindingList.BindGlobal(Generators.TownName, PossibleTownName.Random);
+            GUIManager.SetDefaultColorizer<Location>(l => StaticTables.LocationColorsIndex[_locationToType[l]].Item2);
             Debug.Log(TownName);
             Simulation.BeginPredicates();
             InitStaticTables();
@@ -178,19 +180,24 @@ namespace TotT.Simulator {
 
             var Location = Predicate("Location", location.Key, 
                 locationType.Indexed, locationCategory.Indexed, position.Indexed, founding, businessStatus.Indexed);
+            _locationToType = Location.Accessor(location, locationType);
             Location.Initially[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
                      .Where(PrimordialLocation, LocationInformation);
+            Location.Colorize(location);
 
             // NewLocation is used for both adding tiles to the TileMap in Unity efficiently
             // (not checking every row of the Locations table) and for collecting new locations
             // with the minimal amount of information needed (excludes derivable columns).
             NewLocation = Predicate("NewLocation", position, location, locationType, founding);
+            NewLocation.Colorize(location);
             Location.Add[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
                      .If(NewLocation, LocationInformation);
+            Location.Add.Colorize(location);
+            NewLocation.Colorize(location);
 
             var InBusiness = Definition("InBusiness", location)
                .Is(Location[location, __, __, __, __, BusinessStatus.InBusiness]);
-            
+
             Location.Set(location, businessStatus, BusinessStatus.OutOfBusiness)
                      .If(Location, 
                          !In(locationType, new[] {
@@ -215,6 +222,7 @@ namespace TotT.Simulator {
             var DisplayLocations = Predicate("DisplayLocations", 
                 position.Key, location, locationType,  founding)
                .If(Location[location, locationType, __, position, founding, BusinessStatus.InBusiness]);
+            DisplayLocations.Colorize(location);
             // DisplayLocations is a collection - not intended to be used as a predicate - thus the plural naming
             LocationsPositionIndex = DisplayLocations.KeyIndex(position);
 
@@ -328,6 +336,7 @@ namespace TotT.Simulator {
             // ************************************ Vocations: ************************************
 
             var Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
+            Employment.Colorize(location);
 
             var EmploymentStatus = Predicate("EmploymentStatus", employee.Key, state.Indexed);
             EmploymentStatus.Add[employee, true].If(Employment.Add);
@@ -377,6 +386,7 @@ namespace TotT.Simulator {
 
             var WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType.Indexed, location.Indexed);
             WhereTheyAt.Unique = true;
+            GUIManager.Colorize(WhereTheyAt, location);
             WhereTheyAtLocationIndex = (GeneralIndex<(Person, ActionType, Location), Location>)WhereTheyAt.IndexFor(location, false);
 
             var AdultAction = Predicate("AdultAction", actionType)

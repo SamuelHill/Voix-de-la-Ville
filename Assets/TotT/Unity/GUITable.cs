@@ -73,7 +73,22 @@ namespace TotT.Unity {
         private uint ScrollRow => (uint)Math.Floor(_scrollPosition);
         private int[] LongestStrings => _longestBufferStrings.Zip(_headingLengths, Mathf.Max).ToArray();
         private int LongestRow => LongestStrings.Sum() + _longestBufferStrings.Length * ColumnPadding;
-        private int TableWidth => RowCount == 0 ? _noEntriesWidth : LongestRow;
+        private float TableWidth
+        {
+            get
+            {
+                if (RowCount == 0)
+                    return _noEntriesWidth;
+                else
+                {
+                    var sum = 0f;
+                    for (var i = 0; i < NumColumns; i++)
+                        sum += _columnWidths[i];
+                    return sum;
+                }
+            }
+        }
+
         private int NumDisplayRows => _buffer.Length;
         private bool DefaultTable => NumDisplayRows == DefaultNumRowsToDisplay;
 
@@ -100,7 +115,7 @@ namespace TotT.Unity {
             if (len > _columnWidths[i])
                 _columnWidths[i] = len;
             else if (len < _columnWidths[i]-2)
-                _columnWidths[i] -= 0.05f;
+                _columnWidths[i] -= 0.005f;
             return GUILayout.Width(_columnWidths[i] + ColumnPadding);
         }
 
