@@ -7,7 +7,7 @@ namespace TotT.ValueTypes {
     /// <summary>
     /// Record of a point in time at the finest temporal resolution.
     /// </summary>
-    public readonly struct TimePoint : IEquatable<TimePoint> {
+    public readonly struct TimePoint : IEquatable<TimePoint>, IComparable<TimePoint> {
         /// <summary>Tick value within a year (0 to 671)</summary>
         public readonly ushort Calender;
         /// <summary>Year this point occurred during</summary>
@@ -52,6 +52,11 @@ namespace TotT.ValueTypes {
         public static TimePoint FromString(string timePointString) {
             var timePoint = timePointString.Split('/');
             return new TimePoint(ToMonth(timePoint[0]), ToDay(timePoint[1]), TimeOfDay.AM, ToYear(timePoint[2]));
+        }
+
+        public int CompareTo(TimePoint other)
+        {
+            return Calender.CompareTo(other.Calender);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace TotT.ValueTypes {
     /// With 7 days (DayOfWeek) and binary open states we get 128 possible schedules - 12 of the more
     /// common schedules are named in the ScheduleName enum.
     /// </summary>
-    public readonly struct Schedule {
+    public readonly struct Schedule : IComparable<Schedule> {
         /// <summary>Indicates which days the schedule is open on (array of booleans indexed by DayOfWeek).</summary>
         private readonly bool[] _openOn;
 
@@ -68,6 +68,17 @@ namespace TotT.ValueTypes {
         public static Schedule FromString(string scheduleString) {
             Enum.TryParse(scheduleString, out ScheduleName schedule);
             return new Schedule(schedule);
+        }
+
+        public int CompareTo(Schedule other)
+        {
+            for (var i = 0; i < _openOn.Length; i++)
+            {
+                if (_openOn[i] == other._openOn[i])
+                    continue;
+                return _openOn[i] ? 1 : -1;
+            }
+            return 0;
         }
     }
 }
