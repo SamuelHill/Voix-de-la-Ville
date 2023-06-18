@@ -1,4 +1,5 @@
 digraph {
+splines=true
 node [ style="filled"]
 v0 [ label = "Agent" fillcolor="limegreen"];
 v1 [ label = "set vitalStatus" rank="min"];

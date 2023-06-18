@@ -48,6 +48,8 @@ namespace TotT.Simulator {
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
+            Simulation.Exceptions.Colorize(_ => Color.red);
+            Simulation.Problems.Colorize(_ => Color.red);
             TownName = PossibleTownName.Random;
             TextGenerator.BindingList.BindGlobal(Generators.TownName, PossibleTownName.Random);
             GUIManager.SetDefaultColorizer<Location>(l => StaticTables.LocationColorsIndex[_locationToType[l]].Item2);
@@ -456,6 +458,7 @@ namespace TotT.Simulator {
             DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
             UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
+            Simulation.CheckForProblems = true;
         } 
 
         public static void UpdateSimulator() {
@@ -465,6 +468,8 @@ namespace TotT.Simulator {
 #else
             Time.Tick();
             Simulation.Update();
+            GUIManager.PopTableIfNewActivity(Simulation.Problems);
+            GUIManager.PopTableIfNewActivity(Simulation.Exceptions);
 #endif
         }
 

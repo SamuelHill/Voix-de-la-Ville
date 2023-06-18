@@ -5914,6 +5914,11 @@
             Make a simulation with the specified name
             </summary>
         </member>
+        <member name="F:TED.Simulation.CheckForProblems">
+            <summary>
+            If true, run all the Problem rules specified by the programmer.
+            </summary>
+        </member>
         <member name="M:TED.Simulation.EndPredicates">
             <inheritdoc />
         </member>
@@ -6315,6 +6320,12 @@
         <member name="F:TED.TablePredicate.VisualizerName">
             <summary>
             Name of the metadata property specifying a preferred name to include in a dataflow visualization
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.Problem(System.String)">
+            <summary>
+            Used to add assertions to the Problems table for the current program.
+            Usage: predicate.Problem(message).If(conditions...)
             </summary>
         </member>
         <member name="T:TED.TablePredicate`1">
