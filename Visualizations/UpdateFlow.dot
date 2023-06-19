@@ -155,9 +155,6 @@ v40 -> v12 [ color="green" ]
 v14 -> v40
 v42 -> v41 [ color="red" ]
 v14 -> v42
-v15 -> v42
-v36 -> v42
-v38 -> v42
 v43 -> v41 [ color="green" ]
 v14 -> v43
 v45 -> v44 [ color="red" ]

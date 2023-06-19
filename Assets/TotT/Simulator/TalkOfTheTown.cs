@@ -489,11 +489,8 @@ namespace TotT.Simulator {
             //Spark.Set(pairing, spark).If(Alive[person], Alive[otherPerson], !Interaction[person, otherPerson, __], 
             //                             Spark[pairing, person, otherPerson, num], RegressToZero[num, spark]);
             Charge.Set(pairing, charge, num)
-                  .If(Charge[pairing, person, otherPerson, charge], charge != 0,
-                      !ChosenPositiveInteraction[person, otherPerson],
-                      !ChosenNeutralInteraction[person, otherPerson],
-                      !ChosenNegativeInteraction[person, otherPerson],
-                      RegressToZero[charge, num]);
+                  .If(Charge[pairing, person, otherPerson, charge], charge > 0,
+                      !Interaction[person, otherPerson, __], num == charge - 1);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
