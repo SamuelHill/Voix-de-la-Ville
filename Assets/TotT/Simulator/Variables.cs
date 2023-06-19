@@ -60,7 +60,6 @@ namespace TotT.Simulator {
         public static readonly Var<int> charge = (Var<int>)"charge";
 
         public static readonly Var<RelationshipId<Person>> pairing = (Var<RelationshipId<Person>>)"pairing";
-        public static readonly Var<RelationshipId<Person>> otherPairing = (Var<RelationshipId<Person>>)"otherPairing";
 
         public static readonly Var<float> score = (Var<float>)"score";
         public static readonly Var<bool> state = (Var<bool>)"state";

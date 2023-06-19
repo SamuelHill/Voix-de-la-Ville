@@ -58,47 +58,43 @@ v54 [ label = "Parent" fillcolor="limegreen"];
 v55 [ label = "Add"];
 v56 [ label = "Men" rank="min"];
 v57 [ label = "Women" rank="min"];
-v58 [ label = "ProcreativePair" fillcolor="limegreen"];
-v59 [ label = "Add"];
-v60 [ label = "PairForProcreate"];
-v61 [ label = "ScoredPairing"];
-v62 [ label = "PotentialPairing"];
-v63 [ label = "PotentialProcreation"];
-v64 [ label = "Pregnant" rank="min"];
-v65 [ label = "Gestation" fillcolor="limegreen"];
-v66 [ label = "set state"];
+v58 [ label = "ProcreativePair"];
+v59 [ label = "PotentialProcreation"];
+v60 [ label = "Pregnant" rank="min"];
+v61 [ label = "Gestation" fillcolor="limegreen"];
+v62 [ label = "set state"];
+v63 [ label = "Add"];
+v64 [ label = "SuccessfulProcreation"];
+v65 [ label = "Location" fillcolor="limegreen"];
+v66 [ label = "set businessStatus" rank="min"];
 v67 [ label = "Add"];
-v68 [ label = "SuccessfulProcreation"];
-v69 [ label = "Location" fillcolor="limegreen"];
-v70 [ label = "set businessStatus" rank="min"];
-v71 [ label = "Add"];
-v72 [ label = "NewLocation"];
-v73 [ label = "WantToMove"];
-v74 [ label = "Occupancy"];
-v75 [ label = "InBusinessHome" rank="min"];
-v76 [ label = "Unhoused" rank="min"];
-v77 [ label = "JustClosed"];
-v78 [ label = "VacatedLocation"];
-v79 [ label = "DisplayLocations" rank="min"];
-v80 [ label = "Home" fillcolor="limegreen"];
-v81 [ label = "set location"];
-v82 [ label = "UnderOccupied"];
-v83 [ label = "Unoccupied" rank="min"];
-v84 [ label = "ForeclosedUpon"];
-v85 [ label = "MovingIn"];
+v68 [ label = "NewLocation"];
+v69 [ label = "WantToMove"];
+v70 [ label = "Occupancy"];
+v71 [ label = "InBusinessHome" rank="min"];
+v72 [ label = "Unhoused" rank="min"];
+v73 [ label = "JustClosed"];
+v74 [ label = "VacatedLocation"];
+v75 [ label = "DisplayLocations" rank="min"];
+v76 [ label = "Home" fillcolor="limegreen"];
+v77 [ label = "set location"];
+v78 [ label = "UnderOccupied"];
+v79 [ label = "Unoccupied" rank="min"];
+v80 [ label = "ForeclosedUpon"];
+v81 [ label = "MovingIn"];
+v82 [ label = "Add"];
+v83 [ label = "BuriedAt" rank="min"];
+v84 [ label = "Buried"];
+v85 [ label = "Employment" fillcolor="limegreen"];
 v86 [ label = "Add"];
-v87 [ label = "BuriedAt" rank="min"];
-v88 [ label = "Buried"];
-v89 [ label = "Employment" fillcolor="limegreen"];
-v90 [ label = "Add"];
-v91 [ label = "SelectedCandidates"];
-v92 [ label = "FilteredCandidate"];
-v93 [ label = "CandidateToFilter"];
-v94 [ label = "Candidate"];
-v95 [ label = "JobsToFill" rank="min"];
-v96 [ label = "EmploymentStatus" fillcolor="limegreen"];
-v97 [ label = "set state"];
-v98 [ label = "Add"];
+v87 [ label = "SelectedCandidates"];
+v88 [ label = "FilteredCandidate"];
+v89 [ label = "CandidateToFilter"];
+v90 [ label = "Candidate"];
+v91 [ label = "JobsToFill" rank="min"];
+v92 [ label = "EmploymentStatus" fillcolor="limegreen"];
+v93 [ label = "set state"];
+v94 [ label = "Add"];
 v1 -> v0 [ color="red" ]
 v2 -> v0 [ color="red" ]
 v3 -> v2
@@ -165,53 +161,50 @@ v52 -> v51 [ color="red" ]
 v53 -> v51 [ color="green" ]
 v55 -> v54 [ color="green" ]
 v3 -> v55
-v59 -> v58 [ color="green" ]
+v57 -> v58
+v56 -> v58
 v60 -> v59
-v61 -> v60
-v62 -> v61
-v57 -> v62
-v56 -> v62
+v58 -> v59
+v62 -> v61 [ color="red" ]
+v3 -> v62
+v63 -> v61 [ color="green" ]
 v64 -> v63
+v59 -> v64
 v66 -> v65 [ color="red" ]
-v3 -> v66
 v67 -> v65 [ color="green" ]
 v68 -> v67
-v63 -> v68
-v70 -> v69 [ color="red" ]
-v71 -> v69 [ color="green" ]
-v72 -> v71
-v73 -> v72
-v74 -> v73
-v75 -> v74
-v76 -> v72
-v10 -> v72
-v70 -> v77
+v69 -> v68
+v70 -> v69
+v71 -> v70
+v72 -> v68
+v10 -> v68
+v66 -> v73
+v66 -> v74
+v77 -> v76 [ color="red" ]
+v11 -> v77
+v78 -> v77
 v70 -> v78
-v81 -> v80 [ color="red" ]
-v11 -> v81
-v82 -> v81
-v74 -> v82
-v83 -> v82
-v84 -> v81
-v77 -> v84
-v85 -> v81
-v73 -> v85
-v82 -> v85
-v86 -> v80 [ color="green" ]
-v3 -> v86
-v82 -> v86
-v5 -> v86
-v76 -> v86
-v87 -> v88
-v90 -> v89 [ color="green" ]
+v79 -> v78
+v80 -> v77
+v73 -> v80
+v81 -> v77
+v69 -> v81
+v78 -> v81
+v82 -> v76 [ color="green" ]
+v3 -> v82
+v78 -> v82
+v5 -> v82
+v72 -> v82
+v83 -> v84
+v86 -> v85 [ color="green" ]
+v87 -> v86
+v88 -> v87
+v89 -> v88
+v90 -> v89
 v91 -> v90
-v92 -> v91
-v93 -> v92
-v94 -> v93
-v95 -> v94
-v94 -> v91
-v97 -> v96 [ color="red" ]
-v11 -> v97
-v98 -> v96 [ color="green" ]
-v90 -> v98
+v90 -> v87
+v93 -> v92 [ color="red" ]
+v11 -> v93
+v94 -> v92 [ color="green" ]
+v86 -> v94
 }

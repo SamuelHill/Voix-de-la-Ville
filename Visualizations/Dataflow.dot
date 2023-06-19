@@ -19,78 +19,74 @@ v21 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 subgraph "cluster_Agent"{
 v22 [ label = "Agent" fillcolor="limegreen"];
 v23 [ label = "Add"];
-v41 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
-v42 [ label = "set vitalStatus"];
-v43 [ label = "set age"];
+v62 [ label = "set vitalStatus"];
+v104 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v105 [ label = "set age"];
 }
 subgraph "cluster_Personality"{
-v44 [ label = "Personality" fillcolor="limegreen"];
-v45 [ label = "Add"];
-v46 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v106 [ label = "Personality" fillcolor="limegreen"];
+v107 [ label = "Add"];
+v108 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Aptitude"{
-v47 [ label = "Aptitude" fillcolor="limegreen"];
-v48 [ label = "Add"];
-v49 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v67 [ label = "Aptitude" fillcolor="limegreen"];
+v68 [ label = "Add"];
+v69 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Friend"{
-v113 [ label = "Friend" fillcolor="limegreen"];
-v114 [ label = "Add"];
-v115 [ label = "set state"];
+v112 [ label = "Friend" fillcolor="limegreen"];
+v113 [ label = "Add"];
+v114 [ label = "set state"];
 }
 subgraph "cluster_Enemy"{
-v117 [ label = "Enemy" fillcolor="limegreen"];
-v118 [ label = "Add"];
-v119 [ label = "set state"];
+v116 [ label = "Enemy" fillcolor="limegreen"];
+v117 [ label = "Add"];
+v118 [ label = "set state"];
 }
 subgraph "cluster_RomanticInterest"{
-v120 [ label = "RomanticInterest" fillcolor="limegreen"];
-v121 [ label = "Add"];
-v122 [ label = "set state"];
-}
-subgraph "cluster_ProcreativePair"{
-v31 [ label = "ProcreativePair" fillcolor="limegreen"];
-v32 [ label = "Add"];
+v32 [ label = "RomanticInterest" fillcolor="limegreen"];
+v33 [ label = "Add"];
+v98 [ label = "set state"];
 }
 subgraph "cluster_Gestation"{
 v26 [ label = "Gestation" fillcolor="limegreen"];
 v27 [ label = "Add"];
-v40 [ label = "set state"];
+v103 [ label = "set state"];
 }
 subgraph "cluster_Parent"{
-v38 [ label = "Parent" fillcolor="limegreen"];
-v39 [ label = "Add"];
+v101 [ label = "Parent" fillcolor="limegreen"];
+v102 [ label = "Add"];
 }
 subgraph "cluster_Location"{
-v65 [ label = "Location" fillcolor="limegreen"];
-v66 [ label = "Add"];
-v81 [ label = "set businessStatus"];
-v83 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v47 [ label = "Location" fillcolor="limegreen"];
+v48 [ label = "Add"];
+v65 [ label = "set businessStatus"];
+v71 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
 }
 subgraph "cluster_Home"{
-v69 [ label = "Home" fillcolor="limegreen"];
-v70 [ label = "Add"];
-v76 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
-v78 [ label = "set location"];
+v51 [ label = "Home" fillcolor="limegreen"];
+v52 [ label = "Add"];
+v58 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v60 [ label = "set location"];
 }
 subgraph "cluster_EmploymentStatus"{
-v90 [ label = "EmploymentStatus" fillcolor="limegreen"];
-v91 [ label = "Add"];
-v99 [ label = "set state"];
+v78 [ label = "EmploymentStatus" fillcolor="limegreen"];
+v79 [ label = "Add"];
+v87 [ label = "set state"];
 }
 subgraph "cluster_Employment"{
-v92 [ label = "Add"];
-v98 [ label = "Employment" fillcolor="limegreen"];
+v80 [ label = "Add"];
+v86 [ label = "Employment" fillcolor="limegreen"];
 }
 subgraph "cluster_Spark"{
-v52 [ label = "Spark" fillcolor="limegreen"];
-v53 [ label = "Add"];
-v109 [ label = "set spark"];
+v34 [ label = "Spark" fillcolor="limegreen"];
+v35 [ label = "Add"];
+v97 [ label = "set spark"];
 }
 subgraph "cluster_Charge"{
-v110 [ label = "Charge" fillcolor="limegreen"];
-v111 [ label = "Add"];
-v112 [ label = "set charge"];
+v109 [ label = "Charge" fillcolor="limegreen"];
+v110 [ label = "Add"];
+v111 [ label = "set charge"];
 }
 v0 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
 v1 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
@@ -111,60 +107,58 @@ v25 [ label = "BirthTo"];
 v28 [ label = "SuccessfulProcreation"];
 v29 [ label = "PotentialProcreation"];
 v30 [ label = "Pregnant"];
-v33 [ label = "PairForProcreate"];
-v34 [ label = "ScoredPairing"];
-v35 [ label = "PotentialPairing"];
-v36 [ label = "Women"];
-v37 [ label = "Men"];
-v50 [ label = "PopulationCount"];
-v51 [ label = "JustDied"];
-v54 [ label = "Interaction"];
-v55 [ label = "ChosenPositiveInteraction"];
-v56 [ label = "PositiveInteraction"];
-v57 [ label = "ScoredInteraction"];
-v58 [ label = "PotentialInteraction"];
-v59 [ label = "NotWorking"];
-v60 [ label = "WhereTheyAt"];
-v61 [ label = "GoingToSchool"];
-v62 [ label = "AvailableAction"];
-v63 [ label = "AvailableCategory"];
-v64 [ label = "CategoryCount"];
-v67 [ label = "NewLocation"];
-v68 [ label = "WantToMove"];
-v71 [ label = "UnderOccupied"];
-v72 [ label = "Occupancy"];
-v73 [ label = "InBusinessHome"];
-v74 [ label = "Unoccupied"];
-v75 [ label = "Unhoused"];
-v77 [ label = "PrimordialHouse" fillcolor="deepskyblue" shape="diamond"];
-v79 [ label = "ForeclosedUpon"];
-v80 [ label = "JustClosed"];
-v82 [ label = "MovingIn"];
-v84 [ label = "OpenLocationType"];
-v85 [ label = "NeedSchooling"];
-v86 [ label = "Kid"];
-v87 [ label = "GoingToDayCare"];
-v88 [ label = "NeedDayCare"];
-v89 [ label = "GoingToWork"];
-v93 [ label = "SelectedCandidates"];
-v94 [ label = "FilteredCandidate"];
-v95 [ label = "CandidateToFilter"];
-v96 [ label = "Candidate"];
-v97 [ label = "JobsToFill"];
-v100 [ label = "RandomActionAssign"];
-v101 [ label = "AdultAction"];
-v102 [ label = "NeedsActionAssignment"];
-v103 [ label = "LocationByActionAssign"];
-v104 [ label = "OpenForBusinessByAction"];
-v105 [ label = "ChosenNeutralInteraction"];
-v106 [ label = "NeutralInteraction"];
-v107 [ label = "ChosenNegativeInteraction"];
-v108 [ label = "NegativeInteraction"];
-v116 [ label = "MutualFriendship"];
-v123 [ label = "VacatedLocation"];
-v124 [ label = "DisplayLocations"];
-v125 [ label = "BuriedAt"];
-v126 [ label = "Buried"];
+v31 [ label = "ProcreativePair"];
+v36 [ label = "Interaction"];
+v37 [ label = "ChosenPositiveInteraction"];
+v38 [ label = "PositiveInteraction"];
+v39 [ label = "ScoredInteraction"];
+v40 [ label = "PotentialInteraction"];
+v41 [ label = "NotWorking"];
+v42 [ label = "WhereTheyAt"];
+v43 [ label = "GoingToSchool"];
+v44 [ label = "AvailableAction"];
+v45 [ label = "AvailableCategory"];
+v46 [ label = "CategoryCount"];
+v49 [ label = "NewLocation"];
+v50 [ label = "WantToMove"];
+v53 [ label = "UnderOccupied"];
+v54 [ label = "Occupancy"];
+v55 [ label = "InBusinessHome"];
+v56 [ label = "Unoccupied"];
+v57 [ label = "Unhoused"];
+v59 [ label = "PrimordialHouse" fillcolor="deepskyblue" shape="diamond"];
+v61 [ label = "JustDied"];
+v63 [ label = "ForeclosedUpon"];
+v64 [ label = "JustClosed"];
+v66 [ label = "MovingIn"];
+v70 [ label = "PopulationCount"];
+v72 [ label = "OpenLocationType"];
+v73 [ label = "NeedSchooling"];
+v74 [ label = "Kid"];
+v75 [ label = "GoingToDayCare"];
+v76 [ label = "NeedDayCare"];
+v77 [ label = "GoingToWork"];
+v81 [ label = "SelectedCandidates"];
+v82 [ label = "FilteredCandidate"];
+v83 [ label = "CandidateToFilter"];
+v84 [ label = "Candidate"];
+v85 [ label = "JobsToFill"];
+v88 [ label = "RandomActionAssign"];
+v89 [ label = "AdultAction"];
+v90 [ label = "NeedsActionAssignment"];
+v91 [ label = "LocationByActionAssign"];
+v92 [ label = "OpenForBusinessByAction"];
+v93 [ label = "ChosenNeutralInteraction"];
+v94 [ label = "NeutralInteraction"];
+v95 [ label = "ChosenNegativeInteraction"];
+v96 [ label = "NegativeInteraction"];
+v99 [ label = "Women"];
+v100 [ label = "Men"];
+v115 [ label = "MutualFriendship"];
+v119 [ label = "VacatedLocation"];
+v120 [ label = "DisplayLocations"];
+v121 [ label = "BuriedAt"];
+v122 [ label = "Buried"];
 v5 -> v4 [ color="blue" ]
 v3 -> v5 [ constraint="false" ]
 v7 -> v6 [ color="blue" ]
@@ -189,202 +183,197 @@ v29 -> v28
 v30 -> v29
 v26 -> v30
 v31 -> v29
-v32 -> v31 [ color="green" ]
-v33 -> v32 [ constraint="false" ]
-v34 -> v33
-v35 -> v34
-v31 -> v35
-v36 -> v35
+v32 -> v31
+v33 -> v32 [ color="green" ]
+v32 -> v33 [ constraint="false" ]
+v34 -> v33 [ constraint="false" ]
+v35 -> v34 [ color="green" ]
+v34 -> v35 [ constraint="false" ]
+v36 -> v35 [ constraint="false" ]
+v37 -> v36
+v38 -> v37
+v39 -> v38
+v40 -> v39
+v41 -> v40
+v42 -> v41
+v43 -> v42
+v44 -> v43
+v18 -> v44
+v45 -> v44
+v46 -> v45
+v47 -> v46
+v48 -> v47 [ color="green" ]
+v49 -> v48 [ constraint="false" ]
+v47 -> v49
+v50 -> v49
+v51 -> v50
+v52 -> v51 [ color="green" ]
+v25 -> v52 [ constraint="false" ]
+v51 -> v52 [ constraint="false" ]
+v53 -> v52 [ constraint="false" ]
+v54 -> v53
+v55 -> v54
+v47 -> v55
+v51 -> v55
+v56 -> v53
+v51 -> v56
+v47 -> v56
+v24 -> v52 [ constraint="false" ]
+v57 -> v52 [ constraint="false" ]
+v51 -> v57
+v22 -> v57
+v58 -> v51 [ color="blue" ]
+v59 -> v58 [ constraint="false" ]
+v11 -> v59
+v10 -> v58 [ constraint="false" ]
+v60 -> v51 [ color="red" ]
+v61 -> v60 [ constraint="false" ]
+v62 -> v61
+v22 -> v62 [ constraint="false" ]
+v47 -> v60 [ constraint="false" ]
+v53 -> v60 [ constraint="false" ]
+v63 -> v60 [ constraint="false" ]
+v51 -> v63
+v64 -> v63
+v65 -> v64
+v47 -> v65 [ constraint="false" ]
+v66 -> v60 [ constraint="false" ]
+v50 -> v66
+v53 -> v66
+v54 -> v50
+v6 -> v49
+v57 -> v49
+v67 -> v49
+v68 -> v67 [ color="green" ]
+v23 -> v68 [ constraint="false" ]
+v9 -> v68 [ constraint="false" ]
+v69 -> v67 [ color="blue" ]
+v10 -> v69 [ constraint="false" ]
+v9 -> v69 [ constraint="false" ]
+v22 -> v49
+v70 -> v49
+v22 -> v70
+v12 -> v48 [ constraint="false" ]
+v71 -> v47 [ color="blue" ]
+v11 -> v71 [ constraint="false" ]
+v12 -> v71 [ constraint="false" ]
+v65 -> v47 [ color="red" ]
+v72 -> v43
+v12 -> v72
+v47 -> v43
+v73 -> v43
+v74 -> v73
+v22 -> v74
+v22 -> v73
+v75 -> v42
+v44 -> v75
+v72 -> v75
+v47 -> v75
+v76 -> v75
+v73 -> v76
+v74 -> v76
+v77 -> v42
+v72 -> v77
+v47 -> v77
+v78 -> v77
+v79 -> v78 [ color="green" ]
+v80 -> v79 [ constraint="false" ]
+v81 -> v80 [ constraint="false" ]
+v82 -> v81
+v83 -> v82
+v84 -> v83
+v85 -> v84
+v47 -> v85
+v15 -> v85
+v17 -> v85
+v86 -> v85
+v80 -> v86 [ color="green" ]
+v78 -> v85
+v22 -> v84
+v78 -> v84
+v67 -> v84
+v84 -> v81
+v87 -> v78 [ color="red" ]
+v61 -> v87 [ constraint="false" ]
+v78 -> v87 [ constraint="false" ]
+v86 -> v77
+v88 -> v42
+v89 -> v88
+v44 -> v89
+v90 -> v88
+v77 -> v90
+v75 -> v90
+v43 -> v90
+v22 -> v90
+v91 -> v42
+v88 -> v91
+v51 -> v91
+v92 -> v91
+v18 -> v92
+v45 -> v92
+v72 -> v92
+v47 -> v92
+v47 -> v91
 v22 -> v36
-v37 -> v35
-v22 -> v37
-v22 -> v35
-v38 -> v35
-v39 -> v38 [ color="green" ]
-v25 -> v39 [ constraint="false" ]
+v93 -> v36
+v94 -> v93
+v39 -> v94
+v95 -> v36
+v96 -> v95
+v39 -> v96
+v97 -> v34 [ color="red" ]
+v36 -> v97 [ constraint="false" ]
+v34 -> v97 [ constraint="false" ]
+v98 -> v32 [ color="red" ]
+v34 -> v98 [ constraint="false" ]
+v32 -> v98 [ constraint="false" ]
+v99 -> v31
+v22 -> v99
+v100 -> v31
+v22 -> v100
+v101 -> v31
+v102 -> v101 [ color="green" ]
+v25 -> v102 [ constraint="false" ]
 v22 -> v29
 v1 -> v27 [ constraint="false" ]
 v0 -> v27 [ constraint="false" ]
-v40 -> v26 [ color="red" ]
-v25 -> v40 [ constraint="false" ]
-v41 -> v22 [ color="blue" ]
-v10 -> v41 [ constraint="false" ]
-v42 -> v22 [ color="red" ]
-v22 -> v42 [ constraint="false" ]
-v43 -> v22 [ color="red" ]
-v25 -> v43 [ constraint="false" ]
-v22 -> v43 [ constraint="false" ]
-v45 -> v44 [ color="green" ]
-v23 -> v45 [ constraint="false" ]
-v8 -> v45 [ constraint="false" ]
-v46 -> v44 [ color="blue" ]
-v10 -> v46 [ constraint="false" ]
-v8 -> v46 [ constraint="false" ]
-v48 -> v47 [ color="green" ]
-v23 -> v48 [ constraint="false" ]
-v9 -> v48 [ constraint="false" ]
-v49 -> v47 [ color="blue" ]
-v10 -> v49 [ constraint="false" ]
-v9 -> v49 [ constraint="false" ]
-v22 -> v50
-v42 -> v51
-v53 -> v52 [ color="green" ]
-v52 -> v53 [ constraint="false" ]
-v54 -> v53 [ constraint="false" ]
-v55 -> v54
-v56 -> v55
-v57 -> v56
-v58 -> v57
-v59 -> v58
-v60 -> v59
-v61 -> v60
-v62 -> v61
-v18 -> v62
-v63 -> v62
-v64 -> v63
-v65 -> v64
-v66 -> v65 [ color="green" ]
-v67 -> v66 [ constraint="false" ]
-v65 -> v67
-v68 -> v67
-v69 -> v68
-v70 -> v69 [ color="green" ]
-v25 -> v70 [ constraint="false" ]
-v69 -> v70 [ constraint="false" ]
-v71 -> v70 [ constraint="false" ]
-v72 -> v71
-v73 -> v72
-v65 -> v73
-v69 -> v73
-v74 -> v71
-v69 -> v74
-v65 -> v74
-v24 -> v70 [ constraint="false" ]
-v75 -> v70 [ constraint="false" ]
-v69 -> v75
-v22 -> v75
-v76 -> v69 [ color="blue" ]
-v77 -> v76 [ constraint="false" ]
-v11 -> v77
-v10 -> v76 [ constraint="false" ]
-v78 -> v69 [ color="red" ]
-v51 -> v78 [ constraint="false" ]
-v65 -> v78 [ constraint="false" ]
-v71 -> v78 [ constraint="false" ]
-v79 -> v78 [ constraint="false" ]
-v69 -> v79
-v80 -> v79
-v81 -> v80
-v65 -> v81 [ constraint="false" ]
-v82 -> v78 [ constraint="false" ]
-v68 -> v82
-v71 -> v82
-v72 -> v68
-v6 -> v67
-v75 -> v67
-v47 -> v67
-v22 -> v67
-v50 -> v67
-v12 -> v66 [ constraint="false" ]
-v83 -> v65 [ color="blue" ]
-v11 -> v83 [ constraint="false" ]
-v12 -> v83 [ constraint="false" ]
-v81 -> v65 [ color="red" ]
-v84 -> v61
-v12 -> v84
-v65 -> v61
-v85 -> v61
-v86 -> v85
-v22 -> v86
-v22 -> v85
-v87 -> v60
-v62 -> v87
-v84 -> v87
-v65 -> v87
-v88 -> v87
-v85 -> v88
-v86 -> v88
-v89 -> v60
-v84 -> v89
-v65 -> v89
-v90 -> v89
-v91 -> v90 [ color="green" ]
-v92 -> v91 [ constraint="false" ]
-v93 -> v92 [ constraint="false" ]
-v94 -> v93
-v95 -> v94
-v96 -> v95
-v97 -> v96
-v65 -> v97
-v15 -> v97
-v17 -> v97
-v98 -> v97
-v92 -> v98 [ color="green" ]
-v90 -> v97
-v22 -> v96
-v90 -> v96
-v47 -> v96
-v96 -> v93
-v99 -> v90 [ color="red" ]
-v51 -> v99 [ constraint="false" ]
-v90 -> v99 [ constraint="false" ]
-v98 -> v89
-v100 -> v60
-v101 -> v100
-v62 -> v101
-v102 -> v100
-v89 -> v102
-v87 -> v102
-v61 -> v102
-v22 -> v102
-v103 -> v60
-v100 -> v103
-v69 -> v103
-v104 -> v103
-v18 -> v104
-v63 -> v104
-v84 -> v104
-v65 -> v104
-v65 -> v103
-v22 -> v54
-v105 -> v54
-v106 -> v105
-v57 -> v106
-v107 -> v54
-v108 -> v107
-v57 -> v108
-v109 -> v52 [ color="red" ]
-v54 -> v109 [ constraint="false" ]
-v52 -> v109 [ constraint="false" ]
-v111 -> v110 [ color="green" ]
-v110 -> v111 [ constraint="false" ]
-v54 -> v111 [ constraint="false" ]
-v112 -> v110 [ color="red" ]
-v54 -> v112 [ constraint="false" ]
-v110 -> v112 [ constraint="false" ]
-v114 -> v113 [ color="green" ]
-v113 -> v114 [ constraint="false" ]
-v110 -> v114 [ constraint="false" ]
-v115 -> v113 [ color="red" ]
-v110 -> v115 [ constraint="false" ]
-v113 -> v115 [ constraint="false" ]
-v113 -> v116
-v118 -> v117 [ color="green" ]
-v117 -> v118 [ constraint="false" ]
-v110 -> v118 [ constraint="false" ]
-v119 -> v117 [ color="red" ]
-v110 -> v119 [ constraint="false" ]
-v117 -> v119 [ constraint="false" ]
-v121 -> v120 [ color="green" ]
-v120 -> v121 [ constraint="false" ]
-v52 -> v121 [ constraint="false" ]
-v122 -> v120 [ color="red" ]
-v52 -> v122 [ constraint="false" ]
-v120 -> v122 [ constraint="false" ]
-v81 -> v123
-v65 -> v123
-v65 -> v124
-v65 -> v125
-v69 -> v125
-v125 -> v126
+v103 -> v26 [ color="red" ]
+v25 -> v103 [ constraint="false" ]
+v104 -> v22 [ color="blue" ]
+v10 -> v104 [ constraint="false" ]
+v62 -> v22 [ color="red" ]
+v105 -> v22 [ color="red" ]
+v25 -> v105 [ constraint="false" ]
+v22 -> v105 [ constraint="false" ]
+v107 -> v106 [ color="green" ]
+v23 -> v107 [ constraint="false" ]
+v8 -> v107 [ constraint="false" ]
+v108 -> v106 [ color="blue" ]
+v10 -> v108 [ constraint="false" ]
+v8 -> v108 [ constraint="false" ]
+v110 -> v109 [ color="green" ]
+v109 -> v110 [ constraint="false" ]
+v36 -> v110 [ constraint="false" ]
+v111 -> v109 [ color="red" ]
+v36 -> v111 [ constraint="false" ]
+v109 -> v111 [ constraint="false" ]
+v113 -> v112 [ color="green" ]
+v112 -> v113 [ constraint="false" ]
+v109 -> v113 [ constraint="false" ]
+v114 -> v112 [ color="red" ]
+v109 -> v114 [ constraint="false" ]
+v112 -> v114 [ constraint="false" ]
+v112 -> v115
+v117 -> v116 [ color="green" ]
+v116 -> v117 [ constraint="false" ]
+v109 -> v117 [ constraint="false" ]
+v118 -> v116 [ color="red" ]
+v109 -> v118 [ constraint="false" ]
+v116 -> v118 [ constraint="false" ]
+v65 -> v119
+v47 -> v119
+v47 -> v120
+v47 -> v121
+v51 -> v121
+v121 -> v122
 }
