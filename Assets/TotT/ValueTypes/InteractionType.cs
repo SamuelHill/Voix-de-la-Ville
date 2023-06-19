@@ -10,6 +10,6 @@
         Conforming,
         Flirting,
         Haggling,
-        Observing,
+        Observing
     }
 }

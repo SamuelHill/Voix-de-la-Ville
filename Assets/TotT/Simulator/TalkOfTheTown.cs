@@ -104,7 +104,7 @@ namespace TotT.Simulator {
             var Friend = Predicate("Friend", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
             Friend.Add[pairing, person, otherPerson, true]
                   .If(Charge[pairing, person, otherPerson, charge], 
-                      charge > 5000, !Friend[pairing, person, otherPerson, true]);
+                      charge > 5000, !Friend[pairing, person, otherPerson, __]);
             Friend.Set(pairing, state, false)
                   .If(Charge[pairing, person, otherPerson, charge],
                       charge < 4000, Friend[pairing, person, otherPerson, true]);
@@ -115,6 +115,22 @@ namespace TotT.Simulator {
             var MutualFriendship = Predicate("MutualFriendship", person.Indexed, otherPerson.Indexed);
             MutualFriendship.If(Friend[pairing, person, otherPerson, true], Friend[otherPairing, otherPerson, person, true], SortOrder[person, otherPerson]);
 
+            var Enemy = Predicate("Enemy", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
+            Enemy.Add[pairing, person, otherPerson, true].If(Charge[pairing, person, otherPerson, charge],
+                                                             charge < -7500, !Enemy[pairing, person, otherPerson, __]);
+            Enemy.Set(pairing, state, false).If(Charge[pairing, person, otherPerson, charge],
+                                                charge > -6000, Enemy[pairing, person, otherPerson, true]);
+            Enemy.Set(pairing, state, true).If(Charge[pairing, person, otherPerson, charge],
+                                                charge < -6000, Enemy[pairing, person, otherPerson, false]);
+
+            var RomanticInterest = Predicate("RomanticInterest", 
+                                             pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
+            RomanticInterest.Add[pairing, person, otherPerson, true].If(Spark[pairing, person, otherPerson, spark],
+                                                                        spark > 7000, !RomanticInterest[pairing, person, otherPerson, __]);
+            RomanticInterest.Set(pairing, state, false).If(Spark[pairing, person, otherPerson, spark], 
+                                                           spark < 6000, RomanticInterest[pairing, person, otherPerson, true]);
+            RomanticInterest.Set(pairing, state, true).If(Spark[pairing, person, otherPerson, spark],
+                                                           spark > 6000, RomanticInterest[pairing, person, otherPerson, false]);
 
             // ************************************** Couples *************************************
             // TODO : Primordial couples?
@@ -438,8 +454,10 @@ namespace TotT.Simulator {
             var ChosenNeutralInteraction = AssignRandomly("ChosenNeutralInteraction", NeutralInteraction);
             var ChosenNegativeInteraction = AssignRandomly("ChosenNegativeInteraction", NegativeInteraction);
 
-            Interaction[person, partner, InteractionType.Flirting].If(ChosenPositiveInteraction[person, partner], SexualAttraction);
-            Interaction[person, partner, InteractionType.Assisting].If(ChosenPositiveInteraction[person, partner], !SexualAttraction[person, partner]);
+            Interaction[person, partner, InteractionType.Flirting]
+               .If(ChosenPositiveInteraction[person, partner], SexualAttraction);
+            Interaction[person, partner, InteractionType.Assisting]
+               .If(ChosenPositiveInteraction[person, partner], !SexualAttraction[person, partner]);
             Interaction[person, otherPerson, InteractionType.Chatting].If(ChosenNeutralInteraction);
             Interaction[person, otherPerson, InteractionType.Arguing].If(ChosenNegativeInteraction);
 
@@ -450,18 +468,18 @@ namespace TotT.Simulator {
 
             Charge.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Assisting], 
                                                               !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Charge.Set(pairing, charge).If(Interaction[person, otherPerson, InteractionType.Assisting],
-                                           Charge[pairing, person, otherPerson, num], charge == num + 500);
+            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Assisting], 
+                                                Charge[pairing, person, otherPerson, charge], num == charge + 500);
 
             Charge.Add[pairing, person, otherPerson, 100].If(Interaction[person, otherPerson, InteractionType.Chatting],
                                                              !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Charge.Set(pairing, charge).If(Interaction[person, otherPerson, InteractionType.Chatting], 
-                                           Charge[pairing, person, otherPerson, num], charge == num + 50);
+            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Chatting], 
+                                                Charge[pairing, person, otherPerson, charge], num == charge + 50);
 
             Charge.Add[pairing, person, otherPerson, -900].If(Interaction[person, otherPerson, InteractionType.Arguing],
                                                              !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Charge.Set(pairing, charge).If(Interaction[person, otherPerson, InteractionType.Arguing],
-                                           Charge[pairing, person, otherPerson, num], charge == num - 450);
+            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                                Charge[pairing, person, otherPerson, charge], num == charge - 450);
 
             Spark.Add[pairing, person, otherPerson, -900].If(Interaction[person, otherPerson, InteractionType.Arguing],
                                                              !Spark[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
@@ -470,7 +488,12 @@ namespace TotT.Simulator {
 
             //Spark.Set(pairing, spark).If(Alive[person], Alive[otherPerson], !Interaction[person, otherPerson, __], 
             //                             Spark[pairing, person, otherPerson, num], RegressToZero[num, spark]);
-            //Charge.Set(pairing, charge).If(Charge[pairing, person, otherPerson, num], !Interaction[person, otherPerson, __], RegressToZero[num, charge]);
+            Charge.Set(pairing, charge, num)
+                  .If(Charge[pairing, person, otherPerson, charge], charge != 0,
+                      !ChosenPositiveInteraction[person, otherPerson],
+                      !ChosenNeutralInteraction[person, otherPerson],
+                      !ChosenNegativeInteraction[person, otherPerson],
+                      RegressToZero[charge, num]);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming

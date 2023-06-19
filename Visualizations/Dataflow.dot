@@ -38,6 +38,16 @@ v113 [ label = "Friend" fillcolor="limegreen"];
 v114 [ label = "Add"];
 v115 [ label = "set state"];
 }
+subgraph "cluster_Enemy"{
+v117 [ label = "Enemy" fillcolor="limegreen"];
+v118 [ label = "Add"];
+v119 [ label = "set state"];
+}
+subgraph "cluster_RomanticInterest"{
+v120 [ label = "RomanticInterest" fillcolor="limegreen"];
+v121 [ label = "Add"];
+v122 [ label = "set state"];
+}
 subgraph "cluster_ProcreativePair"{
 v31 [ label = "ProcreativePair" fillcolor="limegreen"];
 v32 [ label = "Add"];
@@ -151,10 +161,10 @@ v106 [ label = "NeutralInteraction"];
 v107 [ label = "ChosenNegativeInteraction"];
 v108 [ label = "NegativeInteraction"];
 v116 [ label = "MutualFriendship"];
-v117 [ label = "VacatedLocation"];
-v118 [ label = "DisplayLocations"];
-v119 [ label = "BuriedAt"];
-v120 [ label = "Buried"];
+v123 [ label = "VacatedLocation"];
+v124 [ label = "DisplayLocations"];
+v125 [ label = "BuriedAt"];
+v126 [ label = "Buried"];
 v5 -> v4 [ color="blue" ]
 v3 -> v5 [ constraint="false" ]
 v7 -> v6 [ color="blue" ]
@@ -352,6 +362,9 @@ v54 -> v111 [ constraint="false" ]
 v112 -> v110 [ color="red" ]
 v54 -> v112 [ constraint="false" ]
 v110 -> v112 [ constraint="false" ]
+v55 -> v112 [ constraint="false" ]
+v105 -> v112 [ constraint="false" ]
+v107 -> v112 [ constraint="false" ]
 v114 -> v113 [ color="green" ]
 v113 -> v114 [ constraint="false" ]
 v110 -> v114 [ constraint="false" ]
@@ -359,10 +372,22 @@ v115 -> v113 [ color="red" ]
 v110 -> v115 [ constraint="false" ]
 v113 -> v115 [ constraint="false" ]
 v113 -> v116
-v81 -> v117
-v65 -> v117
-v65 -> v118
-v65 -> v119
-v69 -> v119
-v119 -> v120
+v118 -> v117 [ color="green" ]
+v117 -> v118 [ constraint="false" ]
+v110 -> v118 [ constraint="false" ]
+v119 -> v117 [ color="red" ]
+v110 -> v119 [ constraint="false" ]
+v117 -> v119 [ constraint="false" ]
+v121 -> v120 [ color="green" ]
+v120 -> v121 [ constraint="false" ]
+v52 -> v121 [ constraint="false" ]
+v122 -> v120 [ color="red" ]
+v52 -> v122 [ constraint="false" ]
+v120 -> v122 [ constraint="false" ]
+v81 -> v123
+v65 -> v123
+v65 -> v124
+v65 -> v125
+v69 -> v125
+v125 -> v126
 }
