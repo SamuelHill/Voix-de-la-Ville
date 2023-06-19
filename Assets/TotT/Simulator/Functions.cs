@@ -49,5 +49,8 @@ namespace TotT.Simulator {
         public static readonly PrimitiveTest<Person, Person> SortOrder = Test<Person, Person>(nameof(SortOrder), 
             (p1, p2) => StringLessThan(p1.FullName, p2.FullName));
 
+        public static readonly Function<int, int> RegressToZero = Function<int, int>(nameof(RegressToZero), 
+            num => num == 0 ? 0 : num > 0 ? num - 1 : num + 1);
+
     }
 }
