@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TED;
@@ -27,6 +27,7 @@ namespace TotT.Unity {
         
         private readonly TablePredicate _predicate;
         private string[][] _buffer;
+        private Color[] _rowColors;
         private int[] _longestBufferStrings;
         private readonly float[] _columnWidths;
         private readonly string[] _headings;
@@ -41,6 +42,7 @@ namespace TotT.Unity {
         private Month _lastMonth;
         private Comparison<uint> _sortComparer;
         private uint[] _sortBuffer;
+        private Func<uint, Color> _colorizer;
 
         public GUITable(TablePredicate predicate, int numRows = DefaultNumRowsToDisplay) {
             _predicate = predicate;
@@ -49,7 +51,7 @@ namespace TotT.Unity {
             BuildBuffer(numRows);
             _longestBufferStrings = new int[NumColumns];
             _columnWidths = new float[NumColumns];
-            //_sortComparer = predicate.RowComparison(0);
+            _colorizer = predicate.Property.TryGetValue("Colorizer", out var func) ? (Func<uint,Color>)func : (_ => Color.white);
         }
 
         public void NewNumRows(int numRows) {
@@ -60,6 +62,7 @@ namespace TotT.Unity {
             _buffer = new string[numRows][];
             for (var i = 0; i < numRows; i++)
                 _buffer[i] = new string[NumColumns];
+            _rowColors = new Color[numRows];
         }
 
         // *********************************** Table properties ***********************************
@@ -70,7 +73,22 @@ namespace TotT.Unity {
         private uint ScrollRow => (uint)Math.Floor(_scrollPosition);
         private int[] LongestStrings => _longestBufferStrings.Zip(_headingLengths, Mathf.Max).ToArray();
         private int LongestRow => LongestStrings.Sum() + _longestBufferStrings.Length * ColumnPadding;
-        private int TableWidth => RowCount == 0 ? _noEntriesWidth : LongestRow;
+        private float TableWidth
+        {
+            get
+            {
+                if (RowCount == 0)
+                    return _noEntriesWidth;
+                else
+                {
+                    var sum = 0f;
+                    for (var i = 0; i < NumColumns; i++)
+                        sum += _columnWidths[i];
+                    return sum;
+                }
+            }
+        }
+
         private int NumDisplayRows => _buffer.Length;
         private bool DefaultTable => NumDisplayRows == DefaultNumRowsToDisplay;
 
@@ -97,7 +115,7 @@ namespace TotT.Unity {
             if (len > _columnWidths[i])
                 _columnWidths[i] = len;
             else if (len < _columnWidths[i]-2)
-                _columnWidths[i] -= 0.05f;
+                _columnWidths[i] -= 0.005f;
             return GUILayout.Width(_columnWidths[i] + ColumnPadding);
         }
 
@@ -145,9 +163,15 @@ namespace TotT.Unity {
                 {
                     _predicate.RowToStrings(_sortBuffer[ScrollRow + i], _buffer[i]);
                     _bufferedRows++;
+                    _rowColors[i] = _colorizer(_sortBuffer[ScrollRow + i]);
                 }
-            } else 
+            }
+            else
+            {
                 _bufferedRows = _predicate.RowRangeToStrings(ScrollRow, _buffer);
+                for (var i = 0; i < _rowColors.Length && ScrollRow + i < _predicate.Length; i++)
+                    _rowColors[i] = _colorizer((uint)(ScrollRow + i));
+            }
 
             // update string lengths per tick - prevents permanent growth due to singular long entries
             var updatedBufferStrings = new int[NumColumns];
@@ -164,10 +188,14 @@ namespace TotT.Unity {
             }
         }
 
-        private void LayoutRow(IReadOnlyList<string> strings) {
+        private void LayoutRow(IReadOnlyList<string> strings, Color c) {
             GUILayout.BeginHorizontal();
-            for (var i = 0; i < NumColumns; i++)
-                Label(strings[i], false, ColumnWidth(i));
+            GUI.skin.label.normal.textColor = c;
+
+            for (var i = 0; i < NumColumns; i++) 
+                GUILayout.Label(strings[i], ColumnWidth(i));
+
+            GUI.skin.label.normal.textColor = Color.white;
             GUILayout.EndHorizontal();
         }
 
@@ -188,7 +216,13 @@ namespace TotT.Unity {
             // Table contents:
             GUILayout.BeginVertical();
             if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
-            else { foreach (var row in _buffer) LayoutRow(row); }
+            else
+            {
+                for (var i = 0; i < _buffer.Length; i++)
+                {
+                    LayoutRow(_buffer[i], _rowColors[i]);
+                }
+            }
             GUILayout.EndVertical();
             // Scrollbar and Update logic:
             if (RowCount != 0 && RowCount >= NumDisplayRows) {

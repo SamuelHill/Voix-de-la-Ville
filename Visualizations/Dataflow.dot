@@ -1,4 +1,5 @@
 digraph {
+splines=true
 node [ style="filled"]
 subgraph "cluster_BarNames"{
 v4 [ label = "BarNames" fillcolor="gold" shape="diamond"];

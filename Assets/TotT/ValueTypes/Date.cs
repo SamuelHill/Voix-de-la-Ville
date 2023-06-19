@@ -8,7 +8,7 @@ namespace TotT.ValueTypes {
     /// Month and Day pairing - no TimeOfDay specificity or indication of Year.
     /// Indicates a recurring time span (two TimesOfDay - AM/PM) within each year.
     /// </summary>
-    public readonly struct Date : IEquatable<Date> {
+    public readonly struct Date : IEquatable<Date>, IComparable<Date> {
         /// <summary>Month (from Month Enum)</summary>
         public Month Month { get; }
         /// <summary>Day number within Month (1-28)</summary>
@@ -39,6 +39,13 @@ namespace TotT.ValueTypes {
         public static Date FromString(string dateString) {
             var date = dateString.Split('/');
             return new Date(ToMonth(date[0]), ToDay(date[1]));
+        }
+
+        public int CompareTo(Date other)
+        {
+            var monthComparison = Month.CompareTo(other.Month);
+            if (monthComparison != 0) return monthComparison;
+            return Day.CompareTo(other.Day);
         }
     }
 }

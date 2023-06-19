@@ -39,9 +39,28 @@ namespace TotT.Unity {
         private static readonly Rect ShowTablesRect = 
             new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
 
+        public static void Colorize(this TablePredicate p, Func<uint, Color> colorizer) =>
+            p.Property["Colorizer"] = colorizer;
+
+        public static void Colorize<TColumn>(this TablePredicate p, Var<TColumn> column, Func<TColumn, Color> colorizer)
+            => Colorize(p, rowNumber =>
+            {
+                var lookup = p.ColumnValueFromRowNumber(column);
+                return colorizer(lookup(rowNumber));
+            });
+
+        public static void Colorize<TColumn>(this TablePredicate p, Var<TColumn> column) =>
+            Colorize(p, column, DefaultColorizer<TColumn>());
+
+        private static readonly Dictionary<Type, Delegate> defaultColorizerTable = new Dictionary<Type, Delegate>();
+
+        public static void SetDefaultColorizer<T>(Func<T,Color> colorizer) => defaultColorizerTable[typeof(T)] = colorizer;
+
+        public static Func<T, Color> DefaultColorizer<T>() => (Func<T, Color>)defaultColorizerTable[typeof(T)];
+
         // *************************************** GUI setup **************************************
 
-        public static void AvailableTables(List<TablePredicate> tables) {
+        public static void AvailableTables(IEnumerable<TablePredicate> tables) {
             foreach (var table in tables) Tables[table.Name] = new GUITable(table);
             _tableDisplayNames = Tables.Keys.Select(CutoffName).ToArray();
             _displayNameToTableName = _tableDisplayNames.Zip(Tables.Keys.ToArray(),
@@ -97,6 +116,29 @@ namespace TotT.Unity {
             // update the active table to change with the selected table
             _activeTables[_tableToChange] = _displayNameToTableName[_tableDisplayNames[_changeTableSelector]];
         }
+
+        public static void PopTable(TablePredicate p)
+        {
+            // Fill this in with something smarter
+            _activeTables[0] = p.Name;
+        }
+
+        private static Dictionary<TablePredicate, uint> _previousLengths = new Dictionary<TablePredicate, uint>();
+
+        public static void PopTableIfNewActivity(TablePredicate p)
+        {
+            if (!_previousLengths.TryGetValue(p, out var length))
+            {
+                _previousLengths[p] = length = p.Length;
+            }
+
+            if (p.Length > length)
+            {
+                PopTable(p);
+                _previousLengths[p] = p.Length;
+            }
+        }
+
         public static void RuleExecutionTimes() => GUI.Label(CenteredRect(480, 350),
             string.Concat((from table in TalkOfTheTown.Simulation.Tables
                            where table.RuleExecutionTime > 0 && !table.Name.Contains("initially")

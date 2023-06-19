@@ -7,7 +7,8 @@ namespace TotT.ValueTypes {
     /// <summary>
     /// Location reference - wraps name string for an individual location.
     /// </summary>
-    public class Location {
+    public class Location : IComparable<Location>
+    {
         /// <summary>'static' component of a location used for hashing.</summary>
         private readonly Guid _id;
         // ReSharper disable once MemberCanBePrivate.Global
@@ -32,5 +33,12 @@ namespace TotT.ValueTypes {
         /// <summary>For use by CsvReader.</summary>
         /// <param name="locationName">Name of the new location.</param>
         public static Location FromString(string locationName) => new(locationName);
+
+        public int CompareTo(Location other)
+        {
+            if (ReferenceEquals(this, other)) return 0;
+            if (ReferenceEquals(null, other)) return 1;
+            return string.Compare(Name, other.Name, StringComparison.Ordinal);
+        }
     }
 }
