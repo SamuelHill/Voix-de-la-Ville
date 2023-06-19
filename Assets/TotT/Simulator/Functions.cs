@@ -9,6 +9,7 @@ using static TED.Language;
 namespace TotT.Simulator {
     using static NameGrammars;
     using static Randomize;
+    using static StringProcessing;
 
     /// <summary>TED.Functions and TED.PrimitiveTests wrappers for Utility and ValueType functionality.</summary>
     /// <remarks>Predicates (includes Functions and Primitive tests) are TitleCase.</remarks>
@@ -39,5 +40,14 @@ namespace TotT.Simulator {
 
         public static readonly Function<Person, Person, RelationshipId<Person>> NewRelationship =
             Function<Person, Person, RelationshipId<Person>>(nameof(NewRelationship), (main, other) => new RelationshipId<Person>(main, other));
+
+        public static readonly Function<RelationshipId<Person>, Person> RelationshipMain =
+            Function<RelationshipId<Person>, Person>(nameof(RelationshipMain), pair => pair.Main);
+        public static readonly Function<RelationshipId<Person>, Person> RelationshipOther =
+            Function<RelationshipId<Person>, Person>(nameof(RelationshipOther), pair => pair.Other);
+
+        public static readonly PrimitiveTest<Person, Person> SortOrder = Test<Person, Person>(nameof(SortOrder), 
+            (p1, p2) => StringLessThan(p1.FullName, p2.FullName));
+
     }
 }

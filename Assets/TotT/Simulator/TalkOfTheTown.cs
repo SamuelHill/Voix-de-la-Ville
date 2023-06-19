@@ -96,6 +96,23 @@ namespace TotT.Simulator {
             // Agents.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
             // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
 
+            // *********************************** Relationships **********************************
+
+            var Spark = Predicate("Spark", pairing.Key, person.Indexed, otherPerson.Indexed, spark.Indexed);
+            var Charge = Predicate("Charge", pairing.Key, person.Indexed, otherPerson.Indexed, charge.Indexed);
+
+            var Friend = Predicate("Friend", pairing.Key, state.Indexed);
+            Friend.Add[pairing, true].If(Charge[pairing, __, __, charge], charge > 5000, !Friend[pairing, true]);
+            Friend.Set(pairing, state, false).If(Charge[pairing, __, __, charge], charge < 4000, Friend[pairing, true]);
+            Friend.Set(pairing, state, true).If(Charge[pairing, __, __, charge], charge > 4000, Friend[pairing, false]);
+
+            var MutualFriendship = Predicate("MutualFriendship", person, otherPerson);
+            MutualFriendship.If(Friend[pairing, true], Friend[otherPairing, true], 
+                                RelationshipMain[pairing, person], RelationshipOther[pairing, otherPerson], 
+                                RelationshipMain[otherPairing, otherPerson], RelationshipOther[otherPairing, person],
+                                SortOrder[person, otherPerson]);
+
+
             // ************************************** Couples *************************************
             // TODO : Primordial couples?
             // TODO : Better util for couples - facet similarity or score based on facet logic (> X, score + 100)
@@ -398,14 +415,11 @@ namespace TotT.Simulator {
 
             var Interaction = Predicate("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
 
-            var Spark = Predicate("Spark", pairing.Key, person.Indexed, otherPerson.Indexed, spark.Indexed);
-            var Charge = Predicate("Charge", pairing.Key, person.Indexed, otherPerson.Indexed, charge.Indexed);
-
             var NotWorking = Predicate("NotWorking", person.Key, location.Indexed)
                .If(WhereTheyAt[person, actionType, location], actionType != ActionType.GoingToWork);
 
             var PotentialInteraction = Predicate("PotentialInteraction", person, otherPerson);
-            PotentialInteraction.If(NotWorking[person, location], NotWorking[otherPerson, location]);
+            PotentialInteraction.If(NotWorking[person, location], NotWorking[otherPerson, location], person != otherPerson);
 
             var ScoredInteraction = Predicate("ScoredInteraction", person.Indexed, otherPerson.Indexed, score);
             ScoredInteraction[person, otherPerson, RandomNormalFloat].If(PotentialInteraction);
@@ -429,7 +443,27 @@ namespace TotT.Simulator {
             Spark.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Flirting], 
                                                              !Spark[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
             Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Flirting], 
-                                                Spark[pairing, person, otherPerson, spark], spark == spark + 500);
+                                                Spark[pairing, person, otherPerson, num], spark == num + 500);
+
+            Charge.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Assisting], 
+                                                              !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
+            Charge.Set(pairing, charge).If(Interaction[person, otherPerson, InteractionType.Assisting],
+                                           Charge[pairing, person, otherPerson, num], charge == num + 500);
+
+            Charge.Add[pairing, person, otherPerson, 100].If(Interaction[person, otherPerson, InteractionType.Chatting],
+                                                             !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
+            Charge.Set(pairing, charge).If(Interaction[person, otherPerson, InteractionType.Chatting], 
+                                           Charge[pairing, person, otherPerson, num], charge == num + 50);
+
+            Charge.Add[pairing, person, otherPerson, -900].If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                                             !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
+            Charge.Set(pairing, charge).If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                           Charge[pairing, person, otherPerson, num], charge == num - 450);
+
+            Spark.Add[pairing, person, otherPerson, -900].If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                                             !Spark[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
+            Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                         Spark[pairing, person, otherPerson, num], spark == num - 450);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
