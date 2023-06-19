@@ -468,11 +468,9 @@ namespace TotT.Simulator {
             Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Arguing],
                                          Spark[pairing, person, otherPerson, num], spark == num - 450);
 
-            Spark.Set(pairing, spark).If(Alive[person], Alive[otherPerson], !Interaction[person, otherPerson, __], 
-                                         Spark[pairing, person, otherPerson, num], RegressToZero[num, spark]);
-
-            Charge.Set(pairing, charge).If(Alive[person], Alive[otherPerson], !Interaction[person, otherPerson, __], 
-                                           Charge[pairing, person, otherPerson, num], RegressToZero[num, charge]);
+            //Spark.Set(pairing, spark).If(Alive[person], Alive[otherPerson], !Interaction[person, otherPerson, __], 
+            //                             Spark[pairing, person, otherPerson, num], RegressToZero[num, spark]);
+            //Charge.Set(pairing, charge).If(Charge[pairing, person, otherPerson, num], !Interaction[person, otherPerson, __], RegressToZero[num, charge]);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
