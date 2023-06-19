@@ -101,16 +101,19 @@ namespace TotT.Simulator {
             var Spark = Predicate("Spark", pairing.Key, person.Indexed, otherPerson.Indexed, spark.Indexed);
             var Charge = Predicate("Charge", pairing.Key, person.Indexed, otherPerson.Indexed, charge.Indexed);
 
-            var Friend = Predicate("Friend", pairing.Key, state.Indexed);
-            Friend.Add[pairing, true].If(Charge[pairing, __, __, charge], charge > 5000, !Friend[pairing, true]);
-            Friend.Set(pairing, state, false).If(Charge[pairing, __, __, charge], charge < 4000, Friend[pairing, true]);
-            Friend.Set(pairing, state, true).If(Charge[pairing, __, __, charge], charge > 4000, Friend[pairing, false]);
+            var Friend = Predicate("Friend", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
+            Friend.Add[pairing, person, otherPerson, true]
+                  .If(Charge[pairing, person, otherPerson, charge], 
+                      charge > 5000, !Friend[pairing, person, otherPerson, true]);
+            Friend.Set(pairing, state, false)
+                  .If(Charge[pairing, person, otherPerson, charge],
+                      charge < 4000, Friend[pairing, person, otherPerson, true]);
+            Friend.Set(pairing, state, true)
+                  .If(Charge[pairing, person, otherPerson, charge],
+                      charge > 4000, Friend[pairing, person, otherPerson, false]);
 
-            var MutualFriendship = Predicate("MutualFriendship", person, otherPerson);
-            MutualFriendship.If(Friend[pairing, true], Friend[otherPairing, true], 
-                                RelationshipMain[pairing, person], RelationshipOther[pairing, otherPerson], 
-                                RelationshipMain[otherPairing, otherPerson], RelationshipOther[otherPairing, person],
-                                SortOrder[person, otherPerson]);
+            var MutualFriendship = Predicate("MutualFriendship", person.Indexed, otherPerson.Indexed);
+            MutualFriendship.If(Friend[pairing, person, otherPerson, true], Friend[otherPairing, otherPerson, person, true], SortOrder[person, otherPerson]);
 
 
             // ************************************** Couples *************************************
@@ -464,6 +467,16 @@ namespace TotT.Simulator {
                                                              !Spark[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
             Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Arguing],
                                          Spark[pairing, person, otherPerson, num], spark == num - 450);
+
+            Spark.Set(pairing, spark).If(Spark[pairing, person, otherPerson, num], Alive[person], Alive[otherPerson],
+                                         !Interaction[person, otherPerson, __], num > 0, spark == num - 1);
+            Spark.Set(pairing, spark).If(Spark[pairing, person, otherPerson, num], Alive[person], Alive[otherPerson],
+                                         !Interaction[person, otherPerson, __], num < 0, spark == num + 1);
+
+            Charge.Set(pairing, charge).If(Charge[pairing, person, otherPerson, num], Alive[person], Alive[otherPerson], 
+                                           !Interaction[person, otherPerson, __], num > 0, charge == num - 1);
+            Charge.Set(pairing, charge).If(Charge[pairing, person, otherPerson, num], Alive[person], Alive[otherPerson],
+                                           !Interaction[person, otherPerson, __], num < 0, charge == num + 1);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
