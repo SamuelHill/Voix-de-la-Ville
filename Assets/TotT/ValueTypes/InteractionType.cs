@@ -6,10 +6,6 @@
         Arguing,
         Assisting,
         Chatting,
-        Competing,
-        Conforming,
         Flirting,
-        Haggling,
-        Observing
     }
 }

@@ -365,7 +365,7 @@ namespace TotT.Simulator {
 
             AddLocationByCFG(LocationType.DayCare, DaycareName, Count(Age & (age < 6)) > 5);
 
-            AddNamedLocation(LocationType.School, "Talk of the Township High", Count(Age & (age >= 5) & (age < 18)) > 5);
+            AddLocationByCFG(LocationType.School, SchoolName, Count(Age & (age >= 5) & (age < 18)) > 5);
 
             AddNamedLocation(LocationType.CityHall, "Big City Hall", Goals(PopulationCount[VitalStatus.Alive, count], count > 200));
 
@@ -411,7 +411,7 @@ namespace TotT.Simulator {
             // ************************************* Movement: ************************************
             // TODO : Visiting choose location of relative or partner (if no friends)
             // TODO : NeedDayCare but not GoingToDayCare follow a non-working parent
-            // TODO : Couple movements
+            // TODO : Couple movements - i.e. GoingOutForDateNight
 
             // for more complex scheduling include an extra table of non-default schedule/operation per location
             var OpenLocationType = Predicate("OpenLocationType", locationType)
@@ -439,7 +439,7 @@ namespace TotT.Simulator {
             WhereTheyAtLocationIndex = (GeneralIndex<(Person, ActionType, Location), Location>)WhereTheyAt.IndexFor(location, false);
 
             var AdultAction = Predicate("AdultAction", actionType)
-                .If(AvailableAction, actionType != ActionType.GoingToSchool);
+                .If(AvailableAction, !In(actionType, new[] { ActionType.GoingToSchool, ActionType.GoingOutForDateNight }));
             var NeedsActionAssignment = Predicate("NeedsActionAssignment", person).If(Alive,
                 !GoingToWork[person, __],
                 !GoingToDayCare[person, __],
@@ -462,7 +462,7 @@ namespace TotT.Simulator {
             // Choose the closest location with the action type assigned
             var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
                 .If(ActionToCategory, AvailableCategory, OpenLocationType, InBusiness, Location);
-            LocationByActionAssign.If(RandomActionAssign, actionType != ActionType.StayingIn, actionType != ActionType.Visiting,
+            LocationByActionAssign.If(RandomActionAssign, !In(actionType, new[] { ActionType.StayingIn, ActionType.Visiting }),
                 Minimal(location, distance, OpenForBusinessByAction & DistanceFromHome[person, location, distance]));
 
             WhereTheyAt[person, ActionType.GoingToSchool, location].If(GoingToSchool);

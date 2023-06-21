@@ -38,10 +38,8 @@ namespace TotT.ValueTypes {
         // *************************** Compare and Equality interfacing ***************************
         public int CompareTo(Person other) => ReferenceEquals(this, other) ? 0 : other is null ? 1 : 
                                               string.Compare(FullName, other.FullName, StringComparison.Ordinal);
-        public bool Equals(Person other) => other is not null && 
-            (ReferenceEquals(this, other) || FullName == other.FullName && MaidenName == other.MaidenName);
-        public override bool Equals(object obj) => obj is not null && (ReferenceEquals(this, obj) || 
-                                                                       obj.GetType() == GetType() && Equals((Person)obj));
+        public bool Equals(Person other) => other is not null && ReferenceEquals(this, other);
+        public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
         public override int GetHashCode() => HashCode.Combine(FirstName, LastName, MaidenName, FullName);
 
         // For TED.Function interfacing:

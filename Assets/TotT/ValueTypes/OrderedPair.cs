@@ -16,12 +16,8 @@ namespace TotT.ValueTypes {
             var mainCompareTo = Main.CompareTo(other.Main);
             return mainCompareTo != 0 ? mainCompareTo : Other.CompareTo(other.Other);
         }
-        public bool Equals(OrderedPair<T> other) =>
-            other is not null && (ReferenceEquals(this, other) ||
-                                  EqualityComparer<T>.Default.Equals(Main, other.Main) &&
-                                  EqualityComparer<T>.Default.Equals(Other, other.Other));
-        public override bool Equals(object obj) => obj is not null && (ReferenceEquals(this, obj) || 
-                                                                       obj.GetType() == GetType() && Equals((OrderedPair<T>)obj));
+        public bool Equals(OrderedPair<T> other) => other is not null && ReferenceEquals(this, other);
+        public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
         public override int GetHashCode() => HashCode.Combine(Main, Other);
 
         // ****************************************************************************************

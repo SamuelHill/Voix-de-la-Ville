@@ -42,9 +42,11 @@ namespace TotT.ValueTypes {
 
         // ****************************************************************************************
 
+        private int Month() => MonthNumber(CalcMonth(CalendarFromClock(Clock)));
+
         /// <returns>TimePoint in "mm/dd/yyyy" format.</returns>
         /// <remarks>Not reflective of full resolution - ignores TimeOfDay.</remarks>
-        public override string ToString() => $"{MonthNumber(CalcMonth(CalendarFromClock(Clock)))}/{CalcDay(CalendarFromClock(Clock))}/{CalcYear(Clock)}";
+        public override string ToString() => $"{Month()}/{CalcDay(CalendarFromClock(Clock))}/{CalcYear(Clock)}";
         /// <summary>
         /// For use by CsvReader. Takes a string (expecting "mm/dd/yyyy" format), try's parsing as a Month,
         /// Day, and Year, then returns the TimePoint made from this Month/Day/Year set.

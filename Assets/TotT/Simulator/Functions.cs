@@ -1,11 +1,13 @@
 ﻿using TED;
 using TED.Primitives;
+using TotT.TextGenerator;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
 using static TED.Language;
 
 namespace TotT.Simulator {
+    using static Generators;
     using static SimpleCFG;
     using static Randomize;
 
@@ -44,6 +46,7 @@ namespace TotT.Simulator {
 
         public static readonly Function<string> HospitalName = Function(nameof(HospitalName), HospitalNames.Generate, false);
         public static readonly Function<string> DaycareName = Function(nameof(DaycareName), DaycareNames.Generate, false);
+        public static readonly Function<string> SchoolName = HighSchoolName.GenerateRandom;
 
         public static readonly Function<Person, Person, OrderedPair<Person>> NewRelationship =
             Function<Person, Person, OrderedPair<Person>>(nameof(NewRelationship), 

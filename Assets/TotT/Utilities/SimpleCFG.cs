@@ -55,6 +55,6 @@ namespace TotT.Utilities {
                   "Dragonfly", "Friendly Faces", "New Beginnings", "Wildflower", "Butterfly", "Precious Angel"), 
             Terms("Academy", "Child Care", "Daycare", "Learning Center", "Nursery", "Preschool"));
 
-        public static readonly Grammar DaycareNames = new(ChildCare, Order("The", ChildCare));
+        public static readonly Grammar DaycareNames = Named(ChildCare, Order("The", ChildCare));
     }
 }

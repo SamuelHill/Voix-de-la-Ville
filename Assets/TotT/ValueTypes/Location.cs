@@ -17,9 +17,8 @@ namespace TotT.ValueTypes {
         // *************************** Compare and Equality interfacing ***************************
         public int CompareTo(Location other) => ReferenceEquals(this, other) ? 0 : other is null ? 1 : 
                                                 string.Compare(Name, other.Name, StringComparison.Ordinal);
-        public bool Equals(Location other) => other is not null && (ReferenceEquals(this, other) || Name == other.Name);
-        public override bool Equals(object obj) => obj is not null && (ReferenceEquals(this, obj) ||
-                                                                       obj.GetType() == GetType() && Equals((Location)obj));
+        public bool Equals(Location other) => other is not null && ReferenceEquals(this, other);
+        public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
         public override int GetHashCode() => Name.GetHashCode();
 
         public static bool operator ==(Location l1, Location l2) => l1 is not null && l1.Equals(l2);
