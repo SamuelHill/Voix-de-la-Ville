@@ -57,12 +57,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\TotT\Unity\GUIString.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Grammar.cs" />
     <Compile Include="Assets\TotT\Utilities\GridComparer.cs" />
     <Compile Include="Assets\TotT\Utilities\CsvParsing.cs" />
     <Compile Include="Assets\TotT\Unity\GUIManager.cs" />
     <Compile Include="Assets\TotT\ValueTypes\LocationCategory.cs" />
     <Compile Include="Assets\TotT\ValueTypes\DailyOperation.cs" />
     <Compile Include="Assets\TotT\ValueTypes\TimePoint.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Production.cs" />
     <Compile Include="Assets\TotT\Simulog\IOccurrence.cs" />
     <Compile Include="Assets\TotT\Unity\SimulationInfo.cs" />
     <Compile Include="Assets\TotT\Utilities\ByteExtensions.cs" />
@@ -75,8 +77,9 @@
     <Compile Include="Assets\TotT\Unity\TileManager.cs" />
     <Compile Include="Assets\TotT\TextGenerator\FixedString.cs" />
     <Compile Include="Assets\TotT\Simulog\Existence.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\NameGrammars.cs" />
     <Compile Include="Assets\TotT\Utilities\Sims.cs" />
-    <Compile Include="Assets\TotT\ValueTypes\RelationshipId.cs" />
+    <Compile Include="Assets\TotT\ValueTypes\OrderedPair.cs" />
     <Compile Include="Assets\TotT\Simulog\Event.cs" />
     <Compile Include="Assets\TotT\Simulog\ColumnAssignment.cs" />
     <Compile Include="Assets\TotT\Simulog\Existent.cs" />
@@ -90,6 +93,7 @@
     <Compile Include="Assets\TotT\Utilities\CFG\Constant.cs" />
     <Compile Include="Assets\TotT\TextGenerator\Generators.cs" />
     <Compile Include="Assets\TotT\ValueTypes\LocationType.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\Terminal.cs" />
     <Compile Include="Assets\TotT\ValueTypes\BusinessStatus.cs" />
     <Compile Include="Assets\TotT\ValueTypes\Date.cs" />
     <Compile Include="Assets\TotT\Utilities\IntExtensions.cs" />
@@ -97,6 +101,7 @@
     <Compile Include="Assets\TotT\Simulator\StaticTables.cs" />
     <Compile Include="Assets\TotT\ValueTypes\Facet.cs" />
     <Compile Include="Assets\TotT\Simulog\TEDHelpers.cs" />
+    <Compile Include="Assets\TotT\Utilities\CFG\ITerminal.cs" />
     <Compile Include="Assets\TotT\Unity\SimulationController.cs" />
     <Compile Include="Assets\TotT\ValueTypes\VitalStatus.cs" />
     <Compile Include="Assets\TotT\ValueTypes\Sexuality.cs" />
@@ -116,6 +121,7 @@
     <Compile Include="Assets\TotT\Utilities\Calendar.cs" />
     <Compile Include="Assets\TotT\ValueTypes\SexualityName.cs" />
     <Compile Include="Assets\TotT\Utilities\Town.cs" />
+    <Compile Include="Assets\TotT\ValueTypes\UnorderedPair.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

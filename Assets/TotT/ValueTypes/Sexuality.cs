@@ -14,8 +14,7 @@ namespace TotT.ValueTypes {
     /// outputting a Sexuality the name will only be one of the 4 SexualityNames (not reflecting the
     /// relationship to Sex).
     /// </summary>
-    public readonly struct Sexuality : IComparable<Sexuality>
-    {
+    public readonly struct Sexuality : IComparable<Sexuality>, IEquatable<Sexuality> {
         /// <summary>5% chance of Random(Sex) assigning Asexual (false, false)</summary>
         private const float AsexualOccurrenceRate = 0.05F;
         /// <summary>15% chance of Random(Sex) assigning Bisexual (true, true)</summary>
@@ -99,11 +98,12 @@ namespace TotT.ValueTypes {
             return SexualityFromName[(int)sexualities]();
         }
 
-        public int CompareTo(Sexuality other)
-        {
+        // Compare and Equality interfacing:
+        public int CompareTo(Sexuality other) {
             var femaleAttractionComparison = FemaleAttraction.CompareTo(other.FemaleAttraction);
-            if (femaleAttractionComparison != 0) return femaleAttractionComparison;
-            return MaleAttraction.CompareTo(other.MaleAttraction);
+            return femaleAttractionComparison != 0 ? femaleAttractionComparison : MaleAttraction.CompareTo(other.MaleAttraction);
         }
+        public bool Equals(Sexuality other) =>
+            other.FemaleAttraction == FemaleAttraction && other.MaleAttraction == MaleAttraction;
     }
 }

@@ -7,40 +7,57 @@ namespace TotT.ValueTypes {
     /// <summary>
     /// Person reference - wraps first and last name strings for an individual person.
     /// </summary>
-    public class Person : IComparable<Person> {
-        /// <summary>'static' component of a person used for hashing.</summary>
-        private readonly Guid _id;
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once FieldCanBeMadeReadOnly.Global
+    public class Person : IComparable<Person>, IEquatable<Person> {
         /// <summary>First name of this person.</summary>
         public string FirstName;
-        // ReSharper disable once FieldCanBeMadeReadOnly.Global
         /// <summary>Last name of this person.</summary>
         public string LastName;
-
+        /// <summary>Maiden name of this person.</summary>
+        public string MaidenName;
         /// <summary>First and last name of this person.</summary>
-        public readonly string FullName;
-
-        private Person() => _id = Guid.NewGuid();
+        public string FullName;
+        
         /// <param name="firstName">First name of this person - will be transformed to title case.</param>
         /// <param name="lastName">Last name of this person - will be transformed to title case.</param>
-        public Person(string firstName, string lastName) : this() {
+        public Person(string firstName, string lastName) {
             FirstName = Title(firstName);
+            LastName = Title(lastName);
+            MaidenName = LastName;
+            FullName = FirstName + " " + LastName;
+        }
+
+        public void NewLastName(string lastName) {
             LastName = Title(lastName);
             FullName = FirstName + " " + LastName;
         }
-        
-        // Reference Equality setup:
-        public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
-        public override int GetHashCode() => _id.GetHashCode();
+        public bool TakeLastName(Person other) {
+            NewLastName(other.LastName);
+            return true;
+        }
+
+        // *************************** Compare and Equality interfacing ***************************
+        public int CompareTo(Person other) => ReferenceEquals(this, other) ? 0 : other is null ? 1 : 
+                                              string.Compare(FullName, other.FullName, StringComparison.Ordinal);
+        public bool Equals(Person other) => other is not null && 
+            (ReferenceEquals(this, other) || FullName == other.FullName && MaidenName == other.MaidenName);
+        public override bool Equals(object obj) => obj is not null && (ReferenceEquals(this, obj) || 
+                                                                       obj.GetType() == GetType() && Equals((Person)obj));
+        public override int GetHashCode() => HashCode.Combine(FirstName, LastName, MaidenName, FullName);
+
+        // For TED.Function interfacing:
+        public static bool operator ==(Person p1, Person p2) => p1 is not null && p1.Equals(p2);
+        public static bool operator !=(Person p1, Person p2) => !(p1 == p2);
+        public static bool operator >(Person p1, Person p2) => p1.CompareTo(p2) > 0;
+        public static bool operator <(Person p1, Person p2) => p1.CompareTo(p2) < 0;
 
         // Equality to FullName string - can be used to reference people by (unique) name in CSVs:
         public static bool operator ==(Person p, string potentialName) => p is not null && p.FullName == potentialName;
         public static bool operator !=(Person p, string potentialName) => !(p == potentialName);
 
+        // ****************************************************************************************
+
+        /// <returns>FullName of this person.</returns>
         public override string ToString() => FullName;
-
-
         /// <summary>
         /// For use by CsvReader, splits the input string on a single space then creates a new
         /// person from the two names found in the split (first and last for the new person).
@@ -49,11 +66,6 @@ namespace TotT.ValueTypes {
         public static Person FromString(string personName) {
             var person = personName.Split(' ');
             return new Person(person[0], person[1]);
-        }
-
-        public int CompareTo(Person other)
-        {
-            return string.Compare(FullName, other.FullName, StringComparison.Ordinal);
         }
     }
 }

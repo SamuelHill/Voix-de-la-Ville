@@ -59,7 +59,8 @@ namespace TotT.Simulator {
         public static readonly Var<int> spark = (Var<int>)"spark";
         public static readonly Var<int> charge = (Var<int>)"charge";
 
-        public static readonly Var<RelationshipId<Person>> pairing = (Var<RelationshipId<Person>>)"pairing";
+        public static readonly Var<OrderedPair<Person>> pairing = (Var<OrderedPair<Person>>)"pairing";
+        public static readonly Var<UnorderedPair<Person>> symmetricPair = (Var<UnorderedPair<Person>>)"symmetricPair";
 
         public static readonly Var<float> score = (Var<float>)"score";
         public static readonly Var<bool> state = (Var<bool>)"state";
