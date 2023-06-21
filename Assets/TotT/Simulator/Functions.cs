@@ -1,13 +1,12 @@
 ﻿using TED;
 using TED.Primitives;
 using TotT.Utilities;
-using TotT.Utilities.CFG;
 using TotT.ValueTypes;
 using UnityEngine;
 using static TED.Language;
 
 namespace TotT.Simulator {
-    using static NameGrammars;
+    using static SimpleCFG;
     using static Randomize;
 
     /// <summary>TED.Functions and TED.PrimitiveTests wrappers for Utility and ValueType functionality.</summary>
