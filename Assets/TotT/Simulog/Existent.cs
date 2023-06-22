@@ -24,8 +24,7 @@ namespace TotT.Simulog {
         public Existent(string name, Var<T> arg1) : base(name, arg1.Key, _exists.Indexed, _start, _end) {
             Start = new TablePredicate<T>($"{name}Start", arg1);
             End = new TablePredicate<T>($"{name}End", arg1);
-            Add[arg1, true, time, TimePoint.Eschaton]
-               .If(Start[arg1], TalkOfTheTown.Time.CurrentTimePoint[time]);
+            Add[arg1, true, time, TimePoint.Eschaton].If(Start, TalkOfTheTown.Time.CurrentTimePoint[time]);
             Set(arg1, _end, time).If(End[arg1], TalkOfTheTown.Time.CurrentTimePoint[time]);
             Set(arg1, _exists, false).If(End[arg1]);
             this.Colorize(_exists, s => s ? Color.white : Color.gray);

@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using TED;
 using TED.Interpreter;
+using TotT.ValueTypes;
 
 namespace TotT.Simulog {
 
@@ -10,6 +12,9 @@ namespace TotT.Simulog {
             goals.Length == 0 ? null : goals.Aggregate((current, goal) => current & goal);
 
         public static Existent<T> Exists<T>(string name, Var<T> arg) => new(name, arg);
+
+        public static Relationship<T> Relation<T>(string name, Var<OrderedPair<T>> arg1, Var<T> arg2, Var<T> arg3) 
+            where T : IComparable<T>, IEquatable<T> => new(name, arg1, arg2, arg3);
 
         public static Event<T1> Event<T1>(string name, IColumnSpec<T1> arg) => new(name, arg);
 
