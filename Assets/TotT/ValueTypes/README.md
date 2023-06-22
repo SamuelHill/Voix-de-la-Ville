@@ -13,6 +13,7 @@ Enums in this folder:
 * `DailyOperation`
 * `DayOfWeek`
 * `Facet`
+* `InteractionType`
 * `LocationCategory`
 * `LocationType`
 * `Month`
@@ -33,6 +34,7 @@ Structs in this folder:
 * `Schedule`
 * `Sexuality`
 * `TimePoint`
+* `UnorderedPair`
 
 ## Classes
 
@@ -41,4 +43,5 @@ There are a few times that it will be necessary to use classes - if every usage 
 Classes in this folder:
 
 * `Location`
+* `OrderedPair`
 * `People`

@@ -22,7 +22,8 @@ namespace TotT.Simulator {
         
         public Time() => _clock = InitialClockTick;
         public Time(ushort calendarTick) => _clock = InitialClockTick + CheckTickInCalendar(calendarTick);
-        public Time(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) => _clock = InitialClockTick + CalcCalendarTick(month, day, time);
+        public Time(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) => 
+            _clock = InitialClockTick + CalcCalendarTick(month, day, time);
 
         private Function<T> Property<T>(string property) => Member<T>(this, property, "Current", false);
         private PrimitiveTest TestProperty(string property) => TestMember(this, property, false);

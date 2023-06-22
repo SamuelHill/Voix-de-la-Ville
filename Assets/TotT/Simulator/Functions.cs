@@ -41,7 +41,7 @@ namespace TotT.Simulator {
 
         public static readonly Function<int, int> RegressToZero = Function<int, int>(nameof(RegressToZero),
             num => num == 0 ? 0 : num > 0 ? num - 1 : num + 1);
-        public static readonly Function<int, int> Incr = Function<int, int>("Incr", i => i + 1);
+        public static readonly Function<int, int> Incr = Function<int, int>(nameof(Incr), i => i + 1);
 
         public static readonly PrimitiveTest<Sexuality, Sex> SexualityAttracted = Test<Sexuality, Sex>(
             nameof(SexualityAttracted), (se, s) => se.IsAttracted(s));

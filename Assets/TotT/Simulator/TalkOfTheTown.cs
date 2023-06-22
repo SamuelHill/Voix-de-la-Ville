@@ -21,7 +21,7 @@ namespace TotT.Simulator {
     using static Randomize;  // Seed and RandomElement
     using static SimuLang;   // Increment and Goals(params...)
     // The following offload static components of a TED program...
-    using static Functions;    // C# hookups to TED predicates
+    using static Functions;    // C# function hookups to TED predicates
     using static StaticTables; // non dynamic tables - classic datalog EDB
     using static Variables;    // named variables
 
@@ -360,7 +360,7 @@ namespace TotT.Simulator {
             AddLocationByCFG(LocationType.Hospital, HospitalName,
                            Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
 
-            AddNamedLocation(LocationType.Cemetery, "The Old Cemetery", Once[Goals(Alive, Age, age >= 60)]); // before anyone can die
+            AddLocationByCFG(LocationType.Cemetery, CemeteryName.GenerateRandom, Once[Goals(Alive, Age, age >= 60)]); // before anyone can die
 
             AddLocationByCFG(LocationType.DayCare, DaycareName, Count(Age & (age < 6)) > 5);
 

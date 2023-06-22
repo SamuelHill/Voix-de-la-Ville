@@ -60,5 +60,8 @@
 
         public static readonly TextGenerator HighSchoolName = Sequence(
             Choice(President, TownName), " High School");
+
+        public static readonly TextGenerator CemeteryName = Sequence(
+            OneOf("The ", ""), TownName, " Cemetery");
     }
 }
