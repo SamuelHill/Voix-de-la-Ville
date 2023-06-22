@@ -17,13 +17,15 @@ namespace TotT.Simulator {
     using static Calendar;   // Prob per interval type
     using static CsvParsing; // DeclareParsers
     using static Generators; // Name Generation
+    using static SimpleCFG;  // Name Generation
     using static GUIManager; // Colorize Extension
     using static Randomize;  // Seed and RandomElement
-    using static SimuLang;   // Increment and Goals(params...)
     // The following offload static components of a TED program...
     using static Functions;    // C# function hookups to TED predicates
     using static StaticTables; // non dynamic tables - classic datalog EDB
     using static Variables;    // named variables
+    // TED Meta language hookup
+    using static SimuLang;
 
     public class TalkOfTheTown {
         public static Simulation Simulation = null!;
@@ -68,6 +70,10 @@ namespace TotT.Simulator {
             Agent.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
             Agent.Colorize(vitalStatus, s => s == VitalStatus.Alive ? Color.white : Color.gray);
 
+            var AgentExist = Exists("AgentExist", person);
+            AgentExist.InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 
+                                      DateAgeToTimePoint[dateOfBirth, age, time]);
+
             // ditto for agents associated tables -
             var Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
             Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeing, Facets);
@@ -78,16 +84,19 @@ namespace TotT.Simulator {
             PopulationCount.IndexByKey(vitalStatus);
             PopulationCountIndex = (KeyIndex<(VitalStatus, int), VitalStatus>)PopulationCount.IndexFor(vitalStatus, true);
 
-            var Alive = Definition("Alive", person)
-                .Is(Agent[person, __, __, __, __, VitalStatus.Alive]);
+            var Alive = Definition("Alive", person).Is(AgentExist[person]);
             // special case Alive check where we also bind age
             var Age = Definition("Age", person, age)
                 .Is(Agent[person, age, __, __, __, VitalStatus.Alive]);
 
-            Agent.Set(person, vitalStatus, VitalStatus.Dead) // Dying
-                .If(Age, age > 60, PerMonth(0.003f));
-            var JustDied = Predicate("JustDied", person)
-                .If(Agent.Set(person, vitalStatus)); // Assumes set only used for dying (two vitalStatus values)
+
+            AgentExist.EndWhen(Age, age > 60, PerMonth(0.003f));
+            var JustDied = Predicate("JustDied", person).If(AgentExist.End);
+            Agent.Set(person, vitalStatus, VitalStatus.Dead).If(AgentExist.End);
+
+            var DeathEvent = Event("DeathEvent", person);
+            DeathEvent.OccursWhen(JustDied);
+
 
             // Person Name helpers -
             var RandomFirstName = Definition("RandomFirstName", sex, firstName);
@@ -102,6 +111,8 @@ namespace TotT.Simulator {
             Drifter[person, RandomSex, sexuality].If(PerYear(0.05f),
                 RandomPerson, RandomSexuality[sex, sexuality]);
             Agent.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
+
+            AgentExist.StartWith(Drifter, Agent.Add, DateAgeToTimePoint[dateOfBirth, age, time]);
 
             // Add associated info that is needed for a new agent -
             Personality.Add[person, facet, RandomNormalSByte].If(Agent.Add, Facets);
@@ -193,6 +204,7 @@ namespace TotT.Simulator {
                 Time.NineMonthsPast[conception], Prob[0.8f]); // Birth after 9 months with 'labor'
             Gestation.Set(child, state, false).If(BirthTo);
 
+            AgentExist.StartWhen(BirthTo[__, __, __, person]);
             Agent.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
                 BirthTo[__, __, sex, person], RandomSexuality[sex, sexuality]);
 
@@ -357,14 +369,14 @@ namespace TotT.Simulator {
             // Currently the following only happens with drifters - everyone starts housed
             AddLocationFromNames(LocationType.House, HouseNames, Once[Unhoused[__]]);
 
-            AddLocationByCFG(LocationType.Hospital, HospitalName,
+            AddLocationByCFG(LocationType.Hospital, HospitalName.GenerateName,
                            Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
 
             AddLocationByCFG(LocationType.Cemetery, CemeteryName.GenerateRandom, Once[Goals(Alive, Age, age >= 60)]); // before anyone can die
 
-            AddLocationByCFG(LocationType.DayCare, DaycareName, Count(Age & (age < 6)) > 5);
+            AddLocationByCFG(LocationType.DayCare, DaycareName.GenerateName, Count(Age & (age < 6)) > 5);
 
-            AddLocationByCFG(LocationType.School, SchoolName, Count(Age & (age >= 5) & (age < 18)) > 5);
+            AddLocationByCFG(LocationType.School, HighSchoolName.GenerateRandom, Count(Age & (age >= 5) & (age < 18)) > 5);
 
             AddNamedLocation(LocationType.CityHall, "Big City Hall", Goals(PopulationCount[VitalStatus.Alive, count], count > 200));
 

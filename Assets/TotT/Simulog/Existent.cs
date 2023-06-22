@@ -1,7 +1,9 @@
 ﻿using TED;
 using TED.Interpreter;
 using TotT.Simulator;
+using TotT.Unity;
 using TotT.ValueTypes;
+using UnityEngine;
 using static TED.Language;
 
 namespace TotT.Simulog {
@@ -19,13 +21,14 @@ namespace TotT.Simulog {
         public readonly TablePredicate<T> Start;
         public readonly TablePredicate<T> End;
 
-        public Existent(string name, Var<T> arg1) : base(name, arg1.Key, _exists, _start, _end) {
+        public Existent(string name, Var<T> arg1) : base(name, arg1.Key, _exists.Indexed, _start, _end) {
             Start = new TablePredicate<T>($"{name}Start", arg1);
             End = new TablePredicate<T>($"{name}End", arg1);
             Add[arg1, true, time, TimePoint.Eschaton]
                .If(Start[arg1], TalkOfTheTown.Time.CurrentTimePoint[time]);
             Set(arg1, _end, time).If(End[arg1], TalkOfTheTown.Time.CurrentTimePoint[time]);
             Set(arg1, _exists, false).If(End[arg1]);
+            this.Colorize(_exists, s => s ? Color.white : Color.gray);
         }
 
         public Existent<T> StartWhen(params Goal[] conditions) {
@@ -35,6 +38,16 @@ namespace TotT.Simulog {
 
         public Existent<T> EndWhen(params Goal[] conditions) {
             End.If(conditions);
+            return this;
+        }
+
+        public Existent<T> InitiallyWhere(params Goal[] conditions) {
+            Initially[(Var<T>)DefaultVariables[0], true, time, TimePoint.Eschaton].Where(conditions);
+            return this;
+        }
+
+        public Existent<T> StartWith(params Goal[] conditions) {
+            Add[(Var<T>)DefaultVariables[0], true, time, TimePoint.Eschaton].If(conditions);
             return this;
         }
 

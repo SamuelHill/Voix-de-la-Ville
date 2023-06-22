@@ -15,10 +15,11 @@ namespace TotT.ValueTypes {
         public TimePoint(uint clock) => Clock = clock;
 
         public static TimePoint Eschaton = new(uint.MaxValue);
+        private bool IsEschaton => Clock == uint.MaxValue;
 
         /// <summary>Constructor from component parts</summary>
         /// <remarks>Only used for FromString, default constructor hooks up to Time more easily</remarks>
-        private TimePoint(Month month, byte day, int year, TimeOfDay time) :
+        public TimePoint(Month month, byte day, int year, TimeOfDay time) :
             this(CalcClockTick(year, month, day, time)) {}
 
         // Every TimePoint also has an equivalent Date, this is a useful conversion to be able to make
@@ -42,11 +43,12 @@ namespace TotT.ValueTypes {
 
         // ****************************************************************************************
 
-        private int Month() => MonthNumber(CalcMonth(CalendarFromClock(Clock)));
+        private int Month => MonthNumber(CalcMonth(CalendarFromClock(Clock)));
+        private string MiddleEndian => $"{Month}/{CalcDay(CalendarFromClock(Clock))}/{CalcYear(Clock)}";
 
         /// <returns>TimePoint in "mm/dd/yyyy" format.</returns>
         /// <remarks>Not reflective of full resolution - ignores TimeOfDay.</remarks>
-        public override string ToString() => $"{Month()}/{CalcDay(CalendarFromClock(Clock))}/{CalcYear(Clock)}";
+        public override string ToString() => IsEschaton ? "Has not occurred" : MiddleEndian;
         /// <summary>
         /// For use by CsvReader. Takes a string (expecting "mm/dd/yyyy" format), try's parsing as a Month,
         /// Day, and Year, then returns the TimePoint made from this Month/Day/Year set.

@@ -49,6 +49,9 @@ namespace TotT.Utilities {
         public static DayOfWeek CalcDayOfWeek(ushort calendar) => (DayOfWeek)(calendar / TimesOfDay % DaysOfWeek);
         public static TimeOfDay CalcTimeOfDay(ushort calendar) => (TimeOfDay)(calendar % TimesOfDay);
 
+        public static TimePoint TimePointFromDateAndAge(Date date, int age) => 
+            new(date.Month, date.Day, StartYear - age, TimeOfDay.AM);
+
         public static int MonthNumber(Month month) => (int)month + 1;
         public static Month ToMonth(string month) => (Month)(int.Parse(month) - 1);
         public static byte ToDay(string day) => CheckDayInRange(byte.Parse(day));
