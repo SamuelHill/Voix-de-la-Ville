@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace TotT.ValueTypes {
     public class OrderedPair<T> : IComparable<OrderedPair<T>>, IEquatable<OrderedPair<T>> where T : IComparable<T>, IEquatable<T> {

@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TED;
+﻿using TED;
 
-namespace TotT.Simulog
-{
+namespace TotT.Simulog {
     /// <summary>
-    /// Interface for all Event predicates
-    /// We have to do this as an interface because the real base class for Event predicates is TablePredicate
-    /// and C# doesn't allow multiple inheritance
+    /// Interface for Event predicates, base class for Event predicates is TablePredicate
+    /// (C# doesn't allow multiple inheritance).
     /// </summary>
-    public interface IEvent
-    {
+    public interface IEvent {
         public TablePredicate ChronicleUntyped { get; }
     }
 }

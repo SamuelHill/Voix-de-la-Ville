@@ -3,46 +3,32 @@ using System.Linq;
 using TED;
 using TED.Interpreter;
 
-namespace TotT.Simulog
-{
+namespace TotT.Simulog {
+
     /// <summary>
     /// Base class for effects of IEvent predicates
     /// </summary>
-    public class Effect
-    {
+    public class Effect {
         protected Goal[] ExtraConditions = Array.Empty<Goal>();
         public delegate void CodeGenerator(Effect effect, Goal eventCondition);
 
-        private readonly CodeGenerator generator;
+        private readonly CodeGenerator _generator;
 
-        public Effect(CodeGenerator generator)
-        {
-            this.generator = generator;
-        }
+        public Effect(CodeGenerator generator) => _generator = generator;
 
-        public void GenerateCode(TableGoal goal) => generator(this, goal);
+        public void GenerateCode(TableGoal goal) => _generator(this, goal);
 
-        public Effect If(params Goal[] extraConditions)
-        {
+        public Effect If(params Goal[] extraConditions) {
             ExtraConditions = extraConditions;
             return this;
         }
 
-        public static Effect Set<TKey, TCol>(TablePredicate t, Var<TKey> key, Var<TCol> column, Term<TCol> newValue)
-            => new Effect((e, g) =>
-            {
-                t.Set(key, column, newValue).If(e.JoinExtraConditions(g));
-            });
+        private Goal[] JoinExtraConditions(Goal g) => ExtraConditions.Prepend(g).ToArray();
 
-        private Goal[] JoinExtraConditions(Goal g)
-        {
-            return ExtraConditions.Prepend(g).ToArray();
-        }
+        public static Effect Set<TKey, TCol>(TablePredicate t, Var<TKey> key, Var<TCol> column, Term<TCol> newValue) => 
+            new((e, g) => { t.Set(key, column, newValue).If(e.JoinExtraConditions(g)); });
 
-        public static Effect Add(TableGoal row)
-            => new Effect((e, g) =>
-            {
-                row.TablePredicate.AddUntyped.GetGoal(row.Arguments).If(e.JoinExtraConditions(g));
-            });
+        public static Effect Add(TableGoal row) => new((e, g) => 
+            { row.TablePredicate.AddUntyped.GetGoal(row.Arguments).If(e.JoinExtraConditions(g)); });
     }
 }

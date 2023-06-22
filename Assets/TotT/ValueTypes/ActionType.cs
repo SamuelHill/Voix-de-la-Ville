@@ -16,6 +16,7 @@
         CommercialShopping,
         MarketShopping,
         PersonalShopping,
-        GoingOutForDateNight
+        GoingOutForDateNight,
+        // TODO: something to distinguish kids going places with parents
     }
 }
