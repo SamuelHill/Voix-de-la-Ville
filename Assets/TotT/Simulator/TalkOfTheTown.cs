@@ -19,7 +19,7 @@ namespace TotT.Simulator {
     using static Generators; // Name Generation
     using static GUIManager; // Colorize Extension
     using static Randomize;  // Seed and RandomElement
-    using static TEDHelpers; // Increment and Goals(params...)
+    using static SimuLang;   // Increment and Goals(params...)
     // The following offload static components of a TED program...
     using static Functions;    // C# hookups to TED predicates
     using static StaticTables; // non dynamic tables - classic datalog EDB
@@ -200,10 +200,9 @@ namespace TotT.Simulator {
             Parent.Add.If(BirthTo[__, parent, __, child]);
 
             // Increment age once per birthday (in the AM, if you weren't just born)
-            var WhenToAge = Definition("WhenToAge", person, age).Is(
-                Agent[person, age, dateOfBirth, __, __, VitalStatus.Alive],
-                Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !BirthTo[__, __, __, person]);
-            Increment(Agent, person, age, WhenToAge);
+            Agent.Set(person, age, num)
+                 .If(Agent[person, age, dateOfBirth, __, __, VitalStatus.Alive], 
+                     Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !BirthTo[__, __, __, person], Incr[age, num]);
 
             // ************************************ Locations *************************************
 

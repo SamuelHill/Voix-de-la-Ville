@@ -38,8 +38,10 @@ namespace TotT.Simulator {
         public static readonly Function<int> RandomNormal = Method(BellCurve, false);
         public static readonly Function<sbyte> RandomNormalSByte = Method(SByteBellCurve, false);
         public static readonly Function<float> RandomNormalFloat = Method(FloatBellCurve, false);
+
         public static readonly Function<int, int> RegressToZero = Function<int, int>(nameof(RegressToZero),
             num => num == 0 ? 0 : num > 0 ? num - 1 : num + 1);
+        public static readonly Function<int, int> Incr = Function<int, int>("Incr", i => i + 1);
 
         public static readonly PrimitiveTest<Sexuality, Sex> SexualityAttracted = Test<Sexuality, Sex>(
             nameof(SexualityAttracted), (se, s) => se.IsAttracted(s));

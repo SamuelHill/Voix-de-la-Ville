@@ -34,7 +34,7 @@ namespace TotT.Simulator {
         public static readonly Var<int> age = (Var<int>)"age";
         public static readonly Var<Date> conception = (Var<Date>)"conception";
         public static readonly Var<Date> dateOfBirth = (Var<Date>)"dateOfBirth";
-        public static readonly Var<TimePoint> dob = (Var<TimePoint>)"dob";
+        public static readonly Var<TimePoint> birthday = (Var<TimePoint>)"birthday";
         public static readonly Var<TimePoint> founding = (Var<TimePoint>)"founding";
         public static readonly Var<TimePoint> time = (Var<TimePoint>)"time";
 

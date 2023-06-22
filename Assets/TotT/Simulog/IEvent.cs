@@ -6,6 +6,7 @@ namespace TotT.Simulog {
     /// (C# doesn't allow multiple inheritance).
     /// </summary>
     public interface IEvent {
+        // ReSharper disable once UnusedMember.Global
         public TablePredicate ChronicleUntyped { get; }
     }
 }
