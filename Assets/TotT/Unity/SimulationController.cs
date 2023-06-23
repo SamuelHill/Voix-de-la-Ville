@@ -15,8 +15,6 @@ namespace TotT.Unity {
         // ReSharper disable FieldCanBeMadeReadOnly.Global
         public TalkOfTheTown TalkOfTheTown;
         // ReSharper disable once ConvertToConstant.Global
-        public int StartYear = 1915;
-        // ReSharper disable once ConvertToConstant.Global
         public bool PrettyNamesOnly = true;
         // ReSharper disable once UnassignedField.Global
         public Vector2Int TownCenter;
@@ -37,7 +35,7 @@ namespace TotT.Unity {
         // ReSharper disable once UnusedMember.Global
         internal void Start() {
             TED.Comparer<Vector2Int>.Default = new GridComparer();
-            TalkOfTheTown = new TalkOfTheTown(StartYear);
+            TalkOfTheTown = new TalkOfTheTown();
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
             _simulationInfo = new SimulationInfo(TalkOfTheTown, _tileManager);
             TalkOfTheTown.InitSimulator();

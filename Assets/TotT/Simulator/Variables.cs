@@ -34,7 +34,7 @@ namespace TotT.Simulator {
         public static readonly Var<int> age = (Var<int>)"age";
         public static readonly Var<Date> conception = (Var<Date>)"conception";
         public static readonly Var<Date> dateOfBirth = (Var<Date>)"dateOfBirth";
-        public static readonly Var<TimePoint> dob = (Var<TimePoint>)"dob";
+        public static readonly Var<TimePoint> birthday = (Var<TimePoint>)"birthday";
         public static readonly Var<TimePoint> founding = (Var<TimePoint>)"founding";
         public static readonly Var<TimePoint> time = (Var<TimePoint>)"time";
 
@@ -59,7 +59,8 @@ namespace TotT.Simulator {
         public static readonly Var<int> spark = (Var<int>)"spark";
         public static readonly Var<int> charge = (Var<int>)"charge";
 
-        public static readonly Var<RelationshipId<Person>> pairing = (Var<RelationshipId<Person>>)"pairing";
+        public static readonly Var<OrderedPair<Person>> pairing = (Var<OrderedPair<Person>>)"pairing";
+        public static readonly Var<UnorderedPair<Person>> symmetricPair = (Var<UnorderedPair<Person>>)"symmetricPair";
 
         public static readonly Var<float> score = (Var<float>)"score";
         public static readonly Var<bool> state = (Var<bool>)"state";

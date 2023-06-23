@@ -5,9 +5,9 @@ This repo contains the Talk of the Town Unity project built on TED for my thesis
 * [Simulator](Assets/TotT/Simulator)
 * [Unity](Assets/TotT/Unity)
 * [Utilities](Assets/TotT/Utilities)
+  * [TextGenerator](Assets/TotT/TextGenerator) - Feature packed CFG for Name Generation
 * [ValueTypes](Assets/TotT/ValueTypes)
-
-Currently under development is [Simulog](Assets/TotT/Simulog) - scaffolding for TED meta language.
+* [Simulog](Assets/TotT/Simulog) - TED meta language for Simulations
 
 Other locations of interest outside of code:
 

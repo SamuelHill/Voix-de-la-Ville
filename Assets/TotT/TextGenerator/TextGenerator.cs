@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using JetBrains.Annotations;
+using TED;
+using TED.Primitives;
+using static TED.Language;
 
 namespace TotT.TextGenerator
 {
     public abstract class TextGenerator
     {
         public string Random => Generate(BindingList.Global);
+        public Function<string> GenerateRandom => Member<string>(this, nameof(Random), false);
 
         public string RandomUnique => GenerateUnique(BindingList.Global);
+        public Function<string> GenerateRandomUnique => Member<string>(this, nameof(RandomUnique), false);
 
         public string Generate(BindingList parameters)
         {

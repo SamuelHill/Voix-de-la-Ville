@@ -10,6 +10,8 @@ namespace TotT.Utilities {
     /// <summary>
     /// Contains almost all maths for calculating any component of time, relates all subtypes of time -
     /// Month, Day, DayOfWeek, TimeOfDay, etc - to the same standard conceptual calendar.
+    /// Also contains constants and associated maths for the start year and earliest year in which
+    /// a primordial being/object can begin to exist.
     /// </summary>
     public static class Calendar {
         private const byte Months = 12;    // Enum.GetValues(typeof(Month)).Length;
@@ -21,6 +23,11 @@ namespace TotT.Utilities {
         public const ushort NumTicks = Months * TicksPerMonth;          // 672
 
         public const byte NineMonths = 9 * DaysPerMonth; // 252
+        
+        public const int StartYear = 1915;
+        private const ushort PrimordialOffset = 100; // years before start that TimePoints can exist at
+        public const uint InitialClockTick = NumTicks * PrimordialOffset;
+        private const int CalcYearOffset = StartYear - PrimordialOffset;
 
         public static byte CheckDayInRange(byte day) => 
             day is > DaysPerMonth or 0 ? 
@@ -31,14 +38,19 @@ namespace TotT.Utilities {
 
         public static ushort CalcCalendarTick(Month month, byte day, TimeOfDay time = TimeOfDay.AM) =>
             (ushort)((byte)month * TicksPerMonth + (CheckDayInRange(day) - 1) * TimesOfDay + (byte)time);
+        public static uint CalcClockTick(int year, Month month, byte day, TimeOfDay time = TimeOfDay.AM) => 
+            (uint)(NumTicks * (year - CalcYearOffset) + CalcCalendarTick(month, day, time));
 
         private static uint YearFromClock(uint clock) => clock / NumTicks;
-        public static int CalcYear(uint clock, int year) => (int)(YearFromClock(clock) + year);
+        public static int CalcYear(uint clock) => (int)(YearFromClock(clock) + CalcYearOffset);
         public static ushort CalendarFromClock(uint clock) => (ushort)(clock % NumTicks);
         public static Month CalcMonth(ushort calendar) => (Month)(calendar / TicksPerMonth);
         public static byte CalcDay(ushort calendar) => (byte)(calendar % TicksPerMonth / TimesOfDay + 1);
         public static DayOfWeek CalcDayOfWeek(ushort calendar) => (DayOfWeek)(calendar / TimesOfDay % DaysOfWeek);
         public static TimeOfDay CalcTimeOfDay(ushort calendar) => (TimeOfDay)(calendar % TimesOfDay);
+
+        public static TimePoint TimePointFromDateAndAge(Date date, int age) => 
+            new(date.Month, date.Day, StartYear - age, TimeOfDay.AM);
 
         public static int MonthNumber(Month month) => (int)month + 1;
         public static Month ToMonth(string month) => (Month)(int.Parse(month) - 1);

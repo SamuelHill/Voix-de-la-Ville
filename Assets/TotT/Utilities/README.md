@@ -12,6 +12,7 @@ Extension and Comparer classes, string and csv processing, and randomization.
 * `CsvParsing` handles declaring `TED.CsvReader` parsers for all relevant ValueTypes
 * `StringProcessing` handles `CultureInfo` stuff like TitleCase as well as all display functions for Joining lists and shortening table names
 * `Randomize` maps over RNG.Next for basic types and provides pseudo-normal bell curve random scoring and various random element/shuffle functions
+* `SimpleCFG` super simple CFG, similar to the more feature packed TextGenerator (used for generating names)
  
 ## Simulation Utilities
 

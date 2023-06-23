@@ -5,8 +5,6 @@ using System.Linq;
 using Random = TED.Utilities.Random;
 
 namespace TotT.Utilities {
-    using TEDRandom = Random;
-
     /// <summary>
     /// Maps over System.Random.Next for basic types and provides pseudo-normal bell curve
     /// random scoring and various random element/shuffle functions.
@@ -37,7 +35,7 @@ namespace TotT.Utilities {
         }
         private static void Seed(int seed) => RNG = new System.Random(seed);
         // ReSharper disable once InconsistentNaming
-        private static void TEDSeed(int seed) => TEDRandom.Rng = new System.Random(seed);
+        private static void TEDSeed(int seed) => Random.Rng = new System.Random(seed);
 
         // ReSharper disable once MemberCanBePrivate.Global
         public static int Integer(int high) => RNG.Next(high + 1);

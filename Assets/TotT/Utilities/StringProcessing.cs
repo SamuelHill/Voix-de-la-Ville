@@ -15,13 +15,6 @@ namespace TotT.Utilities {
         private static readonly CultureInfo CultureInfo = Thread.CurrentThread.CurrentCulture;
         private static readonly TextInfo TextInfo = CultureInfo.TextInfo;
 
-        public static bool StringGreaterThan(string a, string b) =>
-            string.Compare(a, b, StringComparison.CurrentCulture) > 0;
-        public static bool StringEqualTo(string a, string b) =>
-            string.Compare(a, b, StringComparison.CurrentCulture) == 0;
-        public static bool StringLessThan(string a, string b) =>
-            string.Compare(a, b, StringComparison.CurrentCulture) < 0;
-
         public static string Title(string title) => TextInfo.ToTitleCase(title);
 
         private static string VariableSpacing(string variable) =>

@@ -82,6 +82,7 @@ namespace TotT.Simulator {
         private static TablePredicate<T> EnumTable<T>(string name, IColumnSpec<T> column) where T : Enum {
             var table = Predicate(name, column);
             table.AddRows(Enum.GetValues(typeof(T)).Cast<T>());
-            return table; }
+            return table;
+        }
     }
 }
