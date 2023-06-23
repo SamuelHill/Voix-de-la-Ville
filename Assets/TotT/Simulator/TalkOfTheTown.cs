@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using GraphVisualization;
 using TED;
 using TED.Interpreter;
 using TED.Tables;
@@ -45,6 +46,7 @@ namespace TotT.Simulator {
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
         public string TownName;
         private ColumnAccessor<LocationType, Location> _locationToType;
+        public TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
@@ -365,7 +367,7 @@ namespace TotT.Simulator {
 
             // ************************************ Vocations: ************************************
 
-            var Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
+            Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
             Employment.Colorize(location);
 
             var EmploymentStatus = Predicate("EmploymentStatus", employee.Key, state.Indexed);
@@ -512,9 +514,32 @@ namespace TotT.Simulator {
             UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
-        } 
+            TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(Simulation));
+            //var g = new GraphViz<string>();
+            //g.AddEdge(new GraphViz<string>.Edge("a", "b"));
+            //TEDGraphVisualization.ShowGraph(g);
+        }
 
-        public static void UpdateSimulator() {
+        public void VisualizeJobs()
+        {
+            var g = new GraphViz<object>();
+            foreach (var job in Employment)
+            {
+                var place = job.Item3;
+                var color = StaticTables.LocationColorsIndex[_locationToType[place]].Item2;
+                if (!g.Nodes.Contains(place))
+                {
+                    g.Nodes.Add(place);
+                    g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
+                }
+                g.AddEdge(new GraphViz<object>.Edge(job.Item2, place, true, job.Item1.ToString(),
+                    new Dictionary<string, object>() {{ "rgbcolor", color }}));
+
+            }
+            TEDGraphVisualization.ShowGraph(g);
+        }
+
+        public void UpdateSimulator() {
 #if ParallelUpdate
             if (update == null)
                 LoopSimulator();
@@ -523,6 +548,8 @@ namespace TotT.Simulator {
             Simulation.Update();
             GUIManager.PopTableIfNewActivity(Simulation.Problems);
             GUIManager.PopTableIfNewActivity(Simulation.Exceptions);
+            //if (Time.Day == 1 && Time.Month == Month.January)
+            //    VisualizeJobs();
 #endif
         }
 
