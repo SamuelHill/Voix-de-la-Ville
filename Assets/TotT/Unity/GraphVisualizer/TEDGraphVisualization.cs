@@ -83,7 +83,8 @@ namespace GraphVisualization
                     edgeStyle = (Color)attrs["rgbcolor"];
                 AddEdge(e.StartNode, e.EndNode, e.Label, edgeStyle);
             }
-            ComputeSpringLengths();
+            UpdateTopologyStats();
+            PlaceComponents();
             RepopulateMesh();
         }
 

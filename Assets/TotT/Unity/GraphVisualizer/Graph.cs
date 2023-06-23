@@ -25,7 +25,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using UnityEngine.UI;
@@ -158,8 +160,10 @@ namespace GraphVisualization
 
         private short[,] TopologicalDistance;
 
-        private short ConnectedComponentCount;
         private short[] ConnectedComponent;
+        private List<short> ConnectedComponentSize = new List<short>();
+
+        private int ConnectedComponentCount => ConnectedComponentSize.Count;
         #endregion
 
         #region Graph creation
@@ -311,24 +315,9 @@ namespace GraphVisualization
         /// <summary>
         /// Use Floyd-Warshall to compute the topological distances between all pairs of nodes in the graph
         /// </summary>
-        public void ComputeSpringLengths()
+        protected void UpdateTopologyStats()
         {
-            var n = nodes.Count;
-            TopologicalDistance = new short[n, n];
-            for (var i = 0; i < n; i++)
-            for (var j = 0; j < n; j++)
-                TopologicalDistance[i,j] = (i==j)?(short)0:short.MaxValue;
-
-            foreach (var e in edges)
-            {
-                var i = e.StartNode.Index;
-                var j = e.EndNode.Index;
-                TopologicalDistance[i, j] = TopologicalDistance[j, i] = 1;
-            }
-            for (var k = 0; k < n; k++)
-                for (var i = 0; i < n; i++)
-                for (var j = i + 1; j < n; j++)
-                    TopologicalDistance[i, j] = TopologicalDistance[j,i] = (short)Math.Min(TopologicalDistance[i, j], TopologicalDistance[i, k] + TopologicalDistance[k, j]);
+            UpdateTopologicalDistances();
 
             //for (var i = 0; i < n; i++)
             //for (var j = 0; j < n; j++)
@@ -337,24 +326,108 @@ namespace GraphVisualization
 
             targetEdgeLength = Mathf.Clamp(3*Mathf.Sqrt((Bounds.width * Bounds.height) / nodes.Count), 50, 300);
 
-            //ComputeConnectedComponents();
+            UpdateConnectedComponents();
         }
 
-        private void ComputeConnectedComponents()
+        protected void UpdateTopologicalDistances()
         {
+            var n = nodes.Count;
+            TopologicalDistance = new short[n, n];
+            for (var i = 0; i < n; i++)
+            for (var j = 0; j < n; j++)
+                TopologicalDistance[i, j] = (i == j) ? (short)0 : short.MaxValue;
+
+            foreach (var e in edges)
+            {
+                var i = e.StartNode.Index;
+                var j = e.EndNode.Index;
+                TopologicalDistance[i, j] = TopologicalDistance[j, i] = 1;
+            }
+
+            for (var k = 0; k < n; k++)
+            for (var i = 0; i < n; i++)
+            for (var j = i + 1; j < n; j++)
+                TopologicalDistance[i, j] = TopologicalDistance[j, i] = (short)Math.Min(TopologicalDistance[i, j],
+                    TopologicalDistance[i, k] + TopologicalDistance[k, j]);
+        }
+
+        /// <summary>
+        /// Find all the connected components and their sizes, and note the component number of each node.
+        /// </summary>
+        protected void UpdateConnectedComponents()
+        {
+            ConnectedComponentSize.Clear();
             ConnectedComponent = new short[nodes.Count];
             Array.Fill(ConnectedComponent, (short)-1);
-            ConnectedComponentCount = 0;
 
-            void Walk(short index)
+            void Walk(GraphNode node)
             {
+                var index = node.Index;
                 if (ConnectedComponent[index] >= 0)
                     return;
-                ConnectedComponent[index] = (short)(ConnectedComponentCount - 1);
+                var componentNumber = ConnectedComponentCount - 1;
+                ConnectedComponent[index] = (short)componentNumber;
+                ConnectedComponentSize[componentNumber]++;
+                foreach (var n in nodes)
+                    if (n != node && Adjacent(n, node))
+                        Walk(n);
+            }
+
+            foreach (var n in nodes)
+            {
+                if (ConnectedComponent[n.Index] < 0)
+                {
+                    ConnectedComponentSize.Add(0);
+                    Walk(n);
+                }
             }
         }
-
         #endregion
+
+        protected void PlaceComponents()
+        {
+            void PlaceSingleComponent(int component, Rect rect)
+            {
+                foreach (var n in nodes)
+                    if (ConnectedComponent[n.Index] == component)
+                        n.Position = n.PreviousPosition = new Vector2(Random.Range(rect.xMin, rect.xMax), Random.Range(rect.yMin, rect.yMax));
+            }
+
+            void Place(int startComponent, int endComponent, Rect region)
+            {
+                System.Diagnostics.Debug.Assert(endComponent >= startComponent);
+                if (startComponent == endComponent)
+                    PlaceSingleComponent(startComponent, region);
+                else
+                {
+                    Rect r1;
+                    Rect r2;
+                    var p = region.position;
+                    if (region.width > region.height)
+                    {
+                        var halfWidth = region.width / 2;
+                        var size = new Vector2(halfWidth, region.height);
+                        r1 = new Rect(p, size);
+                        p.x += halfWidth;
+                        r2 = new Rect(p, size);
+                    }
+                    else
+                    {
+                        var halfHeight = region.height / 2;
+                        var size = new Vector2(region.width, halfHeight);
+                        r1 = new Rect(p, size);
+                        p.y += halfHeight;
+                        r2 = new Rect(p, size);
+                    }
+
+                    var midpoint = (startComponent + endComponent) / 2;
+                    Place(startComponent, midpoint, r1);
+                    Place(midpoint+1, endComponent, r2);
+                }
+            }
+
+            Place(0, ConnectedComponentCount-1, Bounds);
+        }
 
         #region Unity message handlers
         /// <summary>
@@ -362,6 +435,7 @@ namespace GraphVisualization
         /// </summary>
         public void FixedUpdate()
         {
+            if (nodes.Count == 0) return;
             MakeSiblingsIfNecessary();
             UpdatePhysics();
         }
@@ -394,6 +468,7 @@ namespace GraphVisualization
         /// </summary>
         public void Update()
         {
+            if (nodes.Count == 0) return;
             if (selectionChanged)
             {
                 SelectionChanged();
@@ -546,19 +621,26 @@ namespace GraphVisualization
         private void ApplySpringForce(int i, int j)
         {
             var springLength = TopologicalDistance[i,j];
-            if (springLength == short.MaxValue) return;
             var start = nodes[i];
             var end = nodes[j];
             var offset = start.Position - end.Position;
             var len = offset.magnitude;
+            Vector2 force = Vector2.zero;
             if (len > 0.1f)
             {
-                var lengthError = (targetEdgeLength * springLength) - len;
-                var force = (SpringStiffness * lengthError / len) * offset;
-
-                start.NetForce += force;
-                end.NetForce -= force;
+                if (springLength == short.MaxValue)
+                {
+                    force = offset * (ComponentRepulsionGain/ (len * len * len));
+                }
+                else
+                {
+                    var lengthError = (targetEdgeLength * springLength) - len;
+                    force = (SpringStiffness * lengthError / len) * offset;
+                }
             }
+
+            start.NetForce += force;
+            end.NetForce -= force;
         }
         #endregion
 
@@ -567,6 +649,8 @@ namespace GraphVisualization
         /// List of triangles to render.  Used as scratch by OnPopulateMesh.
         /// </summary>
         private static readonly List<UIVertex> TriBuffer = new List<UIVertex>();
+
+        public float ComponentRepulsionGain = 100000000f;
 
         /// <summary>
         /// Recompute triangles for lines and arrowheads representing edges
@@ -652,5 +736,13 @@ namespace GraphVisualization
             SetVerticesDirty();
         }
         #endregion
+
+        void OnGUI()
+        {
+            if (nodes.Count == 0)
+                return;
+            if (GUI.Button(new Rect(new Vector2(1000,1040), new Vector2(100,30)),"Remove graph"))
+                Clear();
+        }
     }
 }
