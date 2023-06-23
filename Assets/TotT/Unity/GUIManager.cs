@@ -39,6 +39,13 @@ namespace TotT.Unity {
         private static readonly Rect ShowTablesRect = 
             new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
 
+        public static readonly DictionaryWithDefault<TablePredicate, Dictionary<string, Action>> ButtonTable
+            = new DictionaryWithDefault<TablePredicate, Dictionary<string, Action>>((_) =>
+                new Dictionary<string, Action>());
+
+        public static void Button(this TablePredicate p, string buttonLabel, Action action) =>
+            ButtonTable[p][buttonLabel] = action;
+
         public static void Colorize(this TablePredicate p, Func<uint, Color> colorizer) =>
             p.Property["Colorizer"] = colorizer;
 

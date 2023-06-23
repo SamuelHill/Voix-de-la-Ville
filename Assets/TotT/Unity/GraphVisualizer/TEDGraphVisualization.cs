@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static TreeEditor.TreeEditorHelper;
+using TotT.Utilities;
 
 namespace GraphVisualization
 {

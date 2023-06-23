@@ -394,6 +394,7 @@ namespace TotT.Simulator {
 
             Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
             Employment.Colorize(location);
+            Employment.Button("Visualize", VisualizeJobs);
 
             var EmploymentStatus = Predicate("EmploymentStatus", employee.Key, state.Indexed);
             EmploymentStatus.Add[employee, true].If(Employment.Add);
@@ -554,10 +555,7 @@ namespace TotT.Simulator {
             UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
-            TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(Simulation));
-            //var g = new GraphViz<string>();
-            //g.AddEdge(new GraphViz<string>.Edge("a", "b"));
-            //TEDGraphVisualization.ShowGraph(g);
+            //TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(Simulation));
         }
 
         public void VisualizeJobs()
@@ -588,8 +586,6 @@ namespace TotT.Simulator {
             Simulation.Update();
             GUIManager.PopTableIfNewActivity(Simulation.Problems);
             GUIManager.PopTableIfNewActivity(Simulation.Exceptions);
-            //if (Time.Day == 1 && Time.Month == Month.January)
-            //    VisualizeJobs();
 #endif
         }
 

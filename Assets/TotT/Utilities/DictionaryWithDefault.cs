@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GraphVisualization
+namespace TotT.Utilities
 {
     public class DictionaryWithDefault<TKey, TValue> : Dictionary<TKey, TValue>
     {
