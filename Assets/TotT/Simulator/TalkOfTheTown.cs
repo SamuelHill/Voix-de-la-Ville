@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using GraphVisualization;
 using TED;
 using TED.Interpreter;
@@ -51,6 +54,7 @@ namespace TotT.Simulator {
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
         public string TownName;
         public TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
+        public TablePredicate<OrderedPair<Person>, Person, Person, bool> Friend;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
@@ -71,6 +75,7 @@ namespace TotT.Simulator {
                 age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
             Agent.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
             Agent.Colorize(vitalStatus, s => s == VitalStatus.Alive ? Color.white : Color.gray);
+            Agent.Button("Random friend network", () => VisualizeFriendNetwork(Agent.ColumnValueFromRowNumber(person)((uint)Randomize.Integer(0, (int)Agent.Length))));
 
             var AgentExist = Exists("AgentExist", person);
             AgentExist.InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 
@@ -129,7 +134,7 @@ namespace TotT.Simulator {
             var Spark = Predicate("Spark", pairing.Key, person.Indexed, otherPerson.Indexed, spark);
             var Charge = Predicate("Charge", pairing.Key, person.Indexed, otherPerson.Indexed, charge);
 
-            var Friend = Predicate("Friend", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
+            Friend = Predicate("Friend", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
             Friend.Add[pairing, person, otherPerson, true]
                   .If(Charge[pairing, person, otherPerson, charge], 
                       charge > 5000, !Friend[pairing, person, otherPerson, __]);
@@ -575,6 +580,36 @@ namespace TotT.Simulator {
 
             }
             TEDGraphVisualization.ShowGraph(g);
+        }
+
+        public GraphViz<T> TraceToDepth<T>(int maxDepth, T start, Func<T, IEnumerable<(T neighbor, string label)>> edges)
+        {
+            var g = new GraphViz<T>();
+
+            void Walk(T node, int depth)
+            {
+                if (depth > maxDepth || g.Nodes.Contains(node))
+                    return;
+                g.AddNode(node);
+                foreach (var edge in edges(node))
+                {
+                    Walk(edge.neighbor, depth+1);
+                    g.AddEdge(new GraphViz<T>.Edge(node, edge.neighbor, true, edge.label));
+                }
+            }
+
+            Walk(start, 0);
+            return g;
+        }
+
+        public void VisualizeFriendNetwork(Person p)
+        {
+            var friendIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)Friend.IndexFor(person, false);
+
+            IEnumerable<(Person, string)> FriendsOf(Person person)
+                => friendIndex.RowsMatching(p).Select(r => (r.Item3, (string)null));
+            
+            TEDGraphVisualization.ShowGraph(TraceToDepth(1, p, FriendsOf));
         }
 
         public void UpdateSimulator() {
