@@ -1,4 +1,5 @@
-﻿using TED;
+﻿using System;
+using TED;
 using TotT.Simulog;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -60,7 +61,7 @@ namespace TotT.Simulator {
         public static readonly Var<int> spark = (Var<int>)"spark";
         public static readonly Var<int> charge = (Var<int>)"charge";
 
-        public static readonly Var<OrderedPair<Person>> pairing = (Var<OrderedPair<Person>>)"pairing";
+        public static readonly Var<ValueTuple<Person, Person>> pairing = (Var<ValueTuple<Person, Person>>)"pairing";
         public static readonly Var<UnorderedPair<Person>> symmetricPair = (Var<UnorderedPair<Person>>)"symmetricPair";
 
         public static readonly Var<float> score = (Var<float>)"score";
