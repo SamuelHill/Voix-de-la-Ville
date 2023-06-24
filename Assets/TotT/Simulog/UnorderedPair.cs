@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TotT.ValueTypes {
+namespace TotT.Simulog {
     public readonly struct UnorderedPair<T> : IComparable<UnorderedPair<T>>, IEquatable<UnorderedPair<T>> where T : IComparable<T>, IEquatable<T> {
         public readonly T A;
         public readonly T B;
