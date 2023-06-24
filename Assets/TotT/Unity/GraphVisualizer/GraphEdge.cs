@@ -40,6 +40,7 @@ namespace GraphVisualization
         public EdgeStyle Style;
         private TMPro.TextMeshProUGUI text;
         private RectTransform rectTransform;
+        public float Offset;
 
         /// <summary>
         /// Called by Graph.AddEdge after object creation.

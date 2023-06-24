@@ -62,6 +62,8 @@ namespace GraphVisualization
         private void SetGraph<T>(TED.Utilities.GraphViz<T> g)
         {
             Clear();
+            if (g.Nodes.Count == 0) return;
+
             foreach (var n in g.Nodes)
             {
                 var attrs = g.NodeAttributes[n];

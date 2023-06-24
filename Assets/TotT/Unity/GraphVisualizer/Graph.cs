@@ -25,12 +25,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace GraphVisualization
 {
@@ -290,7 +289,9 @@ namespace GraphVisualization
                 style = EdgeStyleNamed(label)??EdgeStyles[0];
             var go = Instantiate(style.Prefab != null?style.Prefab:EdgePrefab, transform);
             go.name = label;
-            edges.Add(go.GetComponent<GraphEdge>());
+            var graphEdge = go.GetComponent<GraphEdge>();
+            graphEdge.Offset = 10*edges.Count(e => e.StartNode.Equals(start) && e.EndNode.Equals(end));
+            edges.Add(graphEdge);
             foreach (var driver in go.GetComponents<IEdgeDriver>())
             {
                 driver.Initialize(this, startNode, endNode, label, style);
@@ -679,9 +680,12 @@ namespace GraphVisualization
             }
 
             // Add the representation of an edge (line or arrow) to TriBuffer
-            void DrawEdge(Vector2 start, Vector2 end, EdgeStyle style, float z, Color c)
+            void DrawEdge(Vector2 start, Vector2 end, EdgeStyle style, float z, Color c, float perpendicularOffset)
             {
                 var offset = end - start;
+                var shift = Perpendicular(perpendicularOffset * offset.normalized);
+                start += shift;
+                end += shift;
                 var length = offset.magnitude;
                 if (length > 1)  // arrows less than one pixel long will disappear
                 {
@@ -722,11 +726,14 @@ namespace GraphVisualization
                 DrawEdge(e.StartNode.Position, e.EndNode.Position,
                     e.Style,
                     foreground ? 0 : 1,
-                    e.Style.Color * brightnessFactor);
+                    e.Style.Color * brightnessFactor,
+                    5+e.Offset);
             }
             // Add TriBuffer to vh.
             vh.AddUIVertexTriangleStream(TriBuffer);
         }
+
+        private static Vector2 Perpendicular(Vector2 v) => new(-v.y, v.x);
 
         /// <summary>
         /// Tell Unity we need to recompute the mesh.

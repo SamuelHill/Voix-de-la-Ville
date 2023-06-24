@@ -14,6 +14,7 @@ using TotT.Unity;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static TED.Language;
 
 namespace TotT.Simulator {
@@ -57,6 +58,7 @@ namespace TotT.Simulator {
         public TablePredicate<OrderedPair<Person>, Person, Person, bool> Friend;
         public TablePredicate<OrderedPair<Person>, Person, Person, bool> Enemy;
         public TablePredicate<OrderedPair<Person>, Person, Person, bool> RomanticInterest;
+        public TablePredicate<Person, Person> Parent;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
@@ -77,7 +79,8 @@ namespace TotT.Simulator {
                 age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
             Agent.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
             Agent.Colorize(vitalStatus, s => s == VitalStatus.Alive ? Color.white : Color.gray);
-            Agent.Button("Random friend network", () => VisualizeFriendNetwork(Agent.ColumnValueFromRowNumber(person)((uint)Randomize.Integer(0, (int)Agent.Length))));
+            Agent.Button("Random friend network", () => VisualizeFriendNetworkOf(Agent.ColumnValueFromRowNumber(person)((uint)Randomize.Integer(0, (int)Agent.Length))));
+            Agent.Button("Full network", VisualizeFullSocialNetwork);
 
             var AgentExist = Exists("AgentExist", person);
             AgentExist.InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 
@@ -176,7 +179,9 @@ namespace TotT.Simulator {
             // TODO : Limit PotentialProcreation by time since last birth and number of children with partner (Gestation table info)
 
             // Need Parents before parenting logic to prevent procreative relationships between parents and kids
-            var Parent = Predicate("Parent", parent, child);
+            Parent = Predicate("Parent", parent, child);
+            Parent.Button("Visualize", VisualizeFamilies);
+
             var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
                 .Is(Parent[person, otherPerson] | Parent[otherPerson, person]); // only immediate family
 
@@ -610,7 +615,7 @@ namespace TotT.Simulator {
             return g;
         }
 
-        public void VisualizeFriendNetwork(Person p)
+        public void VisualizeFriendNetworkOf(Person p)
         {
             var friendIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)Friend.IndexFor(person, false);
             var enemyIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)Enemy.IndexFor(person, false);
@@ -646,6 +651,55 @@ namespace TotT.Simulator {
                         job.Item1.ToString(), new Dictionary<string, object>() { { "rgbcolor", jobColor } }));
                 }
             }
+            TEDGraphVisualization.ShowGraph(g);
+        }
+
+        public void VisualizeFullSocialNetwork()
+        {
+            var g = new GraphViz<object>();
+
+            foreach (var r in Friend)
+                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3,
+                    true, null,
+                    new Dictionary<string, object>() { { "color", "green"}}));
+            foreach (var r in Enemy)
+                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3,
+                    true, null,
+                    new Dictionary<string, object>() { { "color", "red"}}));
+            foreach (var r in RomanticInterest)
+                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3,
+                    true, null,
+                    new Dictionary<string, object>() { { "color", "blue"}}));
+
+            //foreach (var job in Employment)
+            //{
+            //    var place = job.Item3;
+            //    var color = PlaceColor(place);
+            //    if (!g.Nodes.Contains(place))
+            //    {
+            //        g.Nodes.Add(place);
+            //        g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
+            //    }
+            //    g.AddEdge(new GraphViz<object>.Edge(job.Item2, place, true, job.Item1.ToString(),
+            //        new Dictionary<string, object>() {{ "rgbcolor", color }}));
+
+            //}
+
+            TEDGraphVisualization.ShowGraph(g);
+        }
+
+        public void VisualizeFamilies()
+        {
+            var g = new GraphViz<Person>();
+            foreach (var p in Parent)
+            {
+                var parent = p.Item1;
+                var child = p.Item2;
+                if (!g.Nodes.Contains(parent)) g.AddNode(parent);
+                if (!g.Nodes.Contains(child)) g.AddNode(child);
+                g.AddEdge(new GraphViz<Person>.Edge(child, parent));
+            }
+
             TEDGraphVisualization.ShowGraph(g);
         }
 
