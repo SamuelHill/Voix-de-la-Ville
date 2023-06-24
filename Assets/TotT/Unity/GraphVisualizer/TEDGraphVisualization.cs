@@ -101,7 +101,7 @@ namespace GraphVisualization
             public DotColor(string name, int h, int s, int v)
             {
                 Name = name;
-                Color = Color.HSVToRGB(255f/h, 255f/s, 255f/v);
+                Color = Color.HSVToRGB(h/255f, s/255f, v/255f);
             }
         }
 

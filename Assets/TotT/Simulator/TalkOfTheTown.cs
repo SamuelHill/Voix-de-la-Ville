@@ -55,6 +55,8 @@ namespace TotT.Simulator {
         public string TownName;
         public TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
         public TablePredicate<OrderedPair<Person>, Person, Person, bool> Friend;
+        public TablePredicate<OrderedPair<Person>, Person, Person, bool> Enemy;
+        public TablePredicate<OrderedPair<Person>, Person, Person, bool> RomanticInterest;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
@@ -148,7 +150,7 @@ namespace TotT.Simulator {
             var MutualFriendship = Definition("MutualFriendship", person, otherPerson)
                .Is(Friend[__, person, otherPerson, true], Friend[__, otherPerson, person, true]);
 
-            var Enemy = Predicate("Enemy", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
+            Enemy = Predicate("Enemy", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
             Enemy.Add[pairing, person, otherPerson, true].If(Charge[pairing, person, otherPerson, charge],
                                                              charge < -7500, !Enemy[pairing, person, otherPerson, __]);
             Enemy.Set(pairing, state, false).If(Charge[pairing, person, otherPerson, charge],
@@ -156,8 +158,8 @@ namespace TotT.Simulator {
             Enemy.Set(pairing, state, true).If(Charge[pairing, person, otherPerson, charge],
                                                 charge < -6000, Enemy[pairing, person, otherPerson, false]);
 
-            var RomanticInterest = Predicate("RomanticInterest", 
-                                             pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
+            RomanticInterest = Predicate("RomanticInterest", 
+                pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
             RomanticInterest.Add[pairing, person, otherPerson, true].If(Spark[pairing, person, otherPerson, spark],
                                                                         spark > 6000, !RomanticInterest[pairing, person, otherPerson, __]);
             RomanticInterest.Set(pairing, state, false).If(Spark[pairing, person, otherPerson, spark], 
@@ -569,7 +571,7 @@ namespace TotT.Simulator {
             foreach (var job in Employment)
             {
                 var place = job.Item3;
-                var color = StaticTables.LocationColorsIndex[_locationToType[place]].Item2;
+                var color = PlaceColor(place);
                 if (!g.Nodes.Contains(place))
                 {
                     g.Nodes.Add(place);
@@ -582,9 +584,14 @@ namespace TotT.Simulator {
             TEDGraphVisualization.ShowGraph(g);
         }
 
-        public GraphViz<T> TraceToDepth<T>(int maxDepth, T start, Func<T, IEnumerable<(T neighbor, string label)>> edges)
+        private Color PlaceColor(Location place)
         {
-            var g = new GraphViz<T>();
+            return StaticTables.LocationColorsIndex[_locationToType[place]].Item2;
+        }
+
+        public GraphViz<TGraph> TraceToDepth<TGraph,T>(int maxDepth, T start, Func<T, IEnumerable<(T neighbor, string label, string color)>> edges) where T: TGraph
+        {
+            var g = new GraphViz<TGraph>();
 
             void Walk(T node, int depth)
             {
@@ -594,7 +601,8 @@ namespace TotT.Simulator {
                 foreach (var edge in edges(node))
                 {
                     Walk(edge.neighbor, depth+1);
-                    g.AddEdge(new GraphViz<T>.Edge(node, edge.neighbor, true, edge.label));
+                    g.AddEdge(new GraphViz<TGraph>.Edge(node, edge.neighbor, true, edge.label,
+                        new Dictionary<string, object> {  { "color", edge.color} }));
                 }
             }
 
@@ -605,11 +613,40 @@ namespace TotT.Simulator {
         public void VisualizeFriendNetwork(Person p)
         {
             var friendIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)Friend.IndexFor(person, false);
+            var enemyIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)Enemy.IndexFor(person, false);
+            var romanticInterestIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)RomanticInterest.IndexFor(person, false);
+            var employmentIndex =
+                (KeyIndex<(Vocation, Person, Location, TimeOfDay), Person>)Employment.IndexFor(employee, true);
 
-            IEnumerable<(Person, string)> FriendsOf(Person person)
-                => friendIndex.RowsMatching(p).Select(r => (r.Item3, (string)null));
-            
-            TEDGraphVisualization.ShowGraph(TraceToDepth(1, p, FriendsOf));
+            IEnumerable<(Person, string, string)> FriendsOf(Person person)
+                => friendIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "green"));
+            IEnumerable<(Person, string, string)> EnemiesOf(Person person)
+                => enemyIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "red"));
+            IEnumerable<(Person, string, string)> RomanticInterestsOf(Person person)
+                => romanticInterestIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "blue"));
+
+            IEnumerable<(Person, string, string)> ConnectionsOf(Person person) =>
+                FriendsOf(person).Concat(EnemiesOf(person)).Concat(RomanticInterestsOf(person));
+
+            var g = TraceToDepth<object,Person>(1, p, ConnectionsOf);
+            var people = g.Nodes.Cast<Person>().ToArray();
+            foreach (var p2 in people)
+            {
+                if (employmentIndex.ContainsKey(p2))
+                {
+                    var job = employmentIndex[p2];
+                    var company = job.Item3;
+                    var jobColor = PlaceColor(company);
+                    if (!g.Nodes.Contains(company))
+                    {
+                        g.AddNode(company);
+                        g.NodeAttributes[company] = new Dictionary<string, object>() { { "rgbcolor", jobColor } };
+                    }
+                    g.AddEdge(new GraphViz<object>.Edge(p2, company, true, 
+                        job.Item1.ToString(), new Dictionary<string, object>() { { "rgbcolor", jobColor } }));
+                }
+            }
+            TEDGraphVisualization.ShowGraph(g);
         }
 
         public void UpdateSimulator() {
