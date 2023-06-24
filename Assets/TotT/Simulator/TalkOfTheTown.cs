@@ -38,7 +38,8 @@ namespace TotT.Simulator {
             Time = new Time();
         }
         public TalkOfTheTown(ushort tick = 1) : this() => Time = new Time(tick);
-        public TalkOfTheTown(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) : this() => Time = new Time(month, day, time);
+        public TalkOfTheTown(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) : 
+            this() => Time = new Time(month, day, time);
 
         // public Tables and Indexers for GUI purposes (see Unity.SimulationInfo for most uses)
         public TablePredicate<Vector2Int, Location, LocationType, TimePoint> NewLocation;
@@ -119,8 +120,11 @@ namespace TotT.Simulator {
             // TODO : Primordial Relationships?
             // TODO : Married couples - last name changes
 
-            var Spark = Affinity("Spark", pairing, person, otherPerson, spark);
-            var Charge = Affinity("Charge", pairing, person, otherPerson, charge);
+            var Spark = Predicate("Spark", pairing.Key, person.Indexed, otherPerson.Indexed, spark);
+            var Charge = Predicate("Charge", pairing.Key, person.Indexed, otherPerson.Indexed, charge);
+
+            //var Spark = Affinity("Spark", pairing, person, otherPerson, spark);
+            //var Charge = Affinity("Charge", pairing, person, otherPerson, charge);
 
             var Friend = Predicate("Friend", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
             Friend.Add[pairing, person, otherPerson, true]
@@ -508,12 +512,44 @@ namespace TotT.Simulator {
             Interaction[person, otherPerson, InteractionType.Chatting].If(ChosenNeutralInteraction);
             Interaction[person, otherPerson, InteractionType.Arguing].If(ChosenNegativeInteraction);
 
-            Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Flirting], spark == 900);
-            Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing], spark == -700);
+            Spark.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Flirting],
+                                                             !Spark[__, person, otherPerson, __], PersonPair[person, otherPerson, pairing]);
+            Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Flirting],
+                                                Spark[pairing, person, otherPerson, num], spark == num + 500);
 
-            Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Assisting], charge == 800);
-            Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Chatting], charge == 80);
-            Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing], charge == -700);
+            Charge.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Assisting],
+                                                              !Charge[__, person, otherPerson, __], PersonPair[person, otherPerson, pairing]);
+            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Assisting],
+                                                Charge[pairing, person, otherPerson, charge], num == charge + 500);
+
+            Charge.Add[pairing, person, otherPerson, 100].If(Interaction[person, otherPerson, InteractionType.Chatting],
+                                                             !Charge[__, person, otherPerson, __], PersonPair[person, otherPerson, pairing]);
+            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Chatting],
+                                                Charge[pairing, person, otherPerson, charge], num == charge + 50);
+
+            Charge.Add[pairing, person, otherPerson, -900].If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                                             !Charge[__, person, otherPerson, __], PersonPair[person, otherPerson, pairing]);
+            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                                Charge[pairing, person, otherPerson, charge], num == charge - 450);
+
+            Spark.Add[pairing, person, otherPerson, -900].If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                                             !Spark[__, person, otherPerson, __], PersonPair[person, otherPerson, pairing]);
+            Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Arguing],
+                                         Spark[pairing, person, otherPerson, num], spark == num - 450);
+
+            Spark.Set(pairing, spark, num)
+                 .If(Spark[pairing, person, otherPerson, spark], Alive[person], Alive[otherPerson], spark != 0,
+                     !Interaction[person, otherPerson, __], PerDay(0.8f), RegressToZero[spark, num]);
+            Charge.Set(pairing, charge, num)
+                  .If(Charge[pairing, person, otherPerson, charge], Alive[person], Alive[otherPerson], charge != 0,
+                      !Interaction[person, otherPerson, __], PerDay(0.8f), RegressToZero[charge, num]);
+
+            //Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Flirting], spark == 900);
+            //Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing], spark == -700);
+
+            //Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Assisting], charge == 800);
+            //Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Chatting], charge == 80);
+            //Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing], charge == -700);
 
             //Spark.Set(pairing, spark, num)
             //     .If(Spark.Unchanged, Spark, Alive[person], Alive[otherPerson], 

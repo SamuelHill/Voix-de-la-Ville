@@ -9,7 +9,7 @@ namespace TotT.Simulog {
 
         public readonly Event<T1, T2, TValue> Change;
 
-        //public readonly TablePredicate<(T1, T2)> Unchanged;
+        public readonly TablePredicate<(T1, T2)> Unchanged;
 
         public Function<T1, T2, (T1, T2)> NewTuple => new($"New{Name}Tuple", (main, other) => (main, other));
 
@@ -20,7 +20,7 @@ namespace TotT.Simulog {
             var setVar2 = new Var<TValue>($"{value.Name}SetValue2");
             Add[pair, main, other, value].If(Change, !this[__, main, other, __], NewTuple[main, other, pair]);
             Set(pair, value, setVar1).If(Change, this[pair, main, other, setVar2], setVar1 == setVar2 + value);
-            //Unchanged = Predicate($"{name}Unchanged", pair).If(this, !Change[main, other, __]);
+            Unchanged = Predicate($"{name}Unchanged", pair).If(this, !Change[main, other, __]);
         }
 
         public Affinity<T1, T2, TValue> UpdateWhen(params Goal[] conditions) {

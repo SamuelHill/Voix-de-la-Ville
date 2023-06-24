@@ -1,4 +1,5 @@
-﻿using TED;
+﻿using System;
+using TED;
 using TED.Primitives;
 using TotT.Simulog;
 using TotT.Utilities;
@@ -28,6 +29,9 @@ namespace TotT.Simulator {
         public static readonly Function<Person, Person, OrderedPair<Person>> NewRelationship =
             Function<Person, Person, OrderedPair<Person>>(nameof(NewRelationship),
                 (main, other) => new OrderedPair<Person>(main, other));
+
+        public static readonly Function<Person, Person, ValueTuple<Person, Person>> PersonPair =
+            Function<Person, Person, ValueTuple<Person, Person>>(nameof(PersonPair), (main, other) => (main, other));
 
         public static readonly Function<Vector2Int, Vector2Int, int> Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
         public static readonly Function<string, Location> NewLocation = Method<string, Location>(Town.NewLocation, false);
