@@ -74,12 +74,6 @@ namespace TotT.Simulator {
                             .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 
                                             DateAgeToTimePoint[dateOfBirth, age, birthday]);
             //AgentExist.InitiallyCauses(Init(Agent[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]).If(PrimordialBeing));
-
-            // ditto for agents associated tables -
-            var Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
-            Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeing, Facets);
-            var Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
-            Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeing, Jobs);
             
             PopulationCountIndex = AgentExist.CountIndex;
             var Population = Definition("Population", count).Is(AgentExist.Count[true, count]);
@@ -111,9 +105,10 @@ namespace TotT.Simulator {
                                                  sex, sexuality, VitalStatus.Alive]).If(Drifter));
 
             // Add associated info that is needed for a new agent -
-            Personality.Add[person, facet, RandomNormalSByte].If(AgentExist.Add, Facets);
+            var Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
+            Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeing, Jobs);
             Aptitude.Add[person, job, RandomNormalSByte].If(AgentExist.Add, Jobs);
-            // Agents.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
+            // AgentExist.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
             // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
 
             // *********************************** Relationships **********************************

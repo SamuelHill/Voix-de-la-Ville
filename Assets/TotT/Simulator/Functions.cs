@@ -6,6 +6,7 @@ using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
 using static TED.Language;
+using Function = TED.Function;
 
 namespace TotT.Simulator {
     using static Randomize;
@@ -20,7 +21,10 @@ namespace TotT.Simulator {
         public static readonly Function<int> RandomAdultAge = Method(Sims.RandomAdultAge, false);
         public static readonly Function<Sex> RandomSex = Method(Sims.RandomSex, false);
         public static readonly Function<Sex, Sexuality> RandomSexuality = Function<Sex, Sexuality>(nameof(RandomSexuality), Sexuality.Random, false);
-        public static readonly PrimitiveTest<Sexuality, Sex> SexualityAttracted = Test<Sexuality, Sex>(nameof(SexualityAttracted), (se, s) => se.IsAttracted(s));
+        public static readonly PrimitiveTest<Sexuality, Sex> SexualityAttracted = 
+            Test<Sexuality, Sex>(nameof(SexualityAttracted), (se, s) => se.IsAttracted(s));
+        public static readonly Function<Person, Person, int> Compatibility =
+            Function<Person, Person, int>(nameof(Compatibility), (p1, p2) => p1.Compatibility(p2));
 
         // Should we have Actions? this doesn't neatly fit Function or PrimitiveTest patterns
         public static readonly PrimitiveTest<Person, Person> TakeLastName =
