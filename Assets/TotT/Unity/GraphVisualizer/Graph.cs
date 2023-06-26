@@ -327,6 +327,11 @@ namespace GraphVisualization
 
             targetEdgeLength = Mathf.Clamp(3*Mathf.Sqrt((Bounds.width * Bounds.height) / nodes.Count), 50, 300);
 
+            var narrowAxis = Mathf.Min(Bounds.width, Bounds.height);
+
+            if (targetEdgeLength * Diameter > narrowAxis)
+                targetEdgeLength = narrowAxis / Diameter;
+
             UpdateConnectedComponents();
         }
 
@@ -350,6 +355,15 @@ namespace GraphVisualization
             for (var j = i + 1; j < n; j++)
                 TopologicalDistance[i, j] = TopologicalDistance[j, i] = (short)Math.Min(TopologicalDistance[i, j],
                     TopologicalDistance[i, k] + TopologicalDistance[k, j]);
+
+            Diameter = 0;
+            for (var i = 0; i < n; i++)
+            for (var j = i + 1; j < n; j++)
+            {
+                var d = TopologicalDistance[i, j];
+                if (d < short.MaxValue)
+                    Diameter = Math.Max(Diameter, d);
+            }
         }
 
         /// <summary>
@@ -652,6 +666,7 @@ namespace GraphVisualization
         private static readonly List<UIVertex> TriBuffer = new List<UIVertex>();
 
         public float ComponentRepulsionGain = 100000000f;
+        public int Diameter;
 
         /// <summary>
         /// Recompute triangles for lines and arrowheads representing edges

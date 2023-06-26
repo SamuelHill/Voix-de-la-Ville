@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TED.Utilities;
 using UnityEngine;
 using TotT.Utilities;
 
@@ -62,6 +63,7 @@ namespace GraphVisualization
         private void SetGraph<T>(TED.Utilities.GraphViz<T> g)
         {
             Clear();
+            EnsureEdgeNodesInGraph(g);
             if (g.Nodes.Count == 0) return;
 
             foreach (var n in g.Nodes)
@@ -88,6 +90,17 @@ namespace GraphVisualization
             UpdateTopologyStats();
             PlaceComponents();
             RepopulateMesh();
+        }
+
+        private void EnsureEdgeNodesInGraph<T>(GraphViz<T> g)
+        {
+            foreach (var e in g.Edges)
+            {
+                if (!g.Nodes.Contains(e.StartNode))
+                    g.AddNode(e.StartNode);
+                if (!g.Nodes.Contains(e.EndNode))
+                    g.AddNode(e.EndNode);
+            }
         }
 
         public static void ShowGraph<T>(TED.Utilities.GraphViz<T> g)
