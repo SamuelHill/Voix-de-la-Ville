@@ -12,9 +12,15 @@ namespace TotT.Simulog {
             goals.Length == 0 ? null : goals.Aggregate((current, goal) => current & goal);
 
         public static Existent<T> Exists<T>(string name, Var<T> arg) => new(name, arg);
+        public static Existent<T> Exists<T>(string name, Var<T> arg, Var<TimePoint> startArg) => new(name, arg, startArg);
 
-        public static Relationship<T> Relation<T>(string name, Var<OrderedPair<T>> arg1, Var<T> arg2, Var<T> arg3) 
-            where T : IComparable<T>, IEquatable<T> => new(name, arg1, arg2, arg3);
+        public static Affinity<T1, T2, TValue> Affinity<T1, T2, TValue>(string name, Var<(T1, T2)> pair, 
+            Var<T1> main, Var<T2> other, Var<TValue> value) => new(name, pair, main, other, value);
+
+        public static Effect Set<TKey, TCol>(TablePredicate table, Var<TKey> key, Var<TCol> column, Term<TCol> newValue) => 
+            Effect.Set(table, key, column, newValue);
+        public static Effect Add(TableGoal tableGoal) => Effect.Add(tableGoal);
+        public static Effect Init(TableGoal tableGoal) => Effect.Init(tableGoal);
 
         public static Event<T1> Event<T1>(string name, IColumnSpec<T1> arg) => new(name, arg);
 

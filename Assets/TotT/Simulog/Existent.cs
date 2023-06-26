@@ -1,5 +1,6 @@
 ﻿using TED;
 using TED.Interpreter;
+using TED.Tables;
 using TotT.Simulator;
 using TotT.Unity;
 using TotT.ValueTypes;
@@ -7,8 +8,9 @@ using UnityEngine;
 using static TED.Language;
 
 namespace TotT.Simulog {
+    using static SimuLang;
     using static Variables;
-
+    
     public class Existent<T> : TablePredicate<T, bool, TimePoint, TimePoint> {
         // ReSharper disable StaticMemberInGenericType
         // ReSharper disable InconsistentNaming
@@ -18,37 +20,76 @@ namespace TotT.Simulog {
         // ReSharper restore InconsistentNaming
         // ReSharper restore StaticMemberInGenericType
 
-        public readonly TablePredicate<T> Start;
-        public readonly TablePredicate<T> End;
+        // We don't want to chronicle the start and end events, that is the purpose of an Existent...
+        public readonly Event<T> Start;
+        public readonly Event<T> End;
+        // PreviousStart is the special case start (new to existent while already existing)
+        public readonly Event<T, TimePoint> StartWith;
+        private readonly Var<TimePoint> _startVar;
 
-        public Existent(string name, Var<T> arg1) : base(name, arg1.Key, _exists.Indexed, _start, _end) {
-            Start = new TablePredicate<T>($"{name}Start", arg1);
-            End = new TablePredicate<T>($"{name}End", arg1);
-            Add[arg1, true, time, TimePoint.Eschaton].If(Start, TalkOfTheTown.Time.CurrentTimePoint[time]);
-            Set(arg1, _end, time).If(End[arg1], TalkOfTheTown.Time.CurrentTimePoint[time]);
-            Set(arg1, _exists, false).If(End[arg1]);
+        public Existent(string name, Var<T> existent, Var<TimePoint> startTime) : base(name, existent.Key, _exists.Indexed, startTime, _end) {
+            Start = Event($"{name}Start", existent);
+            End = Event($"{name}End", existent);
+            StartWith = Event($"{name}StartWith", existent, startTime);
+            _startVar = startTime;
+            Add[existent, true, time, TimePoint.Eschaton].If(Start, TalkOfTheTown.Time.CurrentTimePoint[time]);
+            Add[existent, true, startTime, TimePoint.Eschaton].If(StartWith);
+            Set(existent, _end, time).If(End, TalkOfTheTown.Time.CurrentTimePoint[time]);
+            Set(existent, _exists, false).If(End);
             this.Colorize(_exists, s => s ? Color.white : Color.gray);
         }
+        // If you will never be using InitiallyWhere or StartWithTime, this is fine...
+        public Existent(string name, Var<T> existent) : this(name, existent, _start) { }
+
+        private TablePredicate<bool, int> _countPredicate;
+        public TablePredicate<bool, int> Count {
+            get {
+                if (_countPredicate != null) return _countPredicate;
+                _countPredicate = CountsBy($"{Name}Count", this, _exists, count);
+                _countPredicate.IndexByKey(_exists);
+                return _countPredicate;
+            }
+        }
+        public KeyIndex<(bool, int), bool> CountIndex =>
+            (KeyIndex<(bool, int), bool>)Count.IndexFor(_exists, true);
 
         public Existent<T> StartWhen(params Goal[] conditions) {
-            Start.If(conditions);
+            Start.OccursWhen(conditions);
+            return this;
+        }
+        public Existent<T> StartCauses(params Effect[] effects) {
+            Start.Causes(effects);
             return this;
         }
 
         public Existent<T> EndWhen(params Goal[] conditions) {
-            End.If(conditions);
+            End.OccursWhen(conditions);
+            return this;
+        }
+        public Existent<T> EndCauses(params Effect[] effects) {
+            End.Causes(effects);
             return this;
         }
 
         public Existent<T> InitiallyWhere(params Goal[] conditions) {
-            Initially[(Var<T>)DefaultVariables[0], true, time, TimePoint.Eschaton].Where(conditions);
+            Initially[(Var<T>)DefaultVariables[0], true, _startVar, TimePoint.Eschaton].Where(conditions);
+            return this;
+        }
+        public Existent<T> InitiallyCauses(params Effect[] effects) {
+            foreach (var e in effects) e.GenerateCode(Initially.DefaultGoal);
             return this;
         }
 
-        public Existent<T> StartWith(params Goal[] conditions) {
-            Add[(Var<T>)DefaultVariables[0], true, time, TimePoint.Eschaton].If(conditions);
+        public Existent<T> StartWithTime(params Goal[] conditions) {
+            StartWith.OccursWhen(conditions);
             return this;
         }
+        public Existent<T> StartWithCauses(params Effect[] effects) {
+            StartWith.Causes(effects);
+            return this;
+        }
+
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
 

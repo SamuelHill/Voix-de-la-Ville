@@ -49,7 +49,7 @@ namespace TotT.Simulator {
         public TablePredicate<Vector2Int, Location, LocationType, TimePoint> NewLocation;
         public TablePredicate<Vector2Int> VacatedLocation;
         public TablePredicate<Person> Buried;
-        public KeyIndex<(VitalStatus, int), VitalStatus> PopulationCountIndex;
+        public KeyIndex<(bool, int), bool> PopulationCountIndex;
         public KeyIndex<LocationDisplayRow, Vector2Int> LocationsPositionIndex;
         private ColumnAccessor<LocationType, Location> _locationToType;
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
@@ -64,17 +64,16 @@ namespace TotT.Simulator {
             Simulation = new Simulation("Talk of the Town");
             Simulation.Exceptions.Colorize(_ => Color.red);
             Simulation.Problems.Colorize(_ => Color.red);
+            SetDefaultColorizer<Location>(l => LocationColorsIndex[_locationToType[l]].Item2);
             TownName = PossibleTownName.Random;
             BindingList.BindGlobal(Generators.TownName, PossibleTownName.Random);
-            SetDefaultColorizer<Location>(l => LocationColorsIndex[_locationToType[l]].Item2);
             Simulation.BeginPredicates();
             InitStaticTables();
             // ReSharper disable InconsistentNaming
             // Tables, despite being local variables, will be capitalized for style/identification purposes.
 
             // ************************************** Agents **************************************
-
-            // Primordial beings init -
+            
             var Agent = Predicate("Agent", person.Key, 
                 age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
             Agent.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
@@ -82,33 +81,28 @@ namespace TotT.Simulator {
             Agent.Button("Random friend network", () => VisualizeFriendNetworkOf(Agent.ColumnValueFromRowNumber(person)((uint)Randomize.Integer(0, (int)Agent.Length))));
             Agent.Button("Full network", VisualizeFullSocialNetwork);
 
-            var AgentExist = Exists("AgentExist", person);
-            AgentExist.InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 
-                                      DateAgeToTimePoint[dateOfBirth, age, time]);
+            var AgentExist = Exists("AgentExist", person, birthday)
+                            .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 
+                                            DateAgeToTimePoint[dateOfBirth, age, birthday]);
+            //AgentExist.InitiallyCauses(Init(Agent[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]).If(PrimordialBeing));
 
             // ditto for agents associated tables -
             var Personality = Predicate("Personality", person.Indexed, facet.Indexed, personality);
             Personality.Initially[person, facet, RandomNormalSByte].Where(PrimordialBeing, Facets);
             var Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
             Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeing, Jobs);
-
-            var PopulationCount = CountsBy("PopulationCount", Agent, vitalStatus, count);
-            PopulationCount.IndexByKey(vitalStatus);
-            PopulationCountIndex = (KeyIndex<(VitalStatus, int), VitalStatus>)PopulationCount.IndexFor(vitalStatus, true);
+            
+            PopulationCountIndex = AgentExist.CountIndex;
+            var Population = Definition("Population", count).Is(AgentExist.Count[true, count]);
 
             var Alive = Definition("Alive", person).Is(AgentExist[person]);
             // special case Alive check where we also bind age
             var Age = Definition("Age", person, age)
                 .Is(Agent[person, age, __, __, __, VitalStatus.Alive]);
 
-
-            AgentExist.EndWhen(Age, age > 60, PerMonth(0.003f));
-            var JustDied = Predicate("JustDied", person).If(AgentExist.End);
-            Agent.Set(person, vitalStatus, VitalStatus.Dead).If(AgentExist.End);
-
-            var DeathEvent = Event("DeathEvent", person);
-            DeathEvent.OccursWhen(JustDied);
-
+            AgentExist.EndWhen(Age, age > 60, PerMonth(0.003f))
+                      .EndCauses(Set(Agent, person, vitalStatus, VitalStatus.Dead));
+            var JustDied = AgentExist.End;
 
             // Person Name helpers -
             var RandomFirstName = Definition("RandomFirstName", sex, firstName);
@@ -122,13 +116,14 @@ namespace TotT.Simulator {
             var Drifter = Predicate("Drifter", person, sex, sexuality);
             Drifter[person, RandomSex, sexuality].If(PerYear(0.05f),
                 RandomPerson, RandomSexuality[sex, sexuality]);
-            Agent.Add[person, RandomAdultAge, RandomDate, sex, sexuality, VitalStatus.Alive].If(Drifter);
 
-            AgentExist.StartWith(Drifter, Agent.Add, DateAgeToTimePoint[dateOfBirth, age, time]);
+            AgentExist.StartWithTime(Drifter, DateAgeToTimePoint[RandomDate, RandomAdultAge, birthday])
+                      .StartWithCauses(Add(Agent[person, Time.YearsOld[birthday], TimePointToDate[birthday], 
+                                                 sex, sexuality, VitalStatus.Alive]).If(Drifter));
 
             // Add associated info that is needed for a new agent -
-            Personality.Add[person, facet, RandomNormalSByte].If(Agent.Add, Facets);
-            Aptitude.Add[person, job, RandomNormalSByte].If(Agent.Add, Jobs);
+            Personality.Add[person, facet, RandomNormalSByte].If(AgentExist.Add, Facets);
+            Aptitude.Add[person, job, RandomNormalSByte].If(AgentExist.Add, Jobs);
             // Agents.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
             // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
 
@@ -136,8 +131,8 @@ namespace TotT.Simulator {
             // TODO : Primordial Relationships?
             // TODO : Married couples - last name changes
 
-            var Spark = Predicate("Spark", pairing.Key, person.Indexed, otherPerson.Indexed, spark);
-            var Charge = Predicate("Charge", pairing.Key, person.Indexed, otherPerson.Indexed, charge);
+            var Spark = Affinity("Spark", pairing, person, otherPerson, spark);
+            var Charge = Affinity("Charge", pairing, person, otherPerson, charge);
 
             Friend = Predicate("Friend", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
             Friend.Add[pairing, person, otherPerson, true]
@@ -392,15 +387,15 @@ namespace TotT.Simulator {
 
             AddLocationByCFG(LocationType.School, HighSchoolName.GenerateRandom, Count(Age & (age >= 5) & (age < 18)) > 5);
 
-            AddNamedLocation(LocationType.CityHall, "Big City Hall", Goals(PopulationCount[VitalStatus.Alive, count], count > 200));
+            AddNamedLocation(LocationType.CityHall, "Big City Hall", Goals(Population[count], count > 200));
 
-            AddNamedLocation(LocationType.GeneralStore, "Big Box Store", Goals(PopulationCount[VitalStatus.Alive, count], count > 150));
+            AddNamedLocation(LocationType.GeneralStore, "Big Box Store", Goals(Population[count], count > 150));
 
-            AddNamedLocation(LocationType.Bar, "Triple Crossing", Goals(PopulationCount[VitalStatus.Alive, count], count > 125));
+            AddNamedLocation(LocationType.Bar, "Triple Crossing", Goals(Population[count], count > 125));
 
-            AddNamedLocation(LocationType.GroceryStore, "Trader Jewels", Goals(PopulationCount[VitalStatus.Alive, count], count > 100));
+            AddNamedLocation(LocationType.GroceryStore, "Trader Jewels", Goals(Population[count], count > 100));
 
-            AddNamedLocation(LocationType.TattooParlor, "Heroes and Ghosts", Goals(PopulationCount[VitalStatus.Alive, count], count > 250));
+            AddNamedLocation(LocationType.TattooParlor, "Heroes and Ghosts", Goals(Population[count], count > 250));
 
             // ************************************ Vocations: ************************************
 
@@ -528,43 +523,25 @@ namespace TotT.Simulator {
             Interaction[person, otherPerson, InteractionType.Chatting].If(ChosenNeutralInteraction);
             Interaction[person, otherPerson, InteractionType.Arguing].If(ChosenNegativeInteraction);
 
-            Spark.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Flirting], 
-                                                             !Spark[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Flirting],
-                                                Spark[pairing, person, otherPerson, num], spark == num + 500);
+            Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Flirting], spark == 900);
+            Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing], spark == -700);
 
-            Charge.Add[pairing, person, otherPerson, 1000].If(Interaction[person, otherPerson, InteractionType.Assisting], 
-                                                              !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Assisting], 
-                                                Charge[pairing, person, otherPerson, charge], num == charge + 500);
+            Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Assisting], charge == 800);
+            Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Chatting], charge == 80);
+            Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing], charge == -700);
 
-            Charge.Add[pairing, person, otherPerson, 100].If(Interaction[person, otherPerson, InteractionType.Chatting],
-                                                             !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Chatting], 
-                                                Charge[pairing, person, otherPerson, charge], num == charge + 50);
-
-            Charge.Add[pairing, person, otherPerson, -900].If(Interaction[person, otherPerson, InteractionType.Arguing],
-                                                             !Charge[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Charge.Set(pairing, charge, num).If(Interaction[person, otherPerson, InteractionType.Arguing],
-                                                Charge[pairing, person, otherPerson, charge], num == charge - 450);
-
-            Spark.Add[pairing, person, otherPerson, -900].If(Interaction[person, otherPerson, InteractionType.Arguing],
-                                                             !Spark[__, person, otherPerson, __], NewRelationship[person, otherPerson, pairing]);
-            Spark.Set(pairing, spark).If(Interaction[person, otherPerson, InteractionType.Arguing],
-                                         Spark[pairing, person, otherPerson, num], spark == num - 450);
-            
-            Spark.Set(pairing, spark, num)
-                 .If(Spark[pairing, person, otherPerson, spark], Alive[person], Alive[otherPerson], spark != 0,
-                     !Interaction[person, otherPerson, __], PerDay(0.8f), RegressToZero[spark, num]);
-            Charge.Set(pairing, charge, num)
-                  .If(Charge[pairing, person, otherPerson, charge], Alive[person], Alive[otherPerson], charge != 0,
-                      !Interaction[person, otherPerson, __], PerDay(0.8f), RegressToZero[charge, num]);
+            //Spark.Set(pairing, spark, num)
+            //     .If(Spark.Unchanged, Spark, Alive[person], Alive[otherPerson], 
+            //         charge != 0, PerDay(0.8f), RegressToZero[spark, num]);
+            //Charge.Set(pairing, charge, num)
+            //      .If(Charge.Unchanged, Charge, Alive[person], Alive[otherPerson], 
+            //          charge != 0, PerDay(0.8f), RegressToZero[charge, num]);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
-            DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
-            UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
+            //DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
+            //UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
             //TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(Simulation));

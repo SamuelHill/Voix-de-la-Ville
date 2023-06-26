@@ -28,7 +28,12 @@ namespace TotT.Simulog {
         public static Effect Set<TKey, TCol>(TablePredicate t, Var<TKey> key, Var<TCol> column, Term<TCol> newValue) => 
             new((e, g) => { t.Set(key, column, newValue).If(e.JoinExtraConditions(g)); });
 
-        public static Effect Add(TableGoal row) => new((e, g) => 
-            { row.TablePredicate.AddUntyped.GetGoal(row.Arguments).If(e.JoinExtraConditions(g)); });
+        public static Effect Add(TableGoal row) => new((e, g) => {
+            row.TablePredicate.AddUntyped.GetGoal(row.Arguments).If(e.JoinExtraConditions(g));
+        });
+
+        public static Effect Init(TableGoal row) => new((e, g) => {
+            row.TablePredicate.InitialValueTable.GetGoal(row.Arguments).If(e.JoinExtraConditions(g));
+        });
     }
 }

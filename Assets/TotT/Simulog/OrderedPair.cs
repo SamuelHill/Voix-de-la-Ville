@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TotT.ValueTypes {
+namespace TotT.Simulog {
     public class OrderedPair<T> : IComparable<OrderedPair<T>>, IEquatable<OrderedPair<T>> where T : IComparable<T>, IEquatable<T> {
         public readonly T Main;
         public readonly T Other;
