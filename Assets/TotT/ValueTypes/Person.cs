@@ -39,6 +39,7 @@ namespace TotT.ValueTypes {
         }
 
         public int Compatibility(Person otherPerson) => _personality.Compatibility(otherPerson._personality);
+        public int Similarity(Person otherPerson) => _personality.Similarity(otherPerson._personality);
         public sbyte Facet(Facet facet) => _personality.Facet(facet);
 
         // *************************** Compare and Equality interfacing ***************************

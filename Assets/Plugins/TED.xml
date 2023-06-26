@@ -4410,7 +4410,7 @@
         </member>
         <member name="M:TED.Language.CountsBy``1(System.String,TED.TablePredicate,TED.Var{``0},TED.Var{System.Int32})">
             <summary>
-            Make a pivot table containing the number of rows for each value of column
+            Make a pivot table containing the number of rows for each value of column.
             </summary>
             <param name="name">Name to give to the table</param>
             <param name="t">TablePredicate to construct the pivot table for</param>
@@ -4423,11 +4423,11 @@
         <member name="M:TED.Language.AssignRandomly``2(System.String,TED.TablePredicate{``0,``1})">
             <summary>
             Generate a random subset of the candidate pairs such that each item from the first column
-            appears exactly once.  Does not guarantee that the same item from the second column won'term be
-            assigned to two different items from the first column.
+            appears exactly once. Does not guarantee that the same item from the second column won't
+            be assigned to two different items from the first column.
             </summary>
             <param name="name">Name for the table of assignments.</param>
-            <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
+            <param name="candidates">Table of candidate pairs. Must be indexed on the first column.</param>
             <typeparam name="T1">Type of the first column of the table</typeparam>
             <typeparam name="T2">Type of the second column of the table</typeparam>
             <returns>Table of random assignments</returns>
@@ -4435,38 +4435,84 @@
         </member>
         <member name="M:TED.Language.AssignGreedily``2(System.String,TED.TablePredicate{``0,``1,System.Single})">
             <summary>
-            Generate a random subset of the candidate pairs such that each item from the first column
-            appears exactly once.  Does not guarantee that the same item from the second column won'term be
-            assigned to two different items from the first column.
+            Generate a subset of the candidate pairs that maximizes utility without using any T1 or T2 twice.
+            Does not guarantee that all T1s or T2s get paired up or that it's a best assignment.
             </summary>
             <param name="name">Name for the table of assignments.</param>
-            <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
+            <param name="candidates">Table of candidate pairs and their utility.</param>
+            <typeparam name="T1">Type of the first column of the table</typeparam>
+            <typeparam name="T2">Type of the second column of the table</typeparam>
+            <returns>Table of assignments</returns>
+        </member>
+        <member name="M:TED.Language.AssignGreedily``2(System.String,TED.TablePredicate{``0,``1,System.Int32})">
+            <summary>
+            Generate a subset of the candidate pairs that maximizes utility without using any T1 or T2 twice.
+            Does not guarantee that all T1s or T2s get paired up or that it's a best assignment.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs and their utility.</param>
             <typeparam name="T1">Type of the first column of the table</typeparam>
             <typeparam name="T2">Type of the second column of the table</typeparam>
             <returns>Table of assignments</returns>
         </member>
         <member name="M:TED.Language.AssignGreedily``2(System.String,TED.TablePredicate{``0,``1,System.Single},TED.TablePredicate{``1,System.Int32})">
             <summary>
-            Generate a random subset of the candidate pairs such that each item from the first column
-            appears exactly once.  Does not guarantee that the same item from the second column won'term be
-            assigned to two different items from the first column.
+            Generate a subset of the candidate pairs that maximizes utility without assigning T1s to a given T2 more than
+            the capacity for that T2. Does not guarantee that all T1s or T2s get paired up or that it's a best assignment.
             </summary>
             <param name="name">Name for the table of assignments.</param>
-            <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
-            <param name="capacities">Number of T1's that can be assigned to a given T2</param>
+            <param name="candidates">Table of candidate pairs and their utility.</param>
+            <param name="capacities">Table of T2s and the number of T1s that can be assigned to each.</param>
+            <typeparam name="T1">Type of the first column of the table</typeparam>
+            <typeparam name="T2">Type of the second column of the table</typeparam>
+            <returns>Table of assignments</returns>
+        </member>
+        <member name="M:TED.Language.AssignGreedily``2(System.String,TED.TablePredicate{``0,``1,System.Int32},TED.TablePredicate{``1,System.Int32})">
+            <summary>
+            Generate a subset of the candidate pairs that maximizes utility without assigning T1s to a given T2 more than
+            the capacity for that T2. Does not guarantee that all T1s or T2s get paired up or that it's a best assignment.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs and their utility.</param>
+            <param name="capacities">Table of T2s and the number of T1s that can be assigned to each.</param>
             <typeparam name="T1">Type of the first column of the table</typeparam>
             <typeparam name="T2">Type of the second column of the table</typeparam>
             <returns>Table of assignments</returns>
         </member>
         <member name="M:TED.Language.MatchGreedily``1(System.String,TED.TablePredicate{``0,``0,System.Single})">
             <summary>
-            Generate a random subset of the candidate pairs such that each item from the first column
-            appears exactly once.  Does not guarantee that the same item from the second column won'term be
-            assigned to two different items from the first column.
+            Generate a subset of the candidate pairs that maximizes utility without using any T1 twice.
             </summary>
             <param name="name">Name for the table of assignments.</param>
-            <param name="candidates">Table of candidate pairs.  Must be indexed.</param>
-            <typeparam name="T1">Type of the first column of the table</typeparam>
+            <param name="candidates">Table of candidate pairs.</param>
+            <typeparam name="T">Type of the first and second column of the table</typeparam>
+            <returns>Table of assignments</returns>
+        </member>
+        <member name="M:TED.Language.MatchGreedily``1(System.String,TED.TablePredicate{``0,``0,System.Int32})">
+            <summary>
+            Generate a subset of the candidate pairs that maximizes utility without using any T1 twice.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs.</param>
+            <typeparam name="T">Type of the first and second column of the table</typeparam>
+            <returns>Table of assignments</returns>
+        </member>
+        <member name="M:TED.Language.MatchGreedilyAsymmetric``1(System.String,TED.TablePredicate{``0,``0,System.Single})">
+            <summary>
+            Generate a subset of the candidate pairs that maximizes utility without using any T1 twice in the first column.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs.</param>
+            <typeparam name="T">Type of the first and second column of the table</typeparam>
+            <returns>Table of assignments</returns>
+        </member>
+        <member name="M:TED.Language.MatchGreedilyAsymmetric``1(System.String,TED.TablePredicate{``0,``0,System.Int32})">
+            <summary>
+            Generate a subset of the candidate pairs that maximizes utility without using any T1 twice in the first column.
+            </summary>
+            <param name="name">Name for the table of assignments.</param>
+            <param name="candidates">Table of candidate pairs.</param>
+            <typeparam name="T">Type of the first and second column of the table</typeparam>
             <returns>Table of assignments</returns>
         </member>
         <member name="M:TED.Language.Closure``1(System.String,TED.TablePredicate{``0,``0},System.Boolean)">

@@ -14,8 +14,10 @@ namespace TotT.Simulog {
         public static Existent<T> Exists<T>(string name, Var<T> arg) => new(name, arg);
         public static Existent<T> Exists<T>(string name, Var<T> arg, Var<TimePoint> startArg) => new(name, arg, startArg);
 
-        public static Affinity<T1, T2, TValue> Affinity<T1, T2, TValue>(string name, Var<(T1, T2)> pair, 
-            Var<T1> main, Var<T2> other, Var<TValue> value) => new(name, pair, main, other, value);
+        public static Affinity<T1, T2> Affinity<T1, T2>(string name, Var<(T1, T2)> pair, 
+            Var<T1> main, Var<T2> other, Var<int> value) => new(name, pair, main, other, value);
+        public static FloatAffinity<T1, T2> Affinity<T1, T2>(string name, Var<(T1, T2)> pair,
+            Var<T1> main, Var<T2> other, Var<float> value) => new(name, pair, main, other, value);
 
         public static Effect Set<TKey, TCol>(TablePredicate table, Var<TKey> key, Var<TCol> column, Term<TCol> newValue) => 
             Effect.Set(table, key, column, newValue);
