@@ -582,7 +582,6 @@ namespace TotT.Simulator {
             //UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
-            TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(Simulation));
         }
 
         private string TableDescription(TablePredicate p)
