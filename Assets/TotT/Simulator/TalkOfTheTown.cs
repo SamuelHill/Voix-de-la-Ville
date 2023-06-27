@@ -64,6 +64,7 @@ namespace TotT.Simulator {
         public TablePredicate<(Person,Person), Person, Person, bool> RomanticInterest;
         public TablePredicate<Person, Person> Parent;
         public TablePredicate<Person, Person, InteractionType> Interaction;
+        public TablePredicate<Person, ActionType, Location> WhereTheyAt;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
@@ -475,10 +476,11 @@ namespace TotT.Simulator {
             var GoingToWork = Predicate("GoingToWork", person, location)
                 .If(OpenLocationType, InBusiness, Location, StillEmployed, Employment[__, person, location, Time.CurrentTimeOfDay]);
 
-            var WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType.Indexed, location.Indexed);
+            WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType.Indexed, location.Indexed);
             WhereTheyAt.Unique = true;
             WhereTheyAt.Colorize(location);
             WhereTheyAtLocationIndex = (GeneralIndex<(Person, ActionType, Location), Location>)WhereTheyAt.IndexFor(location, false);
+            WhereTheyAt.Button("Snapshot", VisualizeWhereTheyAt);
 
             var AdultAction = Predicate("AdultAction", actionType)
                 .If(AvailableAction, !In(actionType, new[] { ActionType.GoingToSchool, ActionType.GoingOutForDateNight }));
@@ -759,6 +761,25 @@ namespace TotT.Simulator {
                         InteractionType.Chatting => "yellow",
                         _ => "white"
                     } }}));
+            }
+            TEDGraphVisualization.ShowGraph(g);
+        }
+
+        public void VisualizeWhereTheyAt()
+        {
+            var g = new GraphViz<object>();
+            foreach (var row in WhereTheyAt)
+            {
+                var place = row.Item3;
+                var color = PlaceColor(place);
+                if (!g.Nodes.Contains(place))
+                {
+                    g.Nodes.Add(place);
+                    g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
+                }
+                g.AddEdge(new GraphViz<object>.Edge(row.Item1, place, true, row.Item2.ToString(),
+                    new Dictionary<string, object>() {{ "rgbcolor", color }}));
+
             }
             TEDGraphVisualization.ShowGraph(g);
         }
