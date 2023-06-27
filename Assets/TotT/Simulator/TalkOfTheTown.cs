@@ -92,10 +92,12 @@ namespace TotT.Simulator {
             {
                 var b = new StringBuilder();
                 var info = TalkOfTheTown.Town.AgentInfoIndex[p];
-                var living = info.Item6 == VitalStatus.Dead ? "Dead" : "Living";
+                var dead = info.Item6 == VitalStatus.Dead;
+                var living = dead ? "Dead" : "Living";
                 var job = "Unemployed";
                 if (TalkOfTheTown.Town.EmploymentIndex.ContainsKey(p))
                     job = TalkOfTheTown.Town.EmploymentIndex[p].Item1.ToString();
+                b.Append(dead ? "<color=gray>" : "");
                 b.Append("<b>");
                 b.Append(p.FullName);
                 b.AppendLine("</b><size=24>");
@@ -575,11 +577,37 @@ namespace TotT.Simulator {
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
+            Graph.SetDescriptionMethod<TablePredicate>(TableDescription);
             DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
             //UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
             TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(Simulation));
+        }
+
+        private string TableDescription(TablePredicate p)
+        {
+            var b = new StringBuilder();
+            b.Append("<b>");
+            b.AppendLine(p.DefaultGoal.ToString().Replace("[","</b>["));
+            b.AppendFormat("{0} rows\n", p.Length);
+            b.Append("<size=16>");
+            switch (p.UpdateMode)
+            {
+                case UpdateMode.BaseTable:
+                    b.Append("Base table");
+                    break;
+
+                case UpdateMode.Operator:
+                    b.Append("Operator result");
+                    break;
+
+                default:
+                    foreach (var r in p.Rules)
+                        b.AppendLine(r.ToString());
+                    break;
+            }
+            return b.ToString();
         }
 
         public void VisualizeJobs()

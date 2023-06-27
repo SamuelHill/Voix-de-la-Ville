@@ -539,6 +539,14 @@ namespace GraphVisualization
 
         private static Dictionary<Type, Delegate> DescriptionMethod = new();
 
+        private Delegate GetDescriptionMethod(object o)
+        {
+            for (var t = o.GetType();  t != null; t = t.BaseType)
+                if (DescriptionMethod.TryGetValue(t, out var d))
+                    return d;
+            return null;
+        }
+
         public static void SetDescriptionMethod<T>(Func<T, string> method) => DescriptionMethod[typeof(T)] = method;
 
         /// <summary>
@@ -563,8 +571,9 @@ namespace GraphVisualization
                         break;
 
                     default:
-                        if (DescriptionMethod.TryGetValue(key.GetType(), out var method))
-                            text = (string)method.DynamicInvoke(key);
+                        var m = GetDescriptionMethod(key);
+                        if (m != null)
+                            text = (string)m.DynamicInvoke(key);
                         else
                             text = key.ToString();
                         break;
