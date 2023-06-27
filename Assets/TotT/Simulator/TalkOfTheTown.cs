@@ -65,6 +65,7 @@ namespace TotT.Simulator {
         public TablePredicate<Person, Person> Parent;
         public TablePredicate<Person, Person, InteractionType> Interaction;
         public TablePredicate<Person, ActionType, Location> WhereTheyAt;
+        public TablePredicate<Person, Location> Home;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
@@ -100,7 +101,7 @@ namespace TotT.Simulator {
                 var job = "Unemployed";
                 if (TalkOfTheTown.Town.EmploymentIndex.ContainsKey(p))
                     job = TalkOfTheTown.Town.EmploymentIndex[p].Item1.ToString();
-                b.Append(dead ? "<color=gray>" : "");
+                b.Append(dead ? "<color=grey>" : "");
                 b.Append("<b>");
                 b.Append(p.FullName);
                 b.AppendLine("</b><size=24>");
@@ -311,8 +312,10 @@ namespace TotT.Simulator {
             // TODO : Include ApartmentComplex locations in Housing logic
             // TODO : Include Inn locations in Housing logic - drifters start at an Inn
 
-            var Home = Predicate("Home", occupant.Key, location.Indexed);
+            Home = Predicate("Home", occupant.Key, location.Indexed);
             Home.Unique = true;
+            Home.Button("Visualize", VisualizeHomes);
+
             var InBusinessHome = Predicate("InBusinessHome", occupant, location.Indexed)
                 .If(Location[location, LocationType.House, __, __, __, BusinessStatus.InBusiness], Home);
             var Occupancy = CountsBy("Occupancy", InBusinessHome, location, count);
@@ -587,6 +590,25 @@ namespace TotT.Simulator {
             //UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
+        }
+
+        private void VisualizeHomes()
+        {
+            var g = new GraphViz<object>();
+            foreach (var row in Home)
+            {
+                var place = row.Item2;
+                var color = PlaceColor(place);
+                if (!g.Nodes.Contains(place))
+                {
+                    g.Nodes.Add(place);
+                    g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
+                }
+                g.AddEdge(new GraphViz<object>.Edge(row.Item1, place, true, null,
+                    new Dictionary<string, object>() {{ "rgbcolor", color }}));
+
+            }
+            TEDGraphVisualization.ShowGraph(g);
         }
 
         private string TableDescription(TablePredicate p)
