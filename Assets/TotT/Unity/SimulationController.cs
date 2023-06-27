@@ -1,4 +1,6 @@
 ﻿using System.Linq;
+using GraphVisualization;
+using TED.Utilities;
 using TotT.Simulator;
 using TotT.Utilities;
 using UnityEngine;
@@ -73,8 +75,22 @@ namespace TotT.Unity {
             ShowStrings();
             ShowActiveTables();
             ChangeActiveTables();
+            ShowFlowButtons();
             if (_profileRuleExecutionTime) RuleExecutionTimes();
             if (!_simulationRunning) ShowPaused();
+        }
+
+        private void ShowFlowButtons()
+        {
+            var buttonWidth = 100;
+            var buttonHeight = 50;
+            var buttonStart = 70;
+            if (GUI.Button(new Rect(Screen.width-buttonWidth, buttonStart, buttonWidth, buttonHeight),
+                    "Show dataflow"))
+                TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(TalkOfTheTown.Simulation));
+            if (GUI.Button(new Rect(Screen.width-buttonWidth, buttonStart+buttonHeight, buttonWidth, buttonHeight),
+                    "Update graph"))
+                TEDGraphVisualization.ShowGraph(UpdateFlowVisualizer.MakeGraph(TalkOfTheTown.Simulation));
         }
     }
 }

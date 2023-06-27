@@ -210,7 +210,12 @@ namespace TotT.Unity {
         private void OnGUI(Rect screenRect, int tableNum = -1) {
             GUILayout.BeginArea(screenRect); // table area
             // Title and Header:
+            GUILayout.BeginHorizontal();
             TableTitle(tableNum, $"{Name} ({_predicate.Length})");
+            foreach (var binding in GUIManager.ButtonTable[_predicate])
+                if (GUILayout.Button(binding.Key))
+                    binding.Value();
+            GUILayout.EndHorizontal();
             LayoutHeaderRow(_headings);
             GUILayout.BeginHorizontal(); // table and scroll bar area
             // Table contents:

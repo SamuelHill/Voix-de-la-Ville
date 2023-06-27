@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text;
+using TotT.Simulator;
 using TotT.Utilities;
 
 namespace TotT.ValueTypes {

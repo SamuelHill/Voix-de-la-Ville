@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GraphVisualization;
 using TED;
 using TotT.Simulator;
 using TotT.Utilities;
@@ -32,12 +33,19 @@ namespace TotT.Unity {
         private static string[] _activeTables;  // should also be a string[4]
         private static int _tableToChange;
         private static int _changeTableSelector;
-        private static bool _changeTable;
+        public static bool ChangeTable;
         private static bool _showTables = true;
         private static readonly Rect ChangeTablesRect = 
             new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
         private static readonly Rect ShowTablesRect = 
             new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
+
+        public static readonly DictionaryWithDefault<TablePredicate, Dictionary<string, Action>> ButtonTable
+            = new DictionaryWithDefault<TablePredicate, Dictionary<string, Action>>((_) =>
+                new Dictionary<string, Action>());
+
+        public static void Button(this TablePredicate p, string buttonLabel, Action action) =>
+            ButtonTable[p][buttonLabel] = action;
 
         public static void Colorize(this TablePredicate p, Func<uint, Color> colorizer) =>
             p.Property["Colorizer"] = colorizer;
@@ -102,10 +110,11 @@ namespace TotT.Unity {
         public static void ChangeActiveTables() {
             // Change and show/hide toggles:
             GUI.BeginGroup(TopMiddleRectStack(ChangeTablesWidth + ShowTablesWidth));
-            _changeTable = GUI.Toggle(ChangeTablesRect, _changeTable, ChangeTables);
+            ChangeTable = GUI.Toggle(ChangeTablesRect, ChangeTable, ChangeTables);
             _showTables = GUI.Toggle(ShowTablesRect, _showTables, ShowHideTables);
             GUI.EndGroup();
-            if (!_changeTable || !_showTables) return;
+            if (!ChangeTable || !_showTables) return;
+            TEDGraphVisualization.Current.Clear();  
             // If we are trying to change tables:
             _tableToChange = GUI.Toolbar(TopMiddleRectStack(TableSelectorToolbarWidth, 2), _tableToChange, TableSelector);
             _changeTableSelector = Array.IndexOf(Tables.Keys.ToArray(), _activeTables[_tableToChange]);
@@ -196,7 +205,7 @@ namespace TotT.Unity {
         }
 
         private static void TableTitleToggle(int tableNum) {
-            _changeTable = _tableToChange != tableNum || !_changeTable;
+            ChangeTable = _tableToChange != tableNum || !ChangeTable;
             _tableToChange = tableNum;
         }
         public static void TableTitle(int tableNum, string title) {
