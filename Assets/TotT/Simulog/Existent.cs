@@ -53,6 +53,11 @@ namespace TotT.Simulog {
         public KeyIndex<(bool, int), bool> CountIndex =>
             (KeyIndex<(bool, int), bool>)Count.IndexFor(_exists, true);
 
+        public Existent<T> InitiallyWhere(params Goal[] conditions) {
+            Initially[(Var<T>)DefaultVariables[0], true, _startVar, TimePoint.Eschaton].Where(conditions);
+            return this;
+        }
+
         public Existent<T> StartWhen(params Goal[] conditions) {
             Start.OccursWhen(conditions);
             return this;
@@ -70,16 +75,7 @@ namespace TotT.Simulog {
             End.Causes(effects);
             return this;
         }
-
-        public Existent<T> InitiallyWhere(params Goal[] conditions) {
-            Initially[(Var<T>)DefaultVariables[0], true, _startVar, TimePoint.Eschaton].Where(conditions);
-            return this;
-        }
-        public Existent<T> InitiallyCauses(params Effect[] effects) {
-            foreach (var e in effects) e.GenerateCode(Initially.DefaultGoal);
-            return this;
-        }
-
+        
         public Existent<T> StartWithTime(params Goal[] conditions) {
             StartWith.OccursWhen(conditions);
             return this;
@@ -91,15 +87,74 @@ namespace TotT.Simulog {
 
         public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
+        #region Feature Tables
+        
+        public TablePredicate<T, T1> Features<T1>(IColumnSpec<T1> feature) => 
+            Predicate($"{Name}Features", ((Var<T>)DefaultVariables[0]).Key, feature);
+        public TablePredicate<T, T1, T2> Features<T1, T2>(IColumnSpec<T1> feature1, IColumnSpec<T2> feature2) =>
+            Predicate($"{Name}Features", ((Var<T>)DefaultVariables[0]).Key, feature1, feature2);
+        public TablePredicate<T, T1, T2, T3> Features<T1, T2, T3>(IColumnSpec<T1> feature1, IColumnSpec<T2> feature2, IColumnSpec<T3> feature3) =>
+            Predicate($"{Name}Features", ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3);
+        public TablePredicate<T, T1, T2, T3, T4> Features<T1, T2, T3, T4>(IColumnSpec<T1> feature1,
+            IColumnSpec<T2> feature2, IColumnSpec<T3> feature3, IColumnSpec<T4> feature4) =>
+            Predicate($"{Name}Features", ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4);
+        public TablePredicate<T, T1, T2, T3, T4, T5> Features<T1, T2, T3, T4, T5>(IColumnSpec<T1> feature1, 
+            IColumnSpec<T2> feature2, IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5) =>
+            Predicate($"{Name}Features", ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4, feature5);
+        public TablePredicate<T, T1, T2, T3, T4, T5, T6> Features<T1, T2, T3, T4, T5, T6>(IColumnSpec<T1> feature1, IColumnSpec<T2> feature2,
+            IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5, IColumnSpec<T6> feature6) =>
+            Predicate($"{Name}Features", ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4, feature5, feature6);
+        public TablePredicate<T, T1, T2, T3, T4, T5, T6, T7> Features<T1, T2, T3, T4, T5, T6, T7>(IColumnSpec<T1> feature1, IColumnSpec<T2> feature2, 
+            IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5, IColumnSpec<T6> feature6, IColumnSpec<T7> feature7) =>
+            Predicate($"{Name}Features", ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
+
+        public TablePredicate<T, T1> Features<T1>(string name, IColumnSpec<T1> feature) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature);
+        public TablePredicate<T, T1, T2> Features<T1, T2>(string name, IColumnSpec<T1> feature1, IColumnSpec<T2> feature2) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature1, feature2);
+        public TablePredicate<T, T1, T2, T3> Features<T1, T2, T3>(string name, IColumnSpec<T1> feature1, IColumnSpec<T2> feature2, IColumnSpec<T3> feature3) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3);
+        public TablePredicate<T, T1, T2, T3, T4> Features<T1, T2, T3, T4>(string name, IColumnSpec<T1> feature1,
+            IColumnSpec<T2> feature2, IColumnSpec<T3> feature3, IColumnSpec<T4> feature4) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4);
+        public TablePredicate<T, T1, T2, T3, T4, T5> Features<T1, T2, T3, T4, T5>(string name, IColumnSpec<T1> feature1,
+            IColumnSpec<T2> feature2, IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4, feature5);
+        public TablePredicate<T, T1, T2, T3, T4, T5, T6> Features<T1, T2, T3, T4, T5, T6>(string name, IColumnSpec<T1> feature1, IColumnSpec<T2> feature2,
+            IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5, IColumnSpec<T6> feature6) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4, feature5, feature6);
+        public TablePredicate<T, T1, T2, T3, T4, T5, T6, T7> Features<T1, T2, T3, T4, T5, T6, T7>(string name, IColumnSpec<T1> feature1, IColumnSpec<T2> feature2,
+            IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5, IColumnSpec<T6> feature6, IColumnSpec<T7> feature7) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
+
+        public TablePredicate<T, T1> FeaturesMultiple<T1>(string name, IColumnSpec<T1> feature) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature);
+        public TablePredicate<T, T1, T2> FeaturesMultiple<T1, T2>(string name, IColumnSpec<T1> feature1, IColumnSpec<T2> feature2) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2);
+        public TablePredicate<T, T1, T2, T3> FeaturesMultiple<T1, T2, T3>(string name, IColumnSpec<T1> feature1, IColumnSpec<T2> feature2, IColumnSpec<T3> feature3) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3);
+        public TablePredicate<T, T1, T2, T3, T4> FeaturesMultiple<T1, T2, T3, T4>(string name, IColumnSpec<T1> feature1,
+            IColumnSpec<T2> feature2, IColumnSpec<T3> feature3, IColumnSpec<T4> feature4) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4);
+        public TablePredicate<T, T1, T2, T3, T4, T5> FeaturesMultiple<T1, T2, T3, T4, T5>(string name, IColumnSpec<T1> feature1,
+            IColumnSpec<T2> feature2, IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5);
+        public TablePredicate<T, T1, T2, T3, T4, T5, T6> FeaturesMultiple<T1, T2, T3, T4, T5, T6>(string name, IColumnSpec<T1> feature1, IColumnSpec<T2> feature2,
+            IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5, IColumnSpec<T6> feature6) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6);
+        public TablePredicate<T, T1, T2, T3, T4, T5, T6, T7> FeaturesMultiple<T1, T2, T3, T4, T5, T6, T7>(string name, IColumnSpec<T1> feature1, IColumnSpec<T2> feature2,
+            IColumnSpec<T3> feature3, IColumnSpec<T4> feature4, IColumnSpec<T5> feature5, IColumnSpec<T6> feature6, IColumnSpec<T7> feature7) =>
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
+
+        #endregion
+
         public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
 
         public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
-            public ExistentGoal(TablePredicate predicate, Term<T> arg1, 
-                                Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4) 
+            public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4) 
                 : base(predicate, arg1, arg2, arg3, arg4) {}
 
             public ExistentGoal Ended => new(TablePredicate, Arg1, false, Arg3, Arg4);
-
             public ExistentGoal StartedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, t, Arg4);
             public ExistentGoal EndedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, Arg3, t);
         }

@@ -63,94 +63,63 @@ namespace TotT.Simulator {
             // ReSharper disable InconsistentNaming
             // Tables, despite being local variables, will be capitalized for style/identification purposes.
 
-            // ************************************** Agents **************************************
-            
-            var Agent = Predicate("Agent", person.Key, 
-                age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
-            Agent.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
-            Agent.Colorize(vitalStatus, s => s == VitalStatus.Alive ? Color.white : Color.gray);
+            // ************************************ Characters ************************************
 
-            var AgentExist = Exists("AgentExist", person, birthday)
-                            .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 
-                                            DateAgeToTimePoint[dateOfBirth, age, birthday]);
-            //AgentExist.InitiallyCauses(Init(Agent[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]).If(PrimordialBeing));
-            
-            PopulationCountIndex = AgentExist.CountIndex;
-            var Population = Definition("Population", count).Is(AgentExist.Count[true, count]);
+            var Character = Exists("Character", person, birthday)
+               .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], DateAgeToTimePoint[dateOfBirth, age, birthday]);
+            var CharacterFeatures = Character.Features(age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
+            CharacterFeatures.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
+            CharacterFeatures.Colorize(vitalStatus, s => s == VitalStatus.Alive ? Color.white : Color.gray);
 
-            var Alive = Definition("Alive", person).Is(AgentExist[person]);
-            // special case Alive check where we also bind age
-            var Age = Definition("Age", person, age)
-                .Is(Agent[person, age, __, __, __, VitalStatus.Alive]);
-
-            AgentExist.EndWhen(Age, age > 60, PerMonth(0.003f))
-                      .EndCauses(Set(Agent, person, vitalStatus, VitalStatus.Dead));
-            var JustDied = AgentExist.End;
-
-            // Person Name helpers -
+            #region Helpers
             var RandomFirstName = Definition("RandomFirstName", sex, firstName);
             RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
             RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
             // Surname here is only being used to facilitate A naming convention for last names (currently paternal lineage)
             var RandomPerson = Definition("RandomPerson", sex, person)
-                .Is(RandomFirstName, RandomElement(Surnames, lastName), NewPerson[firstName, lastName, person]);
+               .Is(RandomFirstName, RandomElement(Surnames, lastName), NewPerson[firstName, lastName, person]);
 
-            // Independent Agent creation (not birth based) - 
-            var Drifter = Predicate("Drifter", person, sex, sexuality);
-            Drifter[person, RandomSex, sexuality].If(PerYear(0.05f),
-                RandomPerson, RandomSexuality[sex, sexuality]);
+            var PersonSex = Definition("PersonSex", person, sex)
+               .Is(CharacterFeatures[person, __, __, sex, __, VitalStatus.Alive]);
+            var PersonSexuality = Definition("PersonSexuality", person, sexuality)
+               .Is(CharacterFeatures[person, __, __, __, sexuality, VitalStatus.Alive]);
+            var SexualAttraction = Definition("SexualAttraction", person, partner)
+               .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], AttractedTo[sexuality, sexOfPartner],
+                   PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], AttractedTo[sexualOfPartner, sex]);
+            #endregion
 
-            AgentExist.StartWithTime(Drifter, DateAgeToTimePoint[RandomDate, RandomAdultAge, birthday])
-                      .StartWithCauses(Add(Agent[person, Time.YearsOld[birthday], TimePointToDate[birthday], 
-                                                 sex, sexuality, VitalStatus.Alive]).If(Drifter));
-
-            // Add associated info that is needed for a new agent -
-            var Aptitude = Predicate("Aptitude", person.Indexed, job.Indexed, aptitude);
+            var Aptitude = Character.FeaturesMultiple("Aptitude", job.Indexed, aptitude);
             Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeing, Jobs);
-            Aptitude.Add[person, job, RandomNormalSByte].If(AgentExist.Add, Jobs);
-            // AgentExist.Add handles both Birth and Drifters, if we want to make kids inherit modified values from
-            // their parents then we will need separate cases for BirthTo[__, __, __, person] and drifters.
+            Aptitude.Add[person, job, RandomNormalSByte].If(Character.Add, Jobs);
+
+            PopulationCountIndex = Character.CountIndex;
+            var Population = Definition("Population", count).Is(Character.Count[true, count]);
+            // Age doubles as a check to vital status - same as also saying Character[person] but with less extraneous referencing
+            var Age = Definition("Age", person, age).Is(CharacterFeatures[person, age, __, __, __, VitalStatus.Alive]);
+
+            Character.EndWhen(Age, age > 60, PerMonth(0.003f))
+                     .EndCauses(Set(CharacterFeatures, person, vitalStatus, VitalStatus.Dead));
+
+            var Drifter = Predicate("Drifter", person, sex, sexuality);
+            Drifter[person, RandomSex, sexuality].If(PerYear(0.05f), RandomPerson, RandomSexuality[sex, sexuality]);
+            Character.StartWithTime(Drifter, DateAgeToTimePoint[RandomDate, RandomAdultAge, birthday])
+                     .StartWithCauses(Add(CharacterFeatures[person, Time.YearsOld[birthday], 
+                                                            TimePointToDate[birthday], sex, sexuality, VitalStatus.Alive]).If(Drifter));
 
             // *********************************** Relationships **********************************
             // TODO : Primordial Relationships?
             // TODO : Married couples - last name changes
             
-            var Spark = Affinity("Spark", pairing, person, otherPerson, spark).Decay(0.1f);
             var Charge = Affinity("Charge", pairing, person, otherPerson, charge).Decay(0.8f);
-
-            var Friend = Predicate("Friend", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
-            Friend.Add[pairing, person, otherPerson, true]
-                  .If(Charge[pairing, person, otherPerson, charge], 
-                      charge > 5000, !Friend[pairing, person, otherPerson, __]);
-            Friend.Set(pairing, state, false)
-                  .If(Charge[pairing, person, otherPerson, charge],
-                      charge < 4000, Friend[pairing, person, otherPerson, true]);
-            Friend.Set(pairing, state, true)
-                  .If(Charge[pairing, person, otherPerson, charge],
-                      charge > 4000, Friend[pairing, person, otherPerson, false]);
-
+            var Friend = Charge.Relationship("Friend", state, 5000, 4000);
             var MutualFriendship = Predicate("MutualFriendship", person, otherPerson)
-               .If(Friend[__, person, otherPerson, true], Friend[__, otherPerson, person, true]);
-
-            var Enemy = Predicate("Enemy", pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
-            Enemy.Add[pairing, person, otherPerson, true].If(Charge[pairing, person, otherPerson, charge],
-                                                             charge < -7500, !Enemy[pairing, person, otherPerson, __]);
-            Enemy.Set(pairing, state, false).If(Charge[pairing, person, otherPerson, charge],
-                                                charge > -6000, Enemy[pairing, person, otherPerson, true]);
-            Enemy.Set(pairing, state, true).If(Charge[pairing, person, otherPerson, charge],
-                                                charge < -6000, Enemy[pairing, person, otherPerson, false]);
-
-            var RomanticInterest = Predicate("RomanticInterest", 
-                                             pairing.Key, person.Indexed, otherPerson.Indexed, state.Indexed);
-            RomanticInterest.Add[pairing, person, otherPerson, true].If(Spark[pairing, person, otherPerson, spark],
-                                                                        spark > 6000, !RomanticInterest[pairing, person, otherPerson, __]);
-            RomanticInterest.Set(pairing, state, false).If(Spark[pairing, person, otherPerson, spark], 
-                                                           spark < 5000, RomanticInterest[pairing, person, otherPerson, true]);
-            RomanticInterest.Set(pairing, state, true).If(Spark[pairing, person, otherPerson, spark],
-                                                           spark > 5000, RomanticInterest[pairing, person, otherPerson, false]);
-
+               .If(Friend[person, otherPerson], Friend[otherPerson, person]);
+            var Enemy = Charge.Relationship("Enemy", state, -6000, -3000);
+            
+            var Spark = Affinity("Spark", pairing, person, otherPerson, spark).Decay(0.1f);
+            var RomanticInterest = Spark.Relationship("RomanticInterest", state, 7000, 6000);
             var MutualRomanticInterest = Predicate("MutualRomanticInterest", person, otherPerson)
-               .If(RomanticInterest[__, person, otherPerson, true], RomanticInterest[__, otherPerson, person, true]);
+               .If(RomanticInterest[person, otherPerson], RomanticInterest[otherPerson, person]);
 
             // ************************************ Procreation ***********************************
             // TODO : Limit PotentialProcreation by interactions (realism)
@@ -161,19 +130,11 @@ namespace TotT.Simulator {
             var Parent = Predicate("Parent", parent, child);
             var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
                 .Is(Parent[person, otherPerson] | Parent[otherPerson, person]); // only immediate family
-
-            var PersonSex = Definition("PersonSex", person, sex)
-                .Is(Agent[person, __, __, sex, __, VitalStatus.Alive]);
-            var PersonSexuality = Definition("PersonSexuality", person, sexuality)
-                .Is(Agent[person, __, __, __, sexuality, VitalStatus.Alive]);
-            var SexualAttraction = Definition("SexualAttraction", person, partner)
-                .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], AttractedTo[sexuality, sexOfPartner],
-                    PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], AttractedTo[sexualOfPartner, sex]);
             
             var Man = Predicate("Men", man).If(
-                Agent[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
+                CharacterFeatures[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
             var Woman = Predicate("Women", woman).If(
-                Agent[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
+                CharacterFeatures[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
 
             var Gestation = Predicate("Gestation",
                 woman.Indexed, man, sex, child.Key, conception, state.Indexed);
@@ -184,7 +145,7 @@ namespace TotT.Simulator {
             PotentialProcreation.Unique = true;
             var ProcreativePair = Predicate("ProcreativePair", woman.Indexed, man.Indexed)
                .If(MutualRomanticInterest[woman, man], Woman, Man, !FamilialRelation[woman, man]);
-            PotentialProcreation.If(ProcreativePair, !Pregnant[woman], Age[woman, age], Alive[man], Prob[FertilityRate[age]]);
+            PotentialProcreation.If(ProcreativePair, !Pregnant[woman], Age[woman, age], Character[man], Prob[FertilityRate[age]]);
             var SuccessfulProcreation = AssignRandomly("SuccessfulProcreation", PotentialProcreation);
 
             Gestation.Add[woman, man, sex, child, Time.CurrentDate, true]
@@ -195,16 +156,16 @@ namespace TotT.Simulator {
                 Time.NineMonthsPast[conception], Prob[0.8f]); // Birth after 9 months with 'labor'
             Gestation.Set(child, state, false).If(BirthTo);
 
-            AgentExist.StartWhen(BirthTo[__, __, __, person]);
-            Agent.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
+            Character.StartWhen(BirthTo[__, __, __, person]);
+            CharacterFeatures.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
                 BirthTo[__, __, sex, person], RandomSexuality[sex, sexuality]);
 
             Parent.Add.If(BirthTo[parent, __, __, child]);
             Parent.Add.If(BirthTo[__, parent, __, child]);
 
             // Increment age once per birthday (in the AM, if you weren't just born)
-            Agent.Set(person, age, num)
-                 .If(Agent[person, age, dateOfBirth, __, __, VitalStatus.Alive], 
+            CharacterFeatures.Set(person, age, num)
+                 .If(CharacterFeatures[person, age, dateOfBirth, __, __, VitalStatus.Alive], 
                      Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !BirthTo[__, __, __, person], Incr[age, num]);
 
             // ************************************ Locations *************************************
@@ -284,7 +245,7 @@ namespace TotT.Simulator {
             UnderOccupied.If(Occupancy, count <= 5);
             UnderOccupied.If(Unoccupied);
 
-            var Unhoused = Predicate("Unhoused", person).If(Alive, !Home[person, __]);
+            var Unhoused = Predicate("Unhoused", person).If(Character[person], !Home[person, __]);
 
             // Using this to randomly assign one house per primordial person...
             var PrimordialHouse = Predicate("PrimordialHouse", location)
@@ -297,7 +258,7 @@ namespace TotT.Simulator {
             Home.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
             Home.Add.If(Unhoused[occupant], RandomElement(UnderOccupied, location));
 
-            Home.Set(occupant, location).If(JustDied[occupant],
+            Home.Set(occupant, location).If(Character.End[occupant],
                 Location[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness]);
             var BuriedAt = Predicate("BuriedAt", occupant, location)
                 .If(Location[location, LocationType.Cemetery, __, __, __, BusinessStatus.InBusiness], Home);
@@ -363,7 +324,7 @@ namespace TotT.Simulator {
             AddLocationByCFG(LocationType.Hospital, HospitalName.GenerateName,
                            Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
 
-            AddLocationByCFG(LocationType.Cemetery, CemeteryName.GenerateRandom, Once[Goals(Alive, Age, age >= 60)]); // before anyone can die
+            AddLocationByCFG(LocationType.Cemetery, CemeteryName.GenerateRandom, Once[Goals(Age, age >= 60)]); // before anyone can die
 
             AddLocationByCFG(LocationType.DayCare, DaycareName.GenerateName, Count(Age & (age < 6)) > 5);
 
@@ -386,7 +347,7 @@ namespace TotT.Simulator {
 
             var EmploymentStatus = Predicate("EmploymentStatus", employee.Key, state.Indexed);
             EmploymentStatus.Add[employee, true].If(Employment.Add);
-            EmploymentStatus.Set(employee, state, false).If(JustDied[employee], EmploymentStatus[employee, true]);
+            EmploymentStatus.Set(employee, state, false).If(Character.End[employee], EmploymentStatus[employee, true]);
             EmploymentStatus.Set(employee, state, false).If(JustClosed[location], Employment, EmploymentStatus[employee, true]);
 
             var StillEmployed = Definition("StillEmployed", person).Is(EmploymentStatus[person, true]);
@@ -398,8 +359,8 @@ namespace TotT.Simulator {
             Drifter[person, RandomSex, sexuality].If(JobToFill, PerMonth(0.5f), RandomPerson, RandomSexuality[sex, sexuality]);
 
             var BestCandidate = Predicate("BestCandidate", person, job, location)
-                .If(JobToFill, Maximal(person, aptitude, 
-                                        Goals(Alive, !StillEmployed[person], Age, age >= 18, Aptitude)));
+                .If(JobToFill, Maximal(person, aptitude,
+                                        Goals(Age, !StillEmployed[person], age >= 18, Aptitude)));
 
             var CandidateForJob = Predicate("CandidateForJob", person.Indexed, job).If(BestCandidate);
             var OneJobPerCandidate = AssignRandomly("OneJobPerCandidate", CandidateForJob);
@@ -419,7 +380,7 @@ namespace TotT.Simulator {
             var OpenLocationType = Predicate("OpenLocationType", locationType)
                 .If(LocationInformation, Time.CurrentlyOperating[operation], Time.CurrentlyOpen[schedule]);
             
-            var Kid = Predicate("Kid", person).If(Alive, Age, age < 18);
+            var Kid = Predicate("Kid", person).If(Age, age < 18);
             var NeedSchooling = Predicate("NeedSchooling", person).If(Kid, Age, age > 6);
             var NeedDayCare = Predicate("NeedDayCare", person).If(Kid, !NeedSchooling[person]);
 
@@ -442,7 +403,7 @@ namespace TotT.Simulator {
 
             var AdultAction = Predicate("AdultAction", actionType)
                 .If(AvailableAction, !In(actionType, new[] { ActionType.GoingToSchool, ActionType.GoingOutForDateNight }));
-            var NeedsActionAssignment = Predicate("NeedsActionAssignment", person).If(Alive,
+            var NeedsActionAssignment = Predicate("NeedsActionAssignment", person).If(Character[person],
                 !GoingToWork[person, __],
                 !GoingToDayCare[person, __],
                 !GoingToSchool[person, __]);

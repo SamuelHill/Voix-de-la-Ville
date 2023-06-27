@@ -4409,13 +4409,11 @@
             <inheritdoc cref="M:TED.Language.Item1``2(TED.Var{``0},TED.TablePredicate{``0,``1})"/>
         </member>
         <member name="M:TED.Language.CountsBy``1(System.String,TED.TablePredicate,TED.Var{``0},TED.Var{System.Int32})">
-            <summary>
-            Make a pivot table containing the number of rows for each value of column.
-            </summary>
-            <param name="name">Name to give to the table</param>
-            <param name="t">TablePredicate to construct the pivot table for</param>
-            <param name="column">Column to find counts of</param>
-            <param name="count">Name to give to the count column in the output</param>
+            <summary>Make a pivot table containing the number of rows for each value of column.</summary>
+            <param name="name">Name to give to the table.</param>
+            <param name="t">TablePredicate to construct the pivot table for.</param>
+            <param name="column">Column to find counts of. Must be indexed.</param>
+            <param name="count">Name to give to the count column in the output.</param>
             <typeparam name="TColumn"></typeparam>
             <returns></returns>
             <exception cref="T:System.InvalidOperationException"></exception>

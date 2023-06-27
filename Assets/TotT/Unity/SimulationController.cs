@@ -44,7 +44,7 @@ namespace TotT.Unity {
                 ? TalkOfTheTown.Simulation.Tables.Where(t => !t.Name.Contains("_"))
                 : TalkOfTheTown.Simulation.Tables;
             AvailableTables(simulationTables.Append(TalkOfTheTown.Simulation.Exceptions).Append(TalkOfTheTown.Simulation.Problems));
-            ActiveTables(new[] { "Agent", "Parent", "Employment", "WhereTheyAt" });
+            ActiveTables(new[] { "Character", "Parent", "Employment", "WhereTheyAt" });
             AddPopulationInfo(() => $"Population of {_simulationInfo.Population}");
             AddSelectedTileInfo(_simulationInfo.SelectedLocation);
         }

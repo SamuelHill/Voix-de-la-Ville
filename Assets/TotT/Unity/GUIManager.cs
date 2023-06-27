@@ -20,9 +20,9 @@ namespace TotT.Unity {
         private const int LabelBorders = 10;
         private const int TopMiddleRectHeight = 30; // allows for TopMiddleRectStacks
         private const int TableSelectorToolbarWidth = 250;
-        private const int SelectionGridWidth = 720;
+        private const int SelectionGridWidth = 760;
         private const int TileSize = 16;
-        private const int TableDisplayNameCutoff = 18;
+        private const int TableDisplayNameCutoff = 20;
 
         private static readonly Dictionary<string, GUITable> Tables = new();
         private static Dictionary<string, string> _displayNameToTableName = new();
