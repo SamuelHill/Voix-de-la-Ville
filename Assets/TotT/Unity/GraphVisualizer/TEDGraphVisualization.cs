@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using TED.Utilities;
+using TotT.Unity;
 using UnityEngine;
 using TotT.Utilities;
 
@@ -62,6 +63,7 @@ namespace GraphVisualization
 
         private void SetGraph<T>(TED.Utilities.GraphViz<T> g)
         {
+            GUIManager.ChangeTable = false;  // hide buttons
             Clear();
             EnsureEdgeNodesInGraph(g);
             if (g.Nodes.Count == 0) return;

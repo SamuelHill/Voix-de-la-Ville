@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using GraphVisualization;
@@ -62,6 +63,7 @@ namespace TotT.Simulator {
         public TablePredicate<(Person,Person), Person, Person, bool> Enemy;
         public TablePredicate<(Person,Person), Person, Person, bool> RomanticInterest;
         public TablePredicate<Person, Person> Parent;
+        public TablePredicate<Person, Person, InteractionType> Interaction;
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
@@ -558,13 +560,14 @@ namespace TotT.Simulator {
             var NegativeInteraction = Predicate("NegativeInteraction", 
                 person.Indexed, otherPerson.Indexed).If(ScoredInteraction, score < -15);
 
-            var Interaction = Predicate("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
+            Interaction = Predicate("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
             Interaction[person, partner, InteractionType.Flirting]
                .If(PositiveInteraction[person, partner], SexualAttraction);
             Interaction[person, partner, InteractionType.Assisting]
                .If(PositiveInteraction[person, partner], !SexualAttraction[person, partner]);
             Interaction[person, otherPerson, InteractionType.Chatting].If(NeutralInteraction);
             Interaction[person, otherPerson, InteractionType.Arguing].If(NegativeInteraction);
+            Interaction.Button("Snapshot", VisualizeInteractions);
 
             Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Flirting], spark == 900);
             Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing], 
@@ -739,6 +742,24 @@ namespace TotT.Simulator {
                 g.AddEdge(new GraphViz<Person>.Edge(child, parent));
             }
 
+            TEDGraphVisualization.ShowGraph(g);
+        }
+
+        public void VisualizeInteractions()
+        {
+            var g = new GraphViz<Person>();
+            foreach (var row in Interaction)
+            {
+                g.AddEdge(new GraphViz<Person>.Edge(row.Item1, row.Item2, true, row.Item3.ToString(), new Dictionary<string, object>() 
+                    { { "color", row.Item3 switch
+                    {
+                        InteractionType.Arguing => "red",
+                        InteractionType.Assisting => "green",
+                        InteractionType.Flirting => "blue",
+                        InteractionType.Chatting => "yellow",
+                        _ => "white"
+                    } }}));
+            }
             TEDGraphVisualization.ShowGraph(g);
         }
 
