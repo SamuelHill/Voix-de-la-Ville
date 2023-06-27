@@ -33,11 +33,13 @@ namespace TotT.Simulator {
         public static Simulation Simulation = null!;
         public static Time Time;
         private const int Seed = 349571286;
+        public static TalkOfTheTown Town;
 
         private TalkOfTheTown() {
             DeclareParsers();
             Seed(Seed, Seed);
             Time = new Time();
+            Town = this;
         }
         public TalkOfTheTown(ushort tick = 1) : this() => Time = new Time(tick);
         public TalkOfTheTown(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) : 
@@ -49,6 +51,7 @@ namespace TotT.Simulator {
         public TablePredicate<Person> Buried;
         public KeyIndex<(bool, int), bool> PopulationCountIndex;
         public KeyIndex<LocationDisplayRow, Vector2Int> LocationsPositionIndex;
+        public KeyIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), Person> AgentInfoIndex;
         private ColumnAccessor<LocationType, Location> _locationToType;
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
         public string TownName;
@@ -77,6 +80,8 @@ namespace TotT.Simulator {
             Agent.Colorize(vitalStatus, s => s == VitalStatus.Alive ? Color.white : Color.gray);
             Agent.Button("Random friend network", () => VisualizeFriendNetworkOf(Agent.ColumnValueFromRowNumber(person)((uint)Randomize.Integer(0, (int)Agent.Length))));
             Agent.Button("Full network", VisualizeFullSocialNetwork);
+            AgentInfoIndex =
+                (KeyIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), Person>)Agent.IndexFor(person, true);
 
             var AgentExist = Exists("AgentExist", person, birthday)
                             .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 

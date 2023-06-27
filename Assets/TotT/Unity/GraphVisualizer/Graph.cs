@@ -30,6 +30,8 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 using UnityEngine.UI;
 using System.Linq;
+using TotT.ValueTypes;
+using Unity.VisualScripting;
 
 namespace GraphVisualization
 {
@@ -549,7 +551,7 @@ namespace GraphVisualization
             {
                 var key = node.Key;
                 var t = key.GetType();
-                var text = (string)key.ToString();
+                var text = (key is IDescribable d)?d.Description:key.ToString();
                 if (text != null)
                     ToolTip.text = text.Trim();
             }
