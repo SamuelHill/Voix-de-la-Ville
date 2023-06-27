@@ -549,7 +549,7 @@ namespace GraphVisualization
             {
                 var key = node.Key;
                 var t = key.GetType();
-                var text = (string)t.InvokeMember(ToolTipProperty, BindingFlags.GetProperty, null, key, null);
+                var text = (string)key.ToString();
                 if (text != null)
                     ToolTip.text = text.Trim();
             }

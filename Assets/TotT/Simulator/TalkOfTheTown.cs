@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using GraphVisualization;
 using TED;
@@ -14,7 +12,6 @@ using TotT.Unity;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
-using UnityEngine.UIElements;
 using static TED.Language;
 
 namespace TotT.Simulator {
@@ -55,9 +52,9 @@ namespace TotT.Simulator {
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
         public string TownName;
         public TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
-        public TablePredicate<OrderedPair<Person>, Person, Person, bool> Friend;
-        public TablePredicate<OrderedPair<Person>, Person, Person, bool> Enemy;
-        public TablePredicate<OrderedPair<Person>, Person, Person, bool> RomanticInterest;
+        public TablePredicate<(Person,Person), Person, Person, bool> Friend;
+        public TablePredicate<(Person,Person), Person, Person, bool> Enemy;
+        public TablePredicate<(Person,Person), Person, Person, bool> RomanticInterest;
         public TablePredicate<Person, Person> Parent;
 
         public void InitSimulator() {
@@ -540,11 +537,11 @@ namespace TotT.Simulator {
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
-            //DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
+            Test.DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
             //UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
-            //TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(Simulation));
+            TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(Simulation));
         }
 
         public void VisualizeJobs()
@@ -594,9 +591,9 @@ namespace TotT.Simulator {
 
         public void VisualizeFriendNetworkOf(Person p)
         {
-            var friendIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)Friend.IndexFor(person, false);
-            var enemyIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)Enemy.IndexFor(person, false);
-            var romanticInterestIndex = (GeneralIndex<(OrderedPair<Person>, Person, Person,bool), Person>)RomanticInterest.IndexFor(person, false);
+            var friendIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Friend.IndexFor(person, false);
+            var enemyIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Enemy.IndexFor(person, false);
+            var romanticInterestIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)RomanticInterest.IndexFor(person, false);
             var employmentIndex =
                 (KeyIndex<(Vocation, Person, Location, TimeOfDay), Person>)Employment.IndexFor(employee, true);
 
