@@ -327,7 +327,7 @@ namespace GraphVisualization
             //    if (TopologicalDistance[i,j] == short.MaxValue)
             //        TopologicalDistance[i,j] = 1;
 
-            targetEdgeLength = Mathf.Clamp(3*Mathf.Sqrt((Bounds.width * Bounds.height) / nodes.Count), 50, 300);
+            targetEdgeLength = Mathf.Clamp(3*Mathf.Sqrt(0.3f*(Bounds.width * Bounds.height) / nodes.Count), 50, 300);
 
             var narrowAxis = Mathf.Min(Bounds.width, Bounds.height);
 
@@ -537,6 +537,10 @@ namespace GraphVisualization
             }
         }
 
+        private static Dictionary<Type, Delegate> DescriptionMethod = new();
+
+        public static void SetDescriptionMethod<T>(Func<T, string> method) => DescriptionMethod[typeof(T)] = method;
+
         /// <summary>
         /// Update the ToolTop UI element, if any, based on the selected node, if any.
         /// </summary>
@@ -551,9 +555,24 @@ namespace GraphVisualization
             {
                 var key = node.Key;
                 var t = key.GetType();
-                var text = (key is IDescribable d)?d.Description:key.ToString();
-                if (text != null)
-                    ToolTip.text = text.Trim();
+                string text;
+                switch (key)
+                {
+                    case IDescribable d:
+                        text = d.Description;
+                        break;
+
+                    default:
+                        if (DescriptionMethod.TryGetValue(key.GetType(), out var method))
+                            text = (string)method.DynamicInvoke(key);
+                        else
+                            text = key.ToString();
+                        break;
+
+                }
+
+                text ??= "";
+                ToolTip.text = text.Trim();
             }
         }
 
@@ -647,7 +666,8 @@ namespace GraphVisualization
             {
                 if (springLength == short.MaxValue)
                 {
-                    force = offset * (ComponentRepulsionGain/ (len * len * len));
+                    if (len < 2*targetEdgeLength)
+                        force = offset * (ComponentRepulsionGain/ (len * len * len));
                 }
                 else
                 {

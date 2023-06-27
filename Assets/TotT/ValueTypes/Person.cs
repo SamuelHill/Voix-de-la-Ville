@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using TotT.Simulator;
 using TotT.Utilities;
 
@@ -8,7 +9,7 @@ namespace TotT.ValueTypes {
     /// <summary>
     /// Person reference - wraps first and last name strings for an individual person.
     /// </summary>
-    public class Person : IComparable<Person>, IEquatable<Person>, IDescribable {
+    public class Person : IComparable<Person>, IEquatable<Person> {
         /// <summary>First name of this person.</summary>
         public string FirstName;
         /// <summary>Last name of this person.</summary>
@@ -72,16 +73,6 @@ namespace TotT.ValueTypes {
         public static Person FromString(string personName) {
             var person = personName.Split(' ');
             return new Person(person[0], person[1]);
-        }
-
-        public string Description
-        {
-            get
-            {
-                var info = TalkOfTheTown.Town.AgentInfoIndex[this];
-                var living = info.Item6 == VitalStatus.Dead ? "Dead" : "Living";
-                return $"{FullName}\n{living} {info.Item4}, age: {info.Item2}\n{info.Item5}";
-            }
         }
     }
 }

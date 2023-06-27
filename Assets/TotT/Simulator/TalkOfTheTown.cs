@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using GraphVisualization;
 using TED;
 using TED.Interpreter;
@@ -56,6 +57,7 @@ namespace TotT.Simulator {
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
         public string TownName;
         public TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
+        public KeyIndex<(Vocation, Person, Location, TimeOfDay), Person> EmploymentIndex;
         public TablePredicate<(Person,Person), Person, Person, bool> Friend;
         public TablePredicate<(Person,Person), Person, Person, bool> Enemy;
         public TablePredicate<(Person,Person), Person, Person, bool> RomanticInterest;
@@ -86,6 +88,22 @@ namespace TotT.Simulator {
             var AgentExist = Exists("AgentExist", person, birthday)
                             .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], 
                                             DateAgeToTimePoint[dateOfBirth, age, birthday]);
+            Graph.SetDescriptionMethod<Person>(p =>
+            {
+                var b = new StringBuilder();
+                var info = TalkOfTheTown.Town.AgentInfoIndex[p];
+                var living = info.Item6 == VitalStatus.Dead ? "Dead" : "Living";
+                var job = "Unemployed";
+                if (TalkOfTheTown.Town.EmploymentIndex.ContainsKey(p))
+                    job = TalkOfTheTown.Town.EmploymentIndex[p].Item1.ToString();
+                b.Append("<b>");
+                b.Append(p.FullName);
+                b.AppendLine("</b><size=24>");
+                b.AppendFormat("{0} {1}, age: {2}\n", living, info.Item4.ToString().ToLower(), info.Item2);
+                b.AppendLine(info.Item5.ToString());
+                b.AppendLine(job);
+                return b.ToString();
+            });
             //AgentExist.InitiallyCauses(Init(Agent[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive]).If(PrimordialBeing));
             
             PopulationCountIndex = AgentExist.CountIndex;
@@ -397,6 +415,8 @@ namespace TotT.Simulator {
             // ************************************ Vocations: ************************************
 
             Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
+            EmploymentIndex =
+                (KeyIndex<(Vocation, Person, Location, TimeOfDay), Person>)Employment.IndexFor(employee, true);
             Employment.Colorize(location);
             Employment.Button("Visualize", VisualizeJobs);
 

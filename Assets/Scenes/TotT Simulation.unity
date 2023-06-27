@@ -588,8 +588,8 @@ MonoBehaviour:
     LineWidth: 2
     IsDirected: 1
     DrawEdge: 1
-    ArrowheadLength: 4
-    ArrowheadWidth: 5
+    ArrowheadLength: 10
+    ArrowheadWidth: 4
     Font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     FontSize: 20
     FontStyle: 0
