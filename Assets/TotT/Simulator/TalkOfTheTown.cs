@@ -71,7 +71,6 @@ namespace TotT.Simulator {
             // Tables, despite being local variables, will be capitalized for style/identification purposes.
 
             // ************************************** Agents **************************************
-            
             var Agent = Predicate("Agent", person.Key, 
                 age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
             Agent.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
@@ -551,7 +550,7 @@ namespace TotT.Simulator {
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
-            Test.DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
+            DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
             //UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
