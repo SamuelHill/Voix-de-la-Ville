@@ -84,7 +84,7 @@ namespace TotT.Unity {
         }
         private bool TrySetLastMonth() => _lastMonth != TalkOfTheTown.Time.Month && SetLastMonth();
         private bool MonthlyUpdate() => UpdateMonthly && TrySetLastMonth();
-        private bool UpdateCheck => UpdateEveryTick || MonthlyUpdate();
+        private bool UpdateCheck => UpdateEveryTick || MonthlyUpdate() || _newlySorted;
         private bool UpdateRowCount() {
             if (_previousRowCount == RowCount) return false;
             _previousRowCount = RowCount;
@@ -153,6 +153,7 @@ namespace TotT.Unity {
                 CalcStringLengths(_buffer[i], ref updatedBufferStrings);
             // overwrite the longest strings for per tick update, pass in to CalcStringLength for permanent growth
             _longestBufferStrings = updatedBufferStrings;
+            _newlySorted = false;
         }
 
         private void CalcHeaderLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
@@ -208,11 +209,13 @@ namespace TotT.Unity {
             if (RowCount != 0 && RowCount >= NumDisplayRows) {
                 _scrollPosition = GUILayout.VerticalScrollbar(_scrollPosition,
                     NumDisplayRows - 0.1f, 0f, RowCount, ScrollHeight);
-                if (ScrollingInRect(screenRect)) _scrollPosition += Event.current.delta.y;
-                if (Scrolled || !_usingScroll || UpdateCheck || _newlySorted) {
+                if (ScrollingInRect(screenRect)) {
+                    var scrollTo = _scrollPosition + Event.current.delta.y;
+                    _scrollPosition = scrollTo < 0f ? 0f : scrollTo > RowCount ? RowCount : scrollTo;
+                }
+                if (Scrolled || !_usingScroll || UpdateCheck) {
                     Update();
                     _oldScroll = _scrollPosition;
-                    if (_newlySorted) _newlySorted = false;
                 }
                 if (!_usingScroll) _usingScroll = true;
             } else if (RowCountChange || UpdateCheck) Update();

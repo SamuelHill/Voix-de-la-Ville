@@ -708,6 +708,7 @@ namespace GraphVisualization {
             Clear();
             EnsureEdgeNodesInGraph(g);
             if (g.Nodes.Count == 0) return;
+            GUIManager.ShowTiles(false);
 
             foreach (var n in g.Nodes) {
                 var attrs = g.NodeAttributes[n];
@@ -738,7 +739,6 @@ namespace GraphVisualization {
         public static void ShowGraph<T>(GraphViz<T> g) => FindObjectOfType<TEDGraphVisualization>().SetGraph(g);
 
         public static void SetTableDescription() => SetDescriptionMethod<TablePredicate>(TableDescription);
-
         private static string TableDescription(TablePredicate p) {
             var b = new StringBuilder();
             b.Append("<b>");

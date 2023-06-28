@@ -76,6 +76,7 @@ namespace TotT.Unity {
             ShowActiveTables();
             ChangeActiveTables();
             ShowFlowButtons();
+            _tileManager.SetVisibility(ShowTilemap);
             if (_profileRuleExecutionTime) RuleExecutionTimes();
             if (!_simulationRunning) ShowPaused();
         }
@@ -91,8 +92,6 @@ namespace TotT.Unity {
             if (GUI.Button(new Rect(Screen.width-buttonWidth, buttonStart+buttonHeight, buttonWidth, buttonHeight),
                     "Update graph"))
                 TEDGraphVisualization.ShowGraph(UpdateFlowVisualizer.MakeGraph(TalkOfTheTown.Simulation));
-            if (GUI.Button(new Rect(Screen.width-buttonWidth, buttonStart + buttonHeight * 2, buttonWidth, buttonHeight), "hide tiles"))
-                _tileManager.ToggleVisible();
         }
     }
 }

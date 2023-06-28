@@ -33,6 +33,7 @@ namespace TotT.Unity {
         private static string[] _activeTables;  // should also be a string[4]
         private static int _tableToChange;
         private static int _changeTableSelector;
+        public static bool ShowTilemap = true;
         public static bool ChangeTable;
         private static bool _showTables = true;
         private static readonly Rect ChangeTablesRect = new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
@@ -92,6 +93,7 @@ namespace TotT.Unity {
 
         // ************************************** GUI control *************************************
 
+        public static void ShowTiles(bool show) => ShowTilemap = show;
         public static void ToggleShowTables() => _showTables = !_showTables;
         public static void ShowPaused() => Paused.OnGUI();
         public static void ShowStrings() {

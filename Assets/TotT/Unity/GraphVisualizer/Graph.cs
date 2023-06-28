@@ -30,8 +30,11 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 using UnityEngine.UI;
 using System.Linq;
+using TotT.Simulator;
+using TotT.Unity;
 using TotT.ValueTypes;
 using Unity.VisualScripting;
+using Time = UnityEngine.Time;
 
 namespace GraphVisualization
 {
@@ -790,12 +793,12 @@ namespace GraphVisualization
         }
         #endregion
 
-        void OnGUI()
-        {
-            if (nodes.Count == 0)
-                return;
-            if (GUI.Button(new Rect(new Vector2(1000,1040), new Vector2(100,30)),"Remove graph"))
+        void OnGUI() {
+            if (nodes.Count == 0) return;
+            if (GUI.Button(GUIManager.BottomMiddleRect(100, 30), "Remove graph")) {
                 Clear();
+                GUIManager.ShowTiles(true);
+            }
         }
     }
 }

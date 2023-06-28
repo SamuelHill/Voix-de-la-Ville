@@ -14,12 +14,12 @@ namespace TotT.Unity {
         private readonly Tile _occupiedLot;
         private readonly Vector2Int _townCenter; // offsets the town's location in terms of tiles on screen
         public readonly Tilemap Tilemap;
-        public readonly TilemapRenderer TilemapRenderer;
+        private readonly TilemapRenderer _tilemapRenderer;
         private Vector3Int? _selectedTile;
 
         public TileManager(Tilemap tilemap, Vector2Int townCenter, Tile occupiedLot) {
             Tilemap = tilemap;
-            TilemapRenderer = Tilemap.GetComponent<TilemapRenderer>();
+            _tilemapRenderer = Tilemap.GetComponent<TilemapRenderer>();
             _townCenter = townCenter;
             _occupiedLot = occupiedLot;
         }
@@ -70,6 +70,9 @@ namespace TotT.Unity {
         }
         public void UpdateSelectedTile() => _selectedTile = TrySelectTile(out var tile) ? tile : null;
 
-        public void ToggleVisible() => TilemapRenderer.enabled = !TilemapRenderer.enabled;
+        public void SetVisibility(bool show) {
+            if (_tilemapRenderer.enabled == show) return;
+            _tilemapRenderer.enabled = show;
+        }
     }
 }
