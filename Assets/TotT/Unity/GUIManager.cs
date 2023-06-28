@@ -40,9 +40,8 @@ namespace TotT.Unity {
         private static readonly Rect ShowTablesRect = 
             new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
 
-        public static readonly DictionaryWithDefault<TablePredicate, Dictionary<string, Action>> ButtonTable
-            = new DictionaryWithDefault<TablePredicate, Dictionary<string, Action>>((_) =>
-                new Dictionary<string, Action>());
+        public static readonly DictionaryWithDefault<TablePredicate, Dictionary<string, Action>> ButtonTable = 
+            new(_ => new Dictionary<string, Action>());
 
         public static void Button(this TablePredicate p, string buttonLabel, Action action) =>
             ButtonTable[p][buttonLabel] = action;
@@ -193,8 +192,8 @@ namespace TotT.Unity {
             GUI.skin.label.fontStyle = FontStyle.Bold;
             GUI.skin.label.normal.background = Texture2D.grayTexture;
             var pressed = GUILayout.Button(label, GUI.skin.label, options);
-            GUI.skin.label.fontStyle = FontStyle.Normal;
             GUI.skin.label.normal.background = Texture2D.blackTexture;
+            GUI.skin.label.fontStyle = FontStyle.Normal;
             return pressed;
         }
 

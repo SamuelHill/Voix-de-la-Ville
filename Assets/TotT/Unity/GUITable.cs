@@ -19,7 +19,7 @@ namespace TotT.Unity {
         private const int LabelHeight = 16; // same as fontSize + padding
         private const int TablePadding = 8; // using height padding for left side offset as well
         private const int DefaultTableHeight = 260; // (260 * 4) + (8 * 5) = 1080...
-        private const int TableWidthOffset = 50; // account for the scrollbar and then some
+        private const int TableWidthOffset = 20; // account for the scrollbar
         private const int DefaultNumRowsToDisplay = (DefaultTableHeight - TablePadding) / LabelHeight - 5;
         // - 5 from display rows; two for the bold title and header row, and three to not get cutoff/crowd the space
         // this could probably be calculated dynamically based on label margins but for now this offset math is good enough.
@@ -72,20 +72,13 @@ namespace TotT.Unity {
         private bool Scrolled => Math.Abs(_scrollPosition - _oldScroll) > 0.0001f;
         private uint ScrollRow => (uint)Math.Floor(_scrollPosition);
         private int[] LongestStrings => _longestBufferStrings.Zip(_headingLengths, Mathf.Max).ToArray();
-        private int LongestRow => LongestStrings.Sum() + _longestBufferStrings.Length * ColumnPadding;
-        private float TableWidth
-        {
-            get
-            {
-                if (RowCount == 0)
-                    return _noEntriesWidth;
-                else
-                {
-                    var sum = 0f;
-                    for (var i = 0; i < NumColumns; i++)
-                        sum += _columnWidths[i];
-                    return sum;
-                }
+        private int LongestRow => LongestStrings.Sum() + NumColumns * ColumnPadding;
+        private float TableWidth {
+            get {
+                if (RowCount == 0) return _noEntriesWidth;
+                var sum = 0f;
+                for (var i = 0; i < NumColumns; i++) sum += _columnWidths[i];
+                return sum;
             }
         }
 
@@ -109,19 +102,16 @@ namespace TotT.Unity {
         private bool RowCountChange => !_usingScroll && UpdateRowCount();
 
         private GUILayoutOption ScrollHeight => GUILayout.Height((NumDisplayRows + 3) * LabelHeight);
-        private GUILayoutOption ColumnWidth(int i)
-        {
-            var len = LongestStrings[i];
-            if (len > _columnWidths[i])
-                _columnWidths[i] = len;
-            else if (len < _columnWidths[i]-2)
-                _columnWidths[i] -= 0.005f;
-            return GUILayout.Width(_columnWidths[i] + ColumnPadding);
+        private GUILayoutOption ColumnWidth(int i) {
+            var len = LongestStrings[i] + ColumnPadding;
+            if (len > _columnWidths[i]) _columnWidths[i] = len;
+            else if (len < _columnWidths[i] - 1) _columnWidths[i] -= 0.002f;
+            return GUILayout.Width(_columnWidths[i]);
         }
 
-        private Rect TableRect(int x, int y, int height) => // no width control - size of columns is calculated
-            new(x, y, TableWidth + TableWidthOffset, height); // height control via num rows
-        private Rect LeftSideTables(int tableNum) => // special case for the 4 tables on the left side
+        private Rect TableRect(int x, int y, int height) =>     // no width control - size of columns is calculated
+            new(x, y, TableWidth + TableWidthOffset + (NumColumns * ColumnPadding), height); // height control via num rows
+        private Rect LeftSideTables(int tableNum) =>            // special case for the 4 tables on the left side
             TableRect(TablePadding, tableNum * (DefaultTableHeight + TablePadding) + TablePadding, 
                 DefaultTableHeight); // used in conjunction with DefaultNumRowsToDisplay - num rows dictates height
         private static int NumRowsToHeight(int numRows) => (numRows + 5) * LabelHeight + 2 * TablePadding;
@@ -135,7 +125,7 @@ namespace TotT.Unity {
         public void Initialize() {
             // This is how I am doing bold label display for now, so ditto for size calc:
             GUI.skin.label.fontStyle = FontStyle.Bold;
-            CalcStringLengths(_headings, ref _headingLengths);
+            CalcHeaderLengths(_headings, ref _headingLengths);
             GUI.skin.label.fontStyle = FontStyle.Normal;
             // If the table is empty now or could be empty in future ticks...
             if (RowCount == 0 || _predicate.IsIntensional) {
@@ -150,29 +140,22 @@ namespace TotT.Unity {
         }
 
         private void Update() {
-            if (_sortComparer != null)
-            {
-                if (_sortBuffer == null || _sortBuffer.Length < _predicate.Length)
+            if (_sortComparer != null) {
+                if (_sortBuffer == null || _sortBuffer.Length < _predicate.Length) 
                     _sortBuffer = new uint[_predicate.Length * 2];
-                for (uint i = 0; i < _predicate.Length; i++)
-                    _sortBuffer[i] = i;
+                for (uint i = 0; i < _predicate.Length; i++) _sortBuffer[i] = i;
                 Array.Sort(_sortBuffer, _sortComparer);
-
                 _bufferedRows = 0;
-                for (int i = 0; i < _buffer.Length && ScrollRow + i < _predicate.Length; i++)
-                {
+                for (var i = 0; i < _buffer.Length && ScrollRow + i < _predicate.Length; i++) {
                     _predicate.RowToStrings(_sortBuffer[ScrollRow + i], _buffer[i]);
                     _bufferedRows++;
                     _rowColors[i] = _colorizer(_sortBuffer[ScrollRow + i]);
                 }
-            }
-            else
-            {
+            } else {
                 _bufferedRows = _predicate.RowRangeToStrings(ScrollRow, _buffer);
                 for (var i = 0; i < _rowColors.Length && ScrollRow + i < _predicate.Length; i++)
                     _rowColors[i] = _colorizer((uint)(ScrollRow + i));
             }
-
             // update string lengths per tick - prevents permanent growth due to singular long entries
             var updatedBufferStrings = new int[NumColumns];
             for (var i = 0; i < _bufferedRows; i++)
@@ -188,13 +171,18 @@ namespace TotT.Unity {
             }
         }
 
+        private void CalcHeaderLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
+            for (var i = 0; i < NumColumns; i++) {
+                var stringLength = (int)GUI.skin.button.CalcSize(new GUIContent(strings[i])).x;
+                if (stringLengths[i] < stringLength) stringLengths[i] = stringLength;
+            }
+        }
+
         private void LayoutRow(IReadOnlyList<string> strings, Color c) {
             GUILayout.BeginHorizontal();
             GUI.skin.label.normal.textColor = c;
-
             for (var i = 0; i < NumColumns; i++) 
                 GUILayout.Label(strings[i], ColumnWidth(i));
-
             GUI.skin.label.normal.textColor = Color.white;
             GUILayout.EndHorizontal();
         }
@@ -212,22 +200,15 @@ namespace TotT.Unity {
             // Title and Header:
             GUILayout.BeginHorizontal();
             TableTitle(tableNum, $"{Name} ({_predicate.Length})");
-            foreach (var binding in GUIManager.ButtonTable[_predicate])
-                if (GUILayout.Button(binding.Key))
-                    binding.Value();
+            foreach (var binding in ButtonTable[_predicate])
+                if (GUILayout.Button(binding.Key)) binding.Value();
             GUILayout.EndHorizontal();
             LayoutHeaderRow(_headings);
             GUILayout.BeginHorizontal(); // table and scroll bar area
             // Table contents:
             GUILayout.BeginVertical();
             if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
-            else
-            {
-                for (var i = 0; i < _buffer.Length; i++)
-                {
-                    LayoutRow(_buffer[i], _rowColors[i]);
-                }
-            }
+            else for (var i = 0; i < _buffer.Length; i++) LayoutRow(_buffer[i], _rowColors[i]);
             GUILayout.EndVertical();
             // Scrollbar and Update logic:
             if (RowCount != 0 && RowCount >= NumDisplayRows) {

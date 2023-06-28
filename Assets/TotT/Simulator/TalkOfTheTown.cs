@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -17,7 +16,6 @@ using UnityEngine;
 using static TED.Language;
 
 namespace TotT.Simulator {
-    using LocationDisplayRow = ValueTuple<Vector2Int, Location, LocationType, TimePoint>;
     using static Calendar;   // Prob per interval type
     using static CsvParsing; // DeclareParsers
     using static Generators; // Name Generation
@@ -35,82 +33,69 @@ namespace TotT.Simulator {
         public static Simulation Simulation = null!;
         public static Time Time;
         private const int Seed = 349571286;
-        public static TalkOfTheTown Town;
+        private readonly string TownName;
 
         private TalkOfTheTown() {
             DeclareParsers();
             Seed(Seed, Seed);
             Time = new Time();
-            Town = this;
+            TownName = PossibleTownName.Random;
+            BindingList.BindGlobal(Generators.TownName, TownName);
+            TEDGraphVisualization.SetTableDescription();
         }
         public TalkOfTheTown(ushort tick = 1) : this() => Time = new Time(tick);
         public TalkOfTheTown(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) :
             this() => Time = new Time(month, day, time);
 
-        // public Tables and Indexers for GUI purposes (see Unity.SimulationInfo for most uses)
+        // ReSharper disable InconsistentNaming
+        // Tables, despite being local or private variables, will be capitalized for style/identification purposes.
+
+        #region Tables and Indexers for GUI and Graph visuals
+        private TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterFeatures;
+        private TablePredicate<Person, Person, InteractionType> Interaction;
+        private TablePredicate<Person, ActionType, Location> WhereTheyAt;
+        private TablePredicate<Person, Location> Home;
+        private TablePredicate<Person, Person> Parent;
+        private AffinityRelationship<Person, Person> Friend;
+        private AffinityRelationship<Person, Person> Enemy;
+        private AffinityRelationship<Person, Person> RomanticInterest;
+        private TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
+        private KeyIndex<(Vocation, Person, Location, TimeOfDay), Person> EmploymentIndex;
         public TablePredicate<Vector2Int, Location, LocationType, TimePoint> NewLocation;
         public TablePredicate<Vector2Int> VacatedLocation;
         public TablePredicate<Person> Buried;
         public KeyIndex<(bool, int), bool> PopulationCountIndex;
-        public KeyIndex<LocationDisplayRow, Vector2Int> LocationsPositionIndex;
-        public KeyIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), Person> AgentInfoIndex;
-        private ColumnAccessor<LocationType, Location> _locationToType;
         public GeneralIndex<(Person, ActionType, Location), Location> WhereTheyAtLocationIndex;
-        public string TownName;
-        public TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
-        public KeyIndex<(Vocation, Person, Location, TimeOfDay), Person> EmploymentIndex;
-        public TablePredicate<(Person,Person), Person, Person, bool> Friend;
-        public TablePredicate<(Person,Person), Person, Person, bool> Enemy;
-        public TablePredicate<(Person,Person), Person, Person, bool> RomanticInterest;
-        public TablePredicate<Person, Person> Parent;
-        public TablePredicate<Person, Person, InteractionType> Interaction;
-        public TablePredicate<Person, ActionType, Location> WhereTheyAt;
-        public TablePredicate<Person, Location> Home;
+        public KeyIndex<(Vector2Int, Location, LocationType, TimePoint), Vector2Int> LocationsPositionIndex;
+        private ColumnAccessor<LocationType, Location> LocationToType;
+
+        // the only place LocationToType is used...
+        private Color PlaceColor(Location place) => LocationColorsIndex[LocationToType[place]].Item2;
+        #endregion
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
             Simulation.Exceptions.Colorize(_ => Color.red);
             Simulation.Problems.Colorize(_ => Color.red);
-            SetDefaultColorizer<Location>(l => LocationColorsIndex[_locationToType[l]].Item2);
-            TownName = PossibleTownName.Random;
-            BindingList.BindGlobal(Generators.TownName, TownName);
+            SetDefaultColorizer<Location>(PlaceColor);
             Simulation.BeginPredicates();
             InitStaticTables();
-            // ReSharper disable InconsistentNaming
-            // Tables, despite being local variables, will be capitalized for style/identification purposes.
 
             // ************************************ Characters ************************************
 
             var Character = Exists("Character", person, birthday)
                .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], DateAgeToTimePoint[dateOfBirth, age, birthday]);
-            var CharacterFeatures = Character.Features(age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
+            CharacterFeatures = Character.Features(age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
             CharacterFeatures.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
             CharacterFeatures.Colorize(vitalStatus, s => s == VitalStatus.Alive ? Color.white : Color.gray);
-            CharacterFeatures.Button("Random friend network", () => VisualizeFriendNetworkOf(CharacterFeatures.ColumnValueFromRowNumber(person)((uint)Randomize.Integer(0, (int)CharacterFeatures.Length))));
+            CharacterFeatures.Button("Random friend network", VisualizeRandomFriendNetwork);
             CharacterFeatures.Button("Full network", VisualizeFullSocialNetwork);
-            AgentInfoIndex =
-                (KeyIndex<(Person, int, Date, Sex, Sexuality, VitalStatus), Person>)CharacterFeatures.IndexFor(person, true);
 
-            Graph.SetDescriptionMethod<Person>(p =>
-            {
-                var b = new StringBuilder();
-                var info = TalkOfTheTown.Town.AgentInfoIndex[p];
-                var dead = info.Item6 == VitalStatus.Dead;
-                var living = dead ? "Dead" : "Living";
-                var job = "Unemployed";
-                if (TalkOfTheTown.Town.EmploymentIndex.ContainsKey(p))
-                    job = TalkOfTheTown.Town.EmploymentIndex[p].Item1.ToString();
-                b.Append(dead ? "<color=grey>" : "");
-                b.Append("<b>");
-                b.Append(p.FullName);
-                b.AppendLine("</b><size=24>");
-                b.AppendFormat("{0} {1}, age: {2}\n", living, info.Item4.ToString().ToLower(), info.Item2);
-                b.AppendLine(info.Item5.ToString());
-                b.AppendLine(job);
-                return b.ToString();
-            });
+            PopulationCountIndex = Character.CountIndex;
+            Graph.SetDescriptionMethod<Person>(PersonDescription);
 
-            #region Helpers
+            #region Character Helpers
+            // TODO : Replace naming helpers with TextGenerator
             var RandomFirstName = Definition("RandomFirstName", sex, firstName);
             RandomFirstName[Sex.Male, firstName].If(RandomElement(MaleNames, firstName));
             RandomFirstName[Sex.Female, firstName].If(RandomElement(FemaleNames, firstName));
@@ -118,6 +103,10 @@ namespace TotT.Simulator {
             var RandomPerson = Definition("RandomPerson", sex, person)
                .Is(RandomFirstName, RandomElement(Surnames, lastName), NewPerson[firstName, lastName, person]);
 
+            var Population = Definition("Population", count).Is(Character.Count[true, count]);
+            // Check to vital status - same as also saying Character[person] but with less extraneous referencing
+            var Age = Definition("Age", person, age)
+               .Is(CharacterFeatures[person, age, __, __, __, VitalStatus.Alive]);
             var PersonSex = Definition("PersonSex", person, sex)
                .Is(CharacterFeatures[person, __, __, sex, __, VitalStatus.Alive]);
             var PersonSexuality = Definition("PersonSexuality", person, sexuality)
@@ -125,16 +114,17 @@ namespace TotT.Simulator {
             var SexualAttraction = Definition("SexualAttraction", person, partner)
                .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], AttractedTo[sexuality, sexOfPartner],
                    PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], AttractedTo[sexualOfPartner, sex]);
+
+            // TODO : Check, Definitions vs Predicates
+            var Man = Predicate("Men", man).If(
+                CharacterFeatures[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
+            var Woman = Predicate("Women", woman).If(
+                CharacterFeatures[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
             #endregion
 
             var Aptitude = Character.FeaturesMultiple("Aptitude", job.Indexed, aptitude);
             Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeing, Jobs);
             Aptitude.Add[person, job, RandomNormalSByte].If(Character.Add, Jobs);
-
-            PopulationCountIndex = Character.CountIndex;
-            var Population = Definition("Population", count).Is(Character.Count[true, count]);
-            // Age doubles as a check to vital status - same as also saying Character[person] but with less extraneous referencing
-            var Age = Definition("Age", person, age).Is(CharacterFeatures[person, age, __, __, __, VitalStatus.Alive]);
 
             Character.EndWhen(Age, age > 60, PerMonth(0.003f))
                      .EndCauses(Set(CharacterFeatures, person, vitalStatus, VitalStatus.Dead));
@@ -150,34 +140,27 @@ namespace TotT.Simulator {
             // TODO : Married couples - last name changes
 
             var Charge = Affinity("Charge", pairing, person, otherPerson, charge).Decay(0.8f);
-            var Friend = Charge.Relationship("Friend", state, 5000, 4000);
+            Friend = Charge.Relationship("Friend", state, 5000, 4000);
             var MutualFriendship = Predicate("MutualFriendship", person, otherPerson)
                .If(Friend[person, otherPerson], Friend[otherPerson, person]);
-            var Enemy = Charge.Relationship("Enemy", state, -6000, -3000);
+            Enemy = Charge.Relationship("Enemy", state, -6000, -3000);
 
             var Spark = Affinity("Spark", pairing, person, otherPerson, spark).Decay(0.1f);
-            var RomanticInterest = Spark.Relationship("RomanticInterest", state, 7000, 6000);
+            RomanticInterest = Spark.Relationship("RomanticInterest", state, 7000, 6000);
             var MutualRomanticInterest = Predicate("MutualRomanticInterest", person, otherPerson)
                .If(RomanticInterest[person, otherPerson], RomanticInterest[otherPerson, person]);
+
+            Parent = Predicate("Parent", parent, child);
+            Parent.Button("Visualize", VisualizeFamilies);
+            var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
+               .Is(Parent[person, otherPerson] | Parent[otherPerson, person]); // only immediate family
 
             // ************************************ Procreation ***********************************
             // TODO : Limit PotentialProcreation by interactions (realism)
             // TODO : Limit PotentialProcreation by Personality (family planning, could include likely-hood to use contraceptives)
             // TODO : Limit PotentialProcreation by time since last birth and number of children with partner (Gestation table info)
 
-            // Need Parents before parenting logic to prevent procreative relationships between parents and kids
-            Parent = Predicate("Parent", parent, child);
-            Parent.Button("Visualize", VisualizeFamilies);
-
-            var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
-                .Is(Parent[person, otherPerson] | Parent[otherPerson, person]); // only immediate family
-
-            var Man = Predicate("Men", man).If(
-                CharacterFeatures[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
-            var Woman = Predicate("Women", woman).If(
-                CharacterFeatures[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
-
-            var Gestation = Predicate("Gestation",
+            var Gestation = Predicate("Gestation", 
                 woman.Indexed, man, sex, child.Key, conception, state.Indexed);
             var Pregnant = Predicate("Pregnant", woman)
                 .If(Gestation[woman, __, __, __, __, true]);
@@ -197,13 +180,12 @@ namespace TotT.Simulator {
                 Time.NineMonthsPast[conception], Prob[0.8f]); // Birth after 9 months with 'labor'
             Gestation.Set(child, state, false).If(BirthTo);
 
-            Character.StartWhen(BirthTo[__, __, __, person]);
-            CharacterFeatures.Add[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive].If(
-                BirthTo[__, __, sex, person], RandomSexuality[sex, sexuality]);
-
             Parent.Add.If(BirthTo[parent, __, __, child]);
             Parent.Add.If(BirthTo[__, parent, __, child]);
 
+            Character.StartWhen(BirthTo[__, __, __, person]);
+            Character.StartCauses(Add(CharacterFeatures[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive])
+                                     .If(BirthTo[__, __, sex, person], RandomSexuality[sex, sexuality]));
             // Increment age once per birthday (in the AM, if you weren't just born)
             CharacterFeatures.Set(person, age, num)
                  .If(CharacterFeatures[person, age, dateOfBirth, __, __, VitalStatus.Alive],
@@ -213,7 +195,7 @@ namespace TotT.Simulator {
 
             var Location = Predicate("Location", location.Key,
                 locationType.Indexed, locationCategory.Indexed, position.Indexed, founding, businessStatus.Indexed);
-            _locationToType = Location.Accessor(location, locationType);
+            LocationToType = Location.Accessor(location, locationType);
             Location.Initially[location, locationType, locationCategory, position, founding, BusinessStatus.InBusiness]
                      .Where(PrimordialLocation, LocationInformation);
             Location.Colorize(location);
@@ -386,8 +368,7 @@ namespace TotT.Simulator {
             // ************************************ Vocations: ************************************
 
             Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
-            EmploymentIndex =
-                (KeyIndex<(Vocation, Person, Location, TimeOfDay), Person>)Employment.IndexFor(employee, true);
+            EmploymentIndex = Employment.KeyIndex(employee);
             Employment.Colorize(location);
             Employment.Button("Visualize", VisualizeJobs);
 
@@ -548,244 +529,166 @@ namespace TotT.Simulator {
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
             Simulation.EndPredicates();
-            Graph.SetDescriptionMethod<TablePredicate>(TableDescription);
             DataflowVisualizer.MakeGraph(Simulation, "Visualizations/Dataflow.dot");
-            //UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
+            UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
         }
 
-        private void VisualizeHomes()
-        {
+        #region Graph visualizations
+        private void VisualizeHomes() {
             var g = new GraphViz<object>();
-            foreach (var row in Home)
-            {
-                var place = row.Item2;
+            foreach ((var person, var place) in Home) {
                 var color = PlaceColor(place);
-                if (!g.Nodes.Contains(place))
-                {
+                if (!g.Nodes.Contains(place)) {
                     g.Nodes.Add(place);
-                    g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
+                    g.NodeAttributes[place] = new Dictionary<string, object> { { "rgbcolor", color } };
                 }
-                g.AddEdge(new GraphViz<object>.Edge(row.Item1, place, true, null,
-                    new Dictionary<string, object>() {{ "rgbcolor", color }}));
-
+                g.AddEdge(new GraphViz<object>.Edge(person, place, true, null,
+                                                    new Dictionary<string, object> { { "rgbcolor", color } }));
             }
             TEDGraphVisualization.ShowGraph(g);
         }
 
-        private string TableDescription(TablePredicate p)
-        {
-            var b = new StringBuilder();
-            b.Append("<b>");
-            b.AppendLine(p.DefaultGoal.ToString().Replace("[","</b>["));
-            b.AppendFormat("{0} rows\n", p.Length);
-            b.Append("<size=16>");
-            switch (p.UpdateMode)
-            {
-                case UpdateMode.BaseTable:
-                    b.Append("Base table");
-                    break;
-
-                case UpdateMode.Operator:
-                    b.Append("Operator result");
-                    break;
-
-                default:
-                    foreach (var r in p.Rules)
-                        b.AppendLine(r.ToString());
-                    break;
-            }
-            return b.ToString();
-        }
-
-        public void VisualizeJobs()
-        {
+        private void VisualizeJobs() {
             var g = new GraphViz<object>();
-            foreach (var job in Employment)
-            {
+            foreach (var job in Employment) {
                 var place = job.Item3;
                 var color = PlaceColor(place);
-                if (!g.Nodes.Contains(place))
-                {
+                if (!g.Nodes.Contains(place)) {
                     g.Nodes.Add(place);
                     g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
                 }
                 g.AddEdge(new GraphViz<object>.Edge(job.Item2, place, true, job.Item1.ToString(),
-                    new Dictionary<string, object>() {{ "rgbcolor", color }}));
-
+                                                    new Dictionary<string, object> { { "rgbcolor", color } }));
             }
             TEDGraphVisualization.ShowGraph(g);
         }
 
-        private Color PlaceColor(Location place)
-        {
-            return StaticTables.LocationColorsIndex[_locationToType[place]].Item2;
-        }
+        private void VisualizeRandomFriendNetwork() => VisualizeFriendNetworkOf(
+            CharacterFeatures.ColumnValueFromRowNumber(person)((uint)Integer(0, (int)CharacterFeatures.Length)));
 
-        public GraphViz<TGraph> TraceToDepth<TGraph,T>(int maxDepth, T start, Func<T, IEnumerable<(T neighbor, string label, string color)>> edges) where T: TGraph
-        {
-            var g = new GraphViz<TGraph>();
+        private void VisualizeFriendNetworkOf(Person p) {
+            // ReSharper disable InconsistentNaming
+            var FriendIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Friend.IndexFor(person, false);
+            var EnemyIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Enemy.IndexFor(person, false);
+            var RomanticInterestIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)RomanticInterest.IndexFor(person, false);
 
-            void Walk(T node, int depth)
-            {
-                if (depth > maxDepth || g.Nodes.Contains(node))
-                    return;
-                g.AddNode(node);
-                foreach (var edge in edges(node))
-                {
-                    Walk(edge.neighbor, depth+1);
-                    g.AddEdge(new GraphViz<TGraph>.Edge(node, edge.neighbor, true, edge.label,
-                        new Dictionary<string, object> {  { "color", edge.color} }));
-                }
-            }
-
-            Walk(start, 0);
-            return g;
-        }
-
-        public void VisualizeFriendNetworkOf(Person p)
-        {
-            var friendIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Friend.IndexFor(person, false);
-            var enemyIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Enemy.IndexFor(person, false);
-            var romanticInterestIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)RomanticInterest.IndexFor(person, false);
-            var employmentIndex =
-                (KeyIndex<(Vocation, Person, Location, TimeOfDay), Person>)Employment.IndexFor(employee, true);
-
-            IEnumerable<(Person, string, string)> FriendsOf(Person person)
+            IEnumerable<(Person, string, string)> FriendsOf(Person person, GeneralIndex<((Person, Person), Person, Person, bool), Person> friendIndex)
                 => friendIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "green"));
-            IEnumerable<(Person, string, string)> EnemiesOf(Person person)
+            IEnumerable<(Person, string, string)> EnemiesOf(Person person, GeneralIndex<((Person, Person), Person, Person, bool), Person> enemyIndex)
                 => enemyIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "red"));
-            IEnumerable<(Person, string, string)> RomanticInterestsOf(Person person)
+            IEnumerable<(Person, string, string)> RomanticInterestsOf(Person person, GeneralIndex<((Person, Person), Person, Person, bool), Person> romanticInterestIndex)
                 => romanticInterestIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "blue"));
-
             IEnumerable<(Person, string, string)> ConnectionsOf(Person person) =>
-                FriendsOf(person).Concat(EnemiesOf(person)).Concat(RomanticInterestsOf(person));
+                FriendsOf(person, FriendIndex).Concat(EnemiesOf(person, EnemyIndex)).Concat(RomanticInterestsOf(person, RomanticInterestIndex));
 
-            var g = TraceToDepth<object,Person>(1, p, ConnectionsOf);
+            var g = TEDGraphVisualization.TraceToDepth<object, Person>(1, p, ConnectionsOf);
             var people = g.Nodes.Cast<Person>().ToArray();
-            foreach (var p2 in people)
-            {
-                if (employmentIndex.ContainsKey(p2))
-                {
-                    var job = employmentIndex[p2];
-                    var company = job.Item3;
-                    var jobColor = PlaceColor(company);
-                    if (!g.Nodes.Contains(company))
-                    {
-                        g.AddNode(company);
-                        g.NodeAttributes[company] = new Dictionary<string, object>() { { "rgbcolor", jobColor } };
-                    }
-                    g.AddEdge(new GraphViz<object>.Edge(p2, company, true,
-                        job.Item1.ToString(), new Dictionary<string, object>() { { "rgbcolor", jobColor } }));
+            foreach (var p2 in people) {
+                if (!EmploymentIndex.ContainsKey(p2)) continue;
+                (var job, _, var company, _) = EmploymentIndex[p2];
+                var jobColor = PlaceColor(company);
+                if (!g.Nodes.Contains(company)) {
+                    g.AddNode(company);
+                    g.NodeAttributes[company] = new Dictionary<string, object>() { { "rgbcolor", jobColor } };
                 }
+                g.AddEdge(new GraphViz<object>.Edge(p2, company, true,
+                                                    job.ToString(), new Dictionary<string, object>() { { "rgbcolor", jobColor } }));
             }
             TEDGraphVisualization.ShowGraph(g);
+            // ReSharper restore InconsistentNaming
         }
 
-        public void VisualizeFullSocialNetwork()
-        {
+        private void VisualizeFullSocialNetwork() {
             var g = new GraphViz<object>();
-
             foreach (var r in Friend)
-                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3,
-                    true, null,
+                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3, true, null,
                     new Dictionary<string, object>() { { "color", "green"}}));
             foreach (var r in Enemy)
-                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3,
-                    true, null,
-                    new Dictionary<string, object>() { { "color", "red"}}));
+                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3, true, null,
+                    new Dictionary<string, object> { { "color", "red"}}));
             foreach (var r in RomanticInterest)
-                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3,
-                    true, null,
-                    new Dictionary<string, object>() { { "color", "blue"}}));
-
-            //foreach (var job in Employment)
-            //{
-            //    var place = job.Item3;
-            //    var color = PlaceColor(place);
-            //    if (!g.Nodes.Contains(place))
-            //    {
-            //        g.Nodes.Add(place);
-            //        g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
-            //    }
-            //    g.AddEdge(new GraphViz<object>.Edge(job.Item2, place, true, job.Item1.ToString(),
-            //        new Dictionary<string, object>() {{ "rgbcolor", color }}));
-
-            //}
-
+                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3, true, null,
+                    new Dictionary<string, object> { { "color", "blue"}}));
             TEDGraphVisualization.ShowGraph(g);
         }
 
-        public void VisualizeFamilies()
-        {
+        private void VisualizeFamilies() {
             var g = new GraphViz<Person>();
-            foreach (var p in Parent)
-            {
+            foreach (var p in Parent) {
                 var parent = p.Item1;
                 var child = p.Item2;
                 if (!g.Nodes.Contains(parent)) g.AddNode(parent);
                 if (!g.Nodes.Contains(child)) g.AddNode(child);
                 g.AddEdge(new GraphViz<Person>.Edge(child, parent));
             }
-
             TEDGraphVisualization.ShowGraph(g);
         }
 
-        public void VisualizeInteractions()
-        {
+        private void VisualizeInteractions() {
             var g = new GraphViz<Person>();
             foreach (var row in Interaction)
-            {
-                g.AddEdge(new GraphViz<Person>.Edge(row.Item1, row.Item2, true, row.Item3.ToString(), new Dictionary<string, object>()
-                    { { "color", row.Item3 switch
-                    {
-                        InteractionType.Arguing => "red",
-                        InteractionType.Assisting => "green",
-                        InteractionType.Flirting => "blue",
-                        InteractionType.Chatting => "yellow",
-                        _ => "white"
-                    } }}));
-            }
+                g.AddEdge(new GraphViz<Person>.Edge(
+                              row.Item1, row.Item2, true, row.Item3.ToString(), 
+                              new Dictionary<string, object> { { "color", row.Item3 switch { 
+                                  InteractionType.Arguing => "red", 
+                                  InteractionType.Assisting => "green", 
+                                  InteractionType.Flirting => "blue", 
+                                  InteractionType.Chatting => "yellow", 
+                                  _ => "white"
+                              } } }));
             TEDGraphVisualization.ShowGraph(g);
         }
 
-        public void VisualizeWhereTheyAt()
-        {
+        private void VisualizeWhereTheyAt() {
             var g = new GraphViz<object>();
-            foreach (var row in WhereTheyAt)
-            {
+            foreach (var row in WhereTheyAt) {
                 var place = row.Item3;
                 var color = PlaceColor(place);
-                if (!g.Nodes.Contains(place))
-                {
+                if (!g.Nodes.Contains(place)) {
                     g.Nodes.Add(place);
                     g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
                 }
                 g.AddEdge(new GraphViz<object>.Edge(row.Item1, place, true, row.Item2.ToString(),
                     new Dictionary<string, object>() {{ "rgbcolor", color }}));
-
             }
             TEDGraphVisualization.ShowGraph(g);
         }
 
-        public void UpdateSimulator() {
+        private string PersonDescription(Person p) {
+            var b = new StringBuilder();
+            var info = CharacterFeatures.KeyIndex(person)[p];
+            var dead = info.Item6 == VitalStatus.Dead;
+            var living = dead ? "Dead" : "Living";
+            var job = "Unemployed";
+            if (EmploymentIndex.ContainsKey(p)) job = EmploymentIndex[p].Item1.ToString();
+            b.Append(dead ? "<color=grey>" : "");
+            b.Append("<b>");
+            b.Append(p.FullName);
+            b.AppendLine("</b><size=24>");
+            b.AppendFormat("{0} {1}, age: {2}\n", living, info.Item4.ToString().ToLower(), info.Item2);
+            b.AppendLine(info.Item5.ToString());
+            b.AppendLine(job);
+            return b.ToString();
+        }
+        #endregion
+
+        public static void UpdateSimulator() {
 #if ParallelUpdate
-            if (update == null)
-                LoopSimulator();
+            if (update == null) LoopSimulator();
 #else
             Time.Tick();
             Simulation.Update();
-            GUIManager.PopTableIfNewActivity(Simulation.Problems);
-            GUIManager.PopTableIfNewActivity(Simulation.Exceptions);
+            PopTableIfNewActivity(Simulation.Problems);
+            PopTableIfNewActivity(Simulation.Exceptions);
 #endif
         }
 
 #if ParallelUpdate
         private static Task update;
 
-        static void LoopSimulator()
-        {
+        static void LoopSimulator(){
             Time.Tick();
             Simulation.Update();
             update = Simulation.UpdateAsync().ContinueWith((_) => LoopSimulator());
