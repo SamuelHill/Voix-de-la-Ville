@@ -110,7 +110,7 @@ namespace TotT.Unity {
             _showTables = GUI.Toggle(ShowTablesRect, _showTables, ShowHideTables);
             GUI.EndGroup();
             if (!ChangeTable || !_showTables) return;
-            TEDGraphVisualization.Current.Clear();  
+            TEDGraphVisualization.Current.Clear();
             // If we are trying to change tables:
             _tableToChange = GUI.Toolbar(TopMiddleRectStack(TableSelectorToolbarWidth, 2), _tableToChange, TableSelector);
             _changeTableSelector = Array.IndexOf(Tables.Keys.ToArray(), _activeTables[_tableToChange]);
@@ -123,7 +123,9 @@ namespace TotT.Unity {
         }
 
         private static void PopTable(TablePredicate p) => _activeTables[0] = p.Name; // Fill this in with something smarter
+
         private static readonly Dictionary<TablePredicate, uint> PreviousLengths = new();
+
         public static void PopTableIfNewActivity(TablePredicate p) {
             if (!PreviousLengths.TryGetValue(p, out var length)) 
                 PreviousLengths[p] = length = p.Length;

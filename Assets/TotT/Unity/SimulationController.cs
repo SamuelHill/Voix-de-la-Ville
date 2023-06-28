@@ -78,7 +78,7 @@ namespace TotT.Unity {
             ShowFlowButtons();
             _tileManager.SetVisibility(ShowTilemap);
             if (_profileRuleExecutionTime) RuleExecutionTimes();
-            if (!_simulationRunning) ShowPaused();
+            if (!_simulationRunning && !ChangeTable) ShowPaused();
         }
 
         private void ShowFlowButtons()

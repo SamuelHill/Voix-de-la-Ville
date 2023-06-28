@@ -189,6 +189,7 @@ namespace GraphVisualization
             }
 
             RepopulateMesh();
+            GUIManager.ShowTiles(true);
         }
 
         public void GenerateFrom<TNode>(IEnumerable<TNode> keys, NodeFormatter<TNode> format, EdgeGenerator<TNode> edgeGenerator)
@@ -795,10 +796,8 @@ namespace GraphVisualization
 
         void OnGUI() {
             if (nodes.Count == 0) return;
-            if (GUI.Button(GUIManager.BottomMiddleRect(100, 30), "Remove graph")) {
+            if (GUI.Button(GUIManager.BottomMiddleRect(100, 30), "Remove graph")) 
                 Clear();
-                GUIManager.ShowTiles(true);
-            }
         }
     }
 }
