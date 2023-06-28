@@ -81,16 +81,11 @@ namespace TotT.Unity {
             if (!_simulationRunning && !ChangeTable) ShowPaused();
         }
 
-        private void ShowFlowButtons()
-        {
-            var buttonWidth = 100;
-            var buttonHeight = 50;
-            var buttonStart = 70;
-            if (GUI.Button(new Rect(Screen.width-buttonWidth, buttonStart, buttonWidth, buttonHeight),
-                    "Show dataflow"))
+        private static void ShowFlowButtons() {
+            if (!TEDGraphVisualization.GraphVisible) return;
+            if (GUI.Button(BottomMiddleSplit(100, 30, true), "Show dataflow"))
                 TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(TalkOfTheTown.Simulation));
-            if (GUI.Button(new Rect(Screen.width-buttonWidth, buttonStart+buttonHeight, buttonWidth, buttonHeight),
-                    "Update graph"))
+            if (GUI.Button(BottomMiddleSplit(100, 30, false), "Update graph"))
                 TEDGraphVisualization.ShowGraph(UpdateFlowVisualizer.MakeGraph(TalkOfTheTown.Simulation));
         }
     }

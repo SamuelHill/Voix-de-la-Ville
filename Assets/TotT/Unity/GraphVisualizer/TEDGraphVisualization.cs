@@ -671,6 +671,8 @@ namespace GraphVisualization {
 
         public static TEDGraphVisualization Current;
 
+        public static bool GraphVisible => Current.nodes.Count == 0;
+
         private readonly DictionaryWithDefault<string, EdgeStyle> _edgeStyles;
         private readonly DictionaryWithDefault<string, NodeStyle> _nodeStyles;
 

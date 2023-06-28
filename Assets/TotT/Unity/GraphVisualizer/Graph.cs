@@ -130,7 +130,7 @@ namespace GraphVisualization
         /// <summary>
         /// All GraphNode objects in this Graph, one per node/key
         /// </summary>
-        private readonly List<GraphNode> nodes = new List<GraphNode>();
+        internal readonly List<GraphNode> nodes = new List<GraphNode>();
         private readonly List<INodeDriver> nodeDrivers = new List<INodeDriver>();
         /// <summary>
         /// All GraphEdge objects in this Graph, one per graph edge

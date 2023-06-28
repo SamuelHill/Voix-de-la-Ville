@@ -157,6 +157,8 @@ namespace TotT.Unity {
             new(Screen.width - (width + LabelBorders), LabelBorders, width, height);
         public static Rect BottomMiddleRect(int width, int height) =>
             new(Screen.width / 2 - width / 2, Screen.height - (height + LabelBorders), width, height);
+        public static Rect BottomMiddleSplit(int width, int height, bool right) =>
+            new(Screen.width / 2 - (width + 4) + (right ? 0 : width + 8), Screen.height - (height + LabelBorders), width, height);
         // ReSharper restore PossibleLossOfFraction
         private static Rect BottomRightRect(int width, int height) =>
             new(Screen.width - (width + LabelBorders), Screen.height - (height + LabelBorders), width, height);
