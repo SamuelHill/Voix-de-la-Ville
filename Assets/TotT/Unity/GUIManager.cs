@@ -35,35 +35,29 @@ namespace TotT.Unity {
         private static int _changeTableSelector;
         public static bool ChangeTable;
         private static bool _showTables = true;
-        private static readonly Rect ChangeTablesRect = 
-            new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
-        private static readonly Rect ShowTablesRect = 
-            new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
+        private static readonly Rect ChangeTablesRect = new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
+        private static readonly Rect ShowTablesRect = new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
 
-        public static readonly DictionaryWithDefault<TablePredicate, Dictionary<string, Action>> ButtonTable = 
+        // ReSharper disable once CollectionNeverUpdated.Global
+        public static readonly DictionaryWithDefault<TablePredicate, Dictionary<string, Action>> tableButtons =
             new(_ => new Dictionary<string, Action>());
-
         public static void Button(this TablePredicate p, string buttonLabel, Action action) =>
-            ButtonTable[p][buttonLabel] = action;
+            tableButtons[p][buttonLabel] = action;
 
         public static void Colorize(this TablePredicate p, Func<uint, Color> colorizer) =>
             p.Property["Colorizer"] = colorizer;
-
         public static void Colorize<TColumn>(this TablePredicate p, Var<TColumn> column, Func<TColumn, Color> colorizer)
-            => Colorize(p, rowNumber =>
-            {
+            => Colorize(p, rowNumber => {
                 var lookup = p.ColumnValueFromRowNumber(column);
                 return colorizer(lookup(rowNumber));
             });
-
         public static void Colorize<TColumn>(this TablePredicate p, Var<TColumn> column) =>
             Colorize(p, column, DefaultColorizer<TColumn>());
 
-        private static readonly Dictionary<Type, Delegate> defaultColorizerTable = new Dictionary<Type, Delegate>();
+        private static readonly Dictionary<Type, Delegate> DefaultColorizerTable = new();
 
-        public static void SetDefaultColorizer<T>(Func<T,Color> colorizer) => defaultColorizerTable[typeof(T)] = colorizer;
-
-        public static Func<T, Color> DefaultColorizer<T>() => (Func<T, Color>)defaultColorizerTable[typeof(T)];
+        public static void SetDefaultColorizer<T>(Func<T,Color> colorizer) => DefaultColorizerTable[typeof(T)] = colorizer;
+        private static Func<T, Color> DefaultColorizer<T>() => (Func<T, Color>)DefaultColorizerTable[typeof(T)];
 
         // *************************************** GUI setup **************************************
 
@@ -97,6 +91,7 @@ namespace TotT.Unity {
         }
 
         // ************************************** GUI control *************************************
+
         public static void ToggleShowTables() => _showTables = !_showTables;
         public static void ShowPaused() => Paused.OnGUI();
         public static void ShowStrings() {
@@ -125,26 +120,14 @@ namespace TotT.Unity {
             _activeTables[_tableToChange] = _displayNameToTableName[_tableDisplayNames[_changeTableSelector]];
         }
 
-        public static void PopTable(TablePredicate p)
-        {
-            // Fill this in with something smarter
-            _activeTables[0] = p.Name;
-        }
-
-        private static Dictionary<TablePredicate, uint> _previousLengths = new Dictionary<TablePredicate, uint>();
-
-        public static void PopTableIfNewActivity(TablePredicate p)
-        {
-            if (!_previousLengths.TryGetValue(p, out var length))
-            {
-                _previousLengths[p] = length = p.Length;
-            }
-
-            if (p.Length > length)
-            {
-                PopTable(p);
-                _previousLengths[p] = p.Length;
-            }
+        private static void PopTable(TablePredicate p) => _activeTables[0] = p.Name; // Fill this in with something smarter
+        private static readonly Dictionary<TablePredicate, uint> PreviousLengths = new();
+        public static void PopTableIfNewActivity(TablePredicate p) {
+            if (!PreviousLengths.TryGetValue(p, out var length)) 
+                PreviousLengths[p] = length = p.Length;
+            if (p.Length <= length) return;
+            PopTable(p);
+            PreviousLengths[p] = p.Length;
         }
 
         public static void RuleExecutionTimes() => GUI.Label(CenteredRect(480, 350),
@@ -154,6 +137,7 @@ namespace TotT.Unity {
                            select $"{table.Name} {table.RuleExecutionTime}\n").Take(20)));
 
         // ************************************ Display helpers ***********************************
+
         private static string CutoffName(string name) =>
             TableShortName(name, TableDisplayNameCutoff);
 
@@ -183,11 +167,11 @@ namespace TotT.Unity {
             GUI.skin.label.fontStyle = FontStyle.Normal;
             GUI.skin.label.normal.background = Texture2D.blackTexture;
         }
-        public static void Label(string label, bool bold, params GUILayoutOption[] options) {
-            if (bold) BoldLabel(label, options);
-            else GUILayout.Label(label, options);
+        private static void ButtonLabel(string label, out bool pressed, params GUILayoutOption[] options) {
+            GUI.skin.label.fontStyle = FontStyle.BoldAndItalic;
+            pressed = GUILayout.Button(label, GUI.skin.label, options);
+            GUI.skin.label.fontStyle = FontStyle.Normal;
         }
-
         public static bool HeaderButton(string label, params GUILayoutOption[] options) {
             GUI.skin.label.fontStyle = FontStyle.Bold;
             GUI.skin.label.normal.background = Texture2D.grayTexture;
@@ -195,12 +179,6 @@ namespace TotT.Unity {
             GUI.skin.label.normal.background = Texture2D.blackTexture;
             GUI.skin.label.fontStyle = FontStyle.Normal;
             return pressed;
-        }
-
-        private static void ButtonLabel(string label, out bool pressed, params GUILayoutOption[] options) {
-            GUI.skin.label.fontStyle = FontStyle.BoldAndItalic;
-            pressed = GUILayout.Button(label, GUI.skin.label, options);
-            GUI.skin.label.fontStyle = FontStyle.Normal;
         }
 
         private static void TableTitleToggle(int tableNum) {

@@ -90,9 +90,8 @@ namespace TotT.Simulator {
             CharacterFeatures.Colorize(vitalStatus, s => s == VitalStatus.Alive ? Color.white : Color.gray);
             CharacterFeatures.Button("Random friend network", VisualizeRandomFriendNetwork);
             CharacterFeatures.Button("Full network", VisualizeFullSocialNetwork);
-
-            PopulationCountIndex = Character.CountIndex;
             Graph.SetDescriptionMethod<Person>(PersonDescription);
+            PopulationCountIndex = Character.CountIndex;
 
             #region Character Helpers
             // TODO : Replace naming helpers with TextGenerator

@@ -19,54 +19,47 @@ namespace TotT.Unity {
         private const int LabelHeight = 16; // same as fontSize + padding
         private const int TablePadding = 8; // using height padding for left side offset as well
         private const int DefaultTableHeight = 260; // (260 * 4) + (8 * 5) = 1080...
-        private const int TableWidthOffset = 20; // account for the scrollbar
+        private const int ScrollbarOffset = 20;
         private const int DefaultNumRowsToDisplay = (DefaultTableHeight - TablePadding) / LabelHeight - 5;
         // - 5 from display rows; two for the bold title and header row, and three to not get cutoff/crowd the space
         // this could probably be calculated dynamically based on label margins but for now this offset math is good enough.
         // to fix, update DefaultNumRowsToDisplay, ScrollHeight, NumRowsToHeight... everything derived from LabelHeight
         
         private readonly TablePredicate _predicate;
-        private string[][] _buffer;
-        private Color[] _rowColors;
-        private int[] _longestBufferStrings;
-        private readonly float[] _columnWidths;
+        private readonly string[][] _buffer;
         private readonly string[] _headings;
+        private readonly Color[] _rowColors;
+        private readonly float[] _columnWidths;
+        private int[] _longestBufferStrings;
         private int[] _headingLengths;
         private GUIContent _noEntries;
         private int _noEntriesWidth;
         private uint _bufferedRows;
         private uint _previousRowCount;
         private bool _usingScroll;
+        private bool _newlySorted;
         private float _scrollPosition;
         private float _oldScroll;
         private Month _lastMonth;
         private Comparison<uint> _sortComparer;
         private uint[] _sortBuffer;
-        private Func<uint, Color> _colorizer;
+        private readonly Func<uint, Color> _colorizer;
 
         public GUITable(TablePredicate predicate, int numRows = DefaultNumRowsToDisplay) {
             _predicate = predicate;
             _headings = (from heading in predicate.ColumnHeadings select Heading(heading)).ToArray();
             _headingLengths = new int[_headings.Length];
-            BuildBuffer(numRows);
-            _longestBufferStrings = new int[NumColumns];
-            _columnWidths = new float[NumColumns];
-            _colorizer = predicate.Property.TryGetValue("Colorizer", out var func) ? (Func<uint,Color>)func : (_ => Color.white);
-        }
-
-        public void NewNumRows(int numRows) {
-            if (numRows != NumDisplayRows) BuildBuffer(numRows);
-        }
-
-        private void BuildBuffer(int numRows) {
             _buffer = new string[numRows][];
             for (var i = 0; i < numRows; i++)
                 _buffer[i] = new string[NumColumns];
             _rowColors = new Color[numRows];
+            _longestBufferStrings = new int[NumColumns];
+            _columnWidths = new float[NumColumns];
+            _colorizer = predicate.Property.TryGetValue("Colorizer", out var func) ? 
+                             (Func<uint,Color>)func : _ => Color.white;
         }
 
         // *********************************** Table properties ***********************************
-        private string Name => _predicate.Name;
         private int NumColumns => _headings.Length;
         private uint RowCount => _predicate.Length;
         private bool Scrolled => Math.Abs(_scrollPosition - _oldScroll) > 0.0001f;
@@ -81,13 +74,11 @@ namespace TotT.Unity {
                 return sum;
             }
         }
-
         private int NumDisplayRows => _buffer.Length;
         private bool DefaultTable => NumDisplayRows == DefaultNumRowsToDisplay;
-
         private bool UpdateEveryTick => _predicate.IsDynamic && _predicate.IsIntensional;
         private bool UpdateMonthly => _predicate.IsDynamic && _predicate.IsExtensional;
-        private bool SetLastMonth() { // only using Set naming for TrySet...
+        private bool SetLastMonth() { // only using Set naming style for TrySet...
             _lastMonth = TalkOfTheTown.Time.Month;
             return true;
         }
@@ -109,9 +100,9 @@ namespace TotT.Unity {
             return GUILayout.Width(_columnWidths[i]);
         }
 
-        private Rect TableRect(int x, int y, int height) =>     // no width control - size of columns is calculated
-            new(x, y, TableWidth + TableWidthOffset + (NumColumns * ColumnPadding), height); // height control via num rows
-        private Rect LeftSideTables(int tableNum) =>            // special case for the 4 tables on the left side
+        private Rect TableRect(int x, int y, int height) => // no width control - size of columns is calculated
+            new(x, y, TableWidth + (_usingScroll ? ScrollbarOffset : 0) + NumColumns * ColumnPadding, height);
+        private Rect LeftSideTables(int tableNum) => // special case for the 4 tables on the left side
             TableRect(TablePadding, tableNum * (DefaultTableHeight + TablePadding) + TablePadding, 
                 DefaultTableHeight); // used in conjunction with DefaultNumRowsToDisplay - num rows dictates height
         private static int NumRowsToHeight(int numRows) => (numRows + 5) * LabelHeight + 2 * TablePadding;
@@ -130,7 +121,7 @@ namespace TotT.Unity {
             // If the table is empty now or could be empty in future ticks...
             if (RowCount == 0 || _predicate.IsIntensional) {
                 // Consider the no entries conditions as well
-                _noEntries = new GUIContent($"No entries in table {Name}");
+                _noEntries = new GUIContent($"No entries in table {_predicate.Name}");
                 _noEntriesWidth = (int)GUI.skin.label.CalcSize(_noEntries).x;
                 _noEntriesWidth = Math.Max(_noEntriesWidth, LongestRow); }
             // GUITables must be initialized after Time (inside TalkOfTheTown):
@@ -164,20 +155,28 @@ namespace TotT.Unity {
             _longestBufferStrings = updatedBufferStrings;
         }
 
-        private void CalcStringLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
-            for (var i = 0; i < NumColumns; i++) {
-                var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
-                if (stringLengths[i] < stringLength) stringLengths[i] = stringLength;
-            }
-        }
-
         private void CalcHeaderLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
             for (var i = 0; i < NumColumns; i++) {
                 var stringLength = (int)GUI.skin.button.CalcSize(new GUIContent(strings[i])).x;
                 if (stringLengths[i] < stringLength) stringLengths[i] = stringLength;
             }
         }
+        private void LayoutHeaderRow(IReadOnlyList<string> strings) {
+            GUILayout.BeginHorizontal();
+            for (var i = 0; i < NumColumns; i++)
+                if (HeaderButton(strings[i], ColumnWidth(i))) {
+                    _sortComparer = _predicate.RowComparison(i);
+                    _newlySorted = true;
+                }
+            GUILayout.EndHorizontal();
+        }
 
+        private void CalcStringLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
+            for (var i = 0; i < NumColumns; i++) {
+                var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
+                if (stringLengths[i] < stringLength) stringLengths[i] = stringLength;
+            }
+        }
         private void LayoutRow(IReadOnlyList<string> strings, Color c) {
             GUILayout.BeginHorizontal();
             GUI.skin.label.normal.textColor = c;
@@ -187,27 +186,22 @@ namespace TotT.Unity {
             GUILayout.EndHorizontal();
         }
 
-        private void LayoutHeaderRow(IReadOnlyList<string> strings) {
-            GUILayout.BeginHorizontal();
-            for (var i = 0; i < NumColumns; i++)
-                if (HeaderButton(strings[i], ColumnWidth(i)))
-                    _sortComparer = _predicate.RowComparison(i);
-            GUILayout.EndHorizontal();
-        }
-
         private void OnGUI(Rect screenRect, int tableNum = -1) {
             GUILayout.BeginArea(screenRect); // table area
             // Title and Header:
             GUILayout.BeginHorizontal();
-            TableTitle(tableNum, $"{Name} ({_predicate.Length})");
-            foreach (var binding in ButtonTable[_predicate])
-                if (GUILayout.Button(binding.Key)) binding.Value();
+            TableTitle(tableNum, $"{_predicate.Name} ({_predicate.Length})");
+            foreach (var binding in tableButtons[_predicate])
+                if (GUILayout.Button(binding.Key, GUILayout.Width(
+                                         (int)GUI.skin.button.CalcSize(new GUIContent(binding.Key)).x)))
+                    binding.Value();
+            GUILayout.Space((_usingScroll ? ScrollbarOffset : 0) + 2 * ColumnPadding);
             GUILayout.EndHorizontal();
             LayoutHeaderRow(_headings);
             GUILayout.BeginHorizontal(); // table and scroll bar area
             // Table contents:
             GUILayout.BeginVertical();
-            if (RowCount == 0) GUILayout.Label($"No entries in table {Name}");
+            if (RowCount == 0) GUILayout.Label($"No entries in table {_predicate.Name}");
             else for (var i = 0; i < _buffer.Length; i++) LayoutRow(_buffer[i], _rowColors[i]);
             GUILayout.EndVertical();
             // Scrollbar and Update logic:
@@ -215,9 +209,10 @@ namespace TotT.Unity {
                 _scrollPosition = GUILayout.VerticalScrollbar(_scrollPosition,
                     NumDisplayRows - 0.1f, 0f, RowCount, ScrollHeight);
                 if (ScrollingInRect(screenRect)) _scrollPosition += Event.current.delta.y;
-                if (Scrolled || !_usingScroll || UpdateCheck) {
+                if (Scrolled || !_usingScroll || UpdateCheck || _newlySorted) {
                     Update();
                     _oldScroll = _scrollPosition;
+                    if (_newlySorted) _newlySorted = false;
                 }
                 if (!_usingScroll) _usingScroll = true;
             } else if (RowCountChange || UpdateCheck) Update();
