@@ -95,7 +95,6 @@ v0 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
 v1 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
 v2 [ label = "Surnames" fillcolor="gold" shape="diamond"];
 v3 [ label = "LocationNames" fillcolor="gold" shape="diamond"];
-v8 [ label = "Facets" fillcolor="gold" shape="diamond"];
 v9 [ label = "Jobs" fillcolor="gold" shape="diamond"];
 v10 [ label = "PrimordialBeing" fillcolor="gold" shape="diamond"];
 v11 [ label = "PrimordialLocation" fillcolor="gold" shape="diamond"];

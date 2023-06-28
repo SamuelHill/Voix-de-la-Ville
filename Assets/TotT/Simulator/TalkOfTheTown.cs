@@ -509,17 +509,14 @@ namespace TotT.Simulator {
                 person.Indexed, otherPerson.Indexed).If(ScoredInteraction, score < -15);
 
             Interaction = Predicate("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
-            Interaction[person, partner, InteractionType.Flirting]
-               .If(PositiveInteraction[person, partner], SexualAttraction);
-            Interaction[person, partner, InteractionType.Assisting]
-               .If(PositiveInteraction[person, partner], !SexualAttraction[person, partner]);
+            Interaction[person, partner, InteractionType.Flirting].If(PositiveInteraction[person, partner], SexualAttraction);
+            Interaction[person, partner, InteractionType.Assisting].If(PositiveInteraction[person, partner], !SexualAttraction[person, partner]);
             Interaction[person, otherPerson, InteractionType.Chatting].If(NeutralInteraction);
             Interaction[person, otherPerson, InteractionType.Arguing].If(NegativeInteraction);
             Interaction.Button("Snapshot", VisualizeInteractions);
 
             Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Flirting], spark == 900);
-            Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing],
-                             SexualAttraction[person, otherPerson], spark == -700);
+            Spark.UpdateWhen(Interaction[person, otherPerson, InteractionType.Arguing], SexualAttraction[person, otherPerson], spark == -700);
 
             Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Assisting], charge == 800);
             Charge.UpdateWhen(Interaction[person, otherPerson, InteractionType.Chatting], charge == 80);

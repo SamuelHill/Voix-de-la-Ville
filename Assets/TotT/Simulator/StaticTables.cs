@@ -26,7 +26,7 @@ namespace TotT.Simulator {
         public static TablePredicate<string> HouseNames;
 
         // ***************************************** Enums ****************************************
-        public static TablePredicate<Facet> Facets;
+        //public static TablePredicate<Facet> Facets;
         public static TablePredicate<Vocation> Jobs;
 
         // ************************************* Primordial(s) ************************************
@@ -56,7 +56,7 @@ namespace TotT.Simulator {
             HouseNames = Predicate("HouseNames", locationName);
             HouseNames.Initially.Where(_locationNames[locationName, LocationType.House]);
 
-            Facets = EnumTable("Facets", facet);
+            //Facets = EnumTable("Facets", facet);
             Jobs = EnumTable("Jobs", job);
 
             PrimordialBeing = FromCsv("PrimordialBeing", Csv("agents"), 
