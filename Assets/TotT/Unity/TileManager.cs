@@ -36,10 +36,6 @@ namespace TotT.Unity {
         private bool SetAllTiles(Vector3Int[] tiles, TileBase tileToSet) =>
             SetTiles(tiles, Enumerable.Repeat(tileToSet, tiles.Length).ToArray());
 
-        public bool SetLots((Vector2Int, TileBase)[] lots) => SetTiles(
-            lots.Select(lot => LotToTile(lot.Item1)).ToArray(),
-            lots.Select(lot => lot.Item2).ToArray());
-
         private bool DeleteTiles(Vector3Int[] tiles) => SetAllTiles(tiles, null);
         public bool DeleteLots(IEnumerable<Vector2Int> lots) => DeleteTiles(lots.Select(LotToTile).ToArray());
         private bool OccupyTiles(Vector3Int[] tiles) => SetAllTiles(tiles, _occupiedLot);

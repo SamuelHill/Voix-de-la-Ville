@@ -27,7 +27,7 @@ namespace TotT.Simulator {
 
         public static readonly Function<Vector2Int, Vector2Int, int> Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
         public static readonly Function<string, Location> NewLocation = Method<string, Location>(Town.NewLocation, false);
-        public static readonly Function<uint, Vector2Int> RandomLot = Method<uint, Vector2Int>(Town.RandomLot, false);
+        public static readonly Function<int, Vector2Int> RandomLot = Method<int, Vector2Int>(Town.RandomLot, false);
 
         public static readonly Function<Date> RandomDate = new(nameof(RandomDate), Calendar.Random, false);
         public static readonly Function<TimePoint, Date> TimePointToDate = new(nameof(TimePointToDate), t => t);

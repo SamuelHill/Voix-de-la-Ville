@@ -45,6 +45,12 @@ namespace TotT.Simulator {
         private static TablePredicate<LocationType, Color> _locationColors;
         public static KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
 
+        // ************************************** Collections *************************************
+        public static readonly LocationType[] permanentLocationTypes = {
+            LocationType.Cemetery, LocationType.CityHall, LocationType.DayCare,
+            LocationType.FireStation, LocationType.Hospital, LocationType.School
+        };
+
         public static void InitStaticTables() {
             FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
             MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);

@@ -30,7 +30,7 @@ namespace TotT.Unity {
             _tileManager.OccupyAndColorLots((from row in PrimordialLocation
                                              select (row.Item3, LocationColor(row.Item2))).ToArray());
         private bool ProcessNewLocations() =>
-            _tileManager.OccupyAndColorLots((from row in _talkOfTheTown.NewLocation 
+            _tileManager.OccupyAndColorLots((from row in _talkOfTheTown.CreatedLocation 
                                              select (row.Item1, LocationColor(row.Item3))).ToArray());
         private bool ProcessLocationDeletions() =>
             _tileManager.DeleteLots(_talkOfTheTown.VacatedLocation);
@@ -40,7 +40,8 @@ namespace TotT.Unity {
             ProcessNewLocations();
             _tileManager.Tilemap.RefreshAllTiles(); }
         public void ProcessLots() {
-            if (ProcessNewLocations() || ProcessLocationDeletions())
+            var newTiles = ProcessNewLocations();
+            if (ProcessLocationDeletions() || newTiles)
                 _tileManager.Tilemap.RefreshAllTiles(); }
 
         // ************************************* Info Strings *************************************

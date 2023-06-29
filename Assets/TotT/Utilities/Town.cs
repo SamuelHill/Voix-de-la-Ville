@@ -16,7 +16,7 @@ namespace TotT.Utilities {
         private static void ExpandAllSides() { _min.x--; _max.x++; _min.y--; _max.y++; }
         private static Vector2Int RandomLot() => new(Integer(_min.x, _max.x), 
                                                      Integer(_min.y, _max.y));
-        public static Vector2Int RandomLot(uint lotCount) {
+        public static Vector2Int RandomLot(int lotCount) {
             if (lotCount * 2 >= GridSpaces()) ExpandAllSides();
             return RandomLot();
         }
