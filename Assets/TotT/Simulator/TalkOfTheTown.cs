@@ -53,14 +53,14 @@ namespace TotT.Simulator {
         // Tables, despite being local or private variables, will be capitalized for style/identification purposes.
 
         #region Tables and Indexers for GUI and Graph visuals
-        private TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterFeatures;
+        private TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterAttributes;
         private TablePredicate<Person, Person, InteractionType> Interaction;
         private TablePredicate<Person, ActionType, Location> WhereTheyAt;
         private TablePredicate<Person, Location> Home;
         private TablePredicate<Person, Person> Parent;
         private AffinityRelationship<Person, Person> Friend;
         private AffinityRelationship<Person, Person> Enemy;
-        private AffinityRelationship<Person, Person> RomanticInterest;
+        private AffinityRelationship<Person, Person> Romantic;
         private TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
         private KeyIndex<(Vocation, Person, Location, TimeOfDay), Person> EmploymentIndex;
         public TablePredicate<Vector2Int, Location, LocationType> CreatedLocation;
@@ -77,6 +77,7 @@ namespace TotT.Simulator {
 
         private void DefaultColorizers() {
             SetDefaultColorizer<Location>(PlaceColor);
+            SetDefaultColorizer<bool>(s => s ? Color.white : Color.gray);
             SetDefaultColorizer<VitalStatus>(s => s == VitalStatus.Alive ? Color.white : Color.gray);
             SetDefaultColorizer<BusinessStatus>(s => s == BusinessStatus.InBusiness ? Color.white : Color.gray);
         }
@@ -92,14 +93,15 @@ namespace TotT.Simulator {
 
             // ************************************ Characters ************************************
 
-            var Character = Exists("Character", person, birthday)
+            var Character = Exists("Character", person, age, 
+                dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed, birthday)
                .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], DateAgeToTimePoint[dateOfBirth, age, birthday]);
-            CharacterFeatures = Character.Features(age, dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed);
-            CharacterFeatures.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
-            
-            CharacterFeatures.Colorize(vitalStatus);
-            CharacterFeatures.Button("Random friend network", VisualizeRandomFriendNetwork);
-            CharacterFeatures.Button("Full network", VisualizeFullSocialNetwork);
+            Character.Attributes.Initially[person, age, dateOfBirth, sex, sexuality, VitalStatus.Alive].Where(PrimordialBeing);
+
+            CharacterAttributes = Character.Attributes;
+            Character.Attributes.Colorize(vitalStatus);
+            Character.Attributes.Button("Random friend network", VisualizeRandomFriendNetwork);
+            Character.Attributes.Button("Full network", VisualizeFullSocialNetwork);
 
             #region Character Helpers
             // TODO : Replace naming helpers with TextGenerator
@@ -115,15 +117,15 @@ namespace TotT.Simulator {
 
             // Check to vital status - same as also saying Character[person] but with less extraneous referencing
             var Age = Definition("Age", person, age)
-               .Is(CharacterFeatures[person, age, __, __, __, VitalStatus.Alive]);
+               .Is(Character.Attributes[person, age, __, __, __, VitalStatus.Alive]);
             var Man = Definition("Men", man)
-               .Is(CharacterFeatures[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
+               .Is(Character.Attributes[man, age, __, Sex.Male, __, VitalStatus.Alive], age >= 18);
             var Woman = Definition("Women", woman)
-               .Is(CharacterFeatures[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
+               .Is(Character.Attributes[woman, age, __, Sex.Female, __, VitalStatus.Alive], age >= 18);
             var PersonSex = Definition("PersonSex", person, sex)
-               .Is(CharacterFeatures[person, __, __, sex, __, VitalStatus.Alive]);
+               .Is(Character.Attributes[person, __, __, sex, __, VitalStatus.Alive]);
             var PersonSexuality = Definition("PersonSexuality", person, sexuality)
-               .Is(CharacterFeatures[person, __, __, __, sexuality, VitalStatus.Alive]);
+               .Is(Character.Attributes[person, __, __, __, sexuality, VitalStatus.Alive]);
             var SexualAttraction = Definition("SexualAttraction", person, partner)
                .Is(PersonSexuality[person, sexuality], PersonSex[partner, sexOfPartner], AttractedTo[sexuality, sexOfPartner],
                    PersonSexuality[partner, sexualOfPartner], PersonSex[person, sex], AttractedTo[sexualOfPartner, sex]);
@@ -134,13 +136,13 @@ namespace TotT.Simulator {
             Aptitude.Add[person, job, RandomNormalSByte].If(Character.Add, Jobs);
 
             Character.EndWhen(Age, age > 60, PerMonth(0.003f))
-                     .EndCauses(Set(CharacterFeatures, person, vitalStatus, VitalStatus.Dead));
+                     .EndCauses(Set(Character.Attributes, person, vitalStatus, VitalStatus.Dead));
 
             var Drifter = Predicate("Drifter", person, sex, sexuality);
             Drifter[person, RandomSex, sexuality].If(PerYear(0.05f), RandomPerson, RandomSexuality[sex, sexuality]);
             Character.StartWithTime(Drifter, DateAgeToTimePoint[RandomDate, RandomAdultAge, birthday])
-                     .StartWithCauses(Add(CharacterFeatures[person, Time.YearsOld[birthday],
-                                                            TimePointToDate[birthday], sex, sexuality, VitalStatus.Alive]).If(Drifter));
+                     .StartWithCauses(Add(Character.Attributes[person, Time.YearsOld[birthday], 
+                                                               TimePointToDate[birthday], sex, sexuality, VitalStatus.Alive]).If(Drifter));
 
             // *********************************** Relationships **********************************
             // TODO : Primordial Relationships?
@@ -148,14 +150,19 @@ namespace TotT.Simulator {
 
             var Charge = Affinity("Charge", pairing, person, otherPerson, charge).Decay(0.8f);
             Friend = Charge.Relationship("Friend", state, 5000, 4000);
-            var MutualFriendship = Predicate("MutualFriendship", person, otherPerson)
-               .If(Friend[person, otherPerson], Friend[otherPerson, person]);
             Enemy = Charge.Relationship("Enemy", state, -6000, -3000);
 
             var Spark = Affinity("Spark", pairing, person, otherPerson, spark).Decay(0.1f);
-            RomanticInterest = Spark.Relationship("RomanticInterest", state, 7000, 6000);
-            var MutualRomanticInterest = Predicate("MutualRomanticInterest", person, otherPerson)
-               .If(RomanticInterest[person, otherPerson], RomanticInterest[otherPerson, person]);
+            Romantic = Spark.Relationship("Romantic", state, 7000, 6000);
+
+            var MutualFriendship = Definition("MutualFriendship", person, otherPerson)
+               .Is(Friend[person, otherPerson], Friend[otherPerson, person]);
+            var MutualRomanticInterest = Definition("MutualRomanticInterest", person, otherPerson)
+               .Is(Romantic[person, otherPerson], Romantic[otherPerson, person]);
+
+            var Lover = ExclusiveRelationship("Lover", symmetricPair, person, otherPerson, state)
+                       .StartWhen(MutualRomanticInterest, MutualFriendship)
+                       .EndWhen(Character.End, Character[otherPerson]);
 
             Parent = Predicate("Parent", parent.Indexed, child.Indexed);
             Parent.Button("Visualize", VisualizeFamilies);
@@ -167,45 +174,41 @@ namespace TotT.Simulator {
             // TODO : Limit PotentialProcreation by Personality
             // TODO : Limit PotentialProcreation by time since last birth/number of children
 
-            var Gestation = Exists("Gestation", child);
-            var Pregnancy = Gestation.Features("Pregnancy",
-                woman.Indexed, man, sex, conception.Indexed);
+            var Embryo = Exists("Embryo", child, woman.Indexed, man, sex, conception.Indexed);
             var Pregnant = Definition("Pregnant", woman)
-               .Is(Gestation[child], Pregnancy[child, woman, __, __, __]);
+               .Is(Embryo.Attributes[child, woman, __, __, __], Embryo[child]);
 
-            var PotentialProcreation = Predicate("PotentialProcreation", woman.Indexed, man.Indexed)
-               .If(MutualRomanticInterest[woman, man], Woman, Man, !FamilialRelation[woman, man], 
+            var PotentialProcreation = Assign("PotentialProcreation", woman, man.Indexed)
+               .When(MutualRomanticInterest[woman, man], Woman, Man, !FamilialRelation[woman, man], 
                    !Pregnant[woman], Age[woman, age], Prob[FertilityRate[age]]);
-            var SuccessfulProcreation = AssignRandomly("SuccessfulProcreation", PotentialProcreation);
             var Procreation = Event("Procreation", woman, man, sex, child)
-               .OccursWhen(SuccessfulProcreation[woman, man], RandomSex[sex], RandomFirstName, NewPerson[firstName, Surname[man], child]);
+               .OccursWhen(PotentialProcreation.Assignments[woman, man], RandomSex[sex], RandomFirstName, NewPerson[firstName, Surname[man], child]);
 
-            Gestation.StartWhen(Procreation)
-                     .StartCauses(Add(Pregnancy[child, woman, man, sex, Time.CurrentDate]).If(Procreation))
-                     .EndWhen(Gestation[child], Pregnancy, Time.NineMonthsPast[conception], Prob[0.8f])
-                     .EndCauses(Add(Parent[parent, child]).If(Pregnancy[child, parent, __, __, __]),
-                                Add(Parent[parent, child]).If(Pregnancy[child, __, parent, __, __]));
+            Embryo.StartWhen(Procreation)
+                  .StartCauses(Add(Embryo.Attributes[child, woman, man, sex, Time.CurrentDate]).If(Procreation))
+                  .EndWhen(Embryo[child], Embryo.Attributes, Time.NineMonthsPast[conception], Prob[0.8f])
+                  .EndCauses(Add(Parent[parent, child]).If(Embryo.Attributes[child, parent, __, __, __]),
+                             Add(Parent[parent, child]).If(Embryo.Attributes[child, __, parent, __, __]));
 
-            Character.StartWhen(Gestation.End[person]);
-            Character.StartCauses(Add(CharacterFeatures[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive])
-                                     .If(Gestation.End[person], Pregnancy[person, __, __, sex, __], RandomSexuality[sex, sexuality]));
+            Character.StartWhen(Embryo.End[person]);
+            Character.StartCauses(Add(CharacterAttributes[person, 0, Time.CurrentDate, sex, sexuality, VitalStatus.Alive])
+                                     .If(Embryo.End[person], Embryo.Attributes[person, __, __, sex, __], RandomSexuality[sex, sexuality]));
             // Increment age once per birthday (in the AM, if you weren't just born)
-            CharacterFeatures.Set(person, age, num)
-                 .If(CharacterFeatures[person, age, dateOfBirth, __, __, VitalStatus.Alive],
-                     Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !Gestation.End[person], Incr[age, num]);
+            CharacterAttributes.Set(person, age, num)
+                 .If(CharacterAttributes[person, age, dateOfBirth, __, __, VitalStatus.Alive],
+                     Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !Embryo.End[person], Incr[age, num]);
 
             // ************************************ Locations *************************************
 
-            var Place = Exists("Place", location, founding).InitiallyWhere(PrimordialLocation);
-            var PlaceFeatures = Place.Features(locationType.Indexed, 
-                locationCategory.Indexed, position.Indexed, businessStatus.Indexed);
-            PlaceFeatures.Initially[location, locationType, locationCategory, position, BusinessStatus.InBusiness]
+            var Place = Exists("Place", location, locationType.Indexed, 
+                locationCategory.Indexed, position.Indexed, businessStatus.Indexed, founding).InitiallyWhere(PrimordialLocation);
+            Place.Attributes.Initially[location, locationType, locationCategory, position, BusinessStatus.InBusiness]
                          .Where(PrimordialLocation, LocationInformation);
 
             var InBusiness = Definition("InBusiness", location)
-               .Is(PlaceFeatures[location, __, __, __, BusinessStatus.InBusiness]);
+               .Is(Place.Attributes[location, __, __, __, BusinessStatus.InBusiness]);
             var IsVacant = Definition("IsVacant", position)
-               .Is(!PlaceFeatures[__, __, __, position, BusinessStatus.InBusiness]);
+               .Is(!Place.Attributes[__, __, __, position, BusinessStatus.InBusiness]);
             var FreeLot = Definition("FreeLot", position)
                .Is(Place.Count[true, count], RandomLot[count, position], IsVacant[position]);
 
@@ -221,7 +224,7 @@ namespace TotT.Simulator {
             CreatedLocation.Colorize(location);
             // VacatedLocation is used for removing tiles from the TileMap
             VacatedLocation = Predicate("VacatedLocation", position);
-            VacatedLocation.If(Place.End, PlaceFeatures);
+            VacatedLocation.If(Place.End, Place.Attributes);
 
             // For tile hover info strings we only want the locations in business, and since we will be
             // using this table for GUI interactions we need to be able to access a location by position.
@@ -229,23 +232,24 @@ namespace TotT.Simulator {
             // DisplayLocations is a collection - not intended to be used as a predicate - thus the plural naming
             var DisplayLocations = Predicate("DisplayLocations", 
                 position.Key, location, locationType, founding)
-               .If(PlaceFeatures[location, locationType, __, position, BusinessStatus.InBusiness], 
+               .If(Place.Attributes[location, locationType, __, position, BusinessStatus.InBusiness], 
                    Place[location, true, founding, TimePoint.Eschaton]);
             DisplayLocations.Colorize(location);
             LocationsPositionIndex = DisplayLocations.KeyIndex(position);
-            LocationToType = PlaceFeatures.Accessor(location, locationType);
-            PlaceFeatures.Colorize(location);
+            LocationToType = Place.Attributes.Accessor(location, locationType);
+            Place.Attributes.Colorize(location);
             #endregion
 
             Place.StartWhen(CreatedLocation)
-                 .StartCauses(Add(PlaceFeatures[location, locationType, locationCategory,
+                 .StartCauses(Add(Place.Attributes[location, locationType, locationCategory,
                                                 position, BusinessStatus.InBusiness])
                                  .If(CreatedLocation, LocationInformation))
-                 .EndWhen(PlaceFeatures, !In(locationType, permanentLocationTypes),
+                 .EndWhen(Place.Attributes, !In(locationType, permanentLocationTypes),
                           Place, Time.YearsOld[founding, age], age > 40, PerYear(0.1f))
-                 .EndCauses(Set(PlaceFeatures, location, businessStatus, BusinessStatus.OutOfBusiness));
+                 .EndCauses(Set(Place.Attributes, location, businessStatus, BusinessStatus.OutOfBusiness));
 
-            var CategoryCount = CountsBy("CategoryCount", PlaceFeatures, locationCategory, count);
+            var NumLocations = CountsBy("NumLocations", Place.Attributes, locationType, count);
+            var CategoryCount = CountsBy("CategoryCount", Place.Attributes, locationCategory, count);
             var AvailableCategory = Predicate("AvailableCategory", locationCategory).If(CategoryCount);
             var AvailableAction = Predicate("AvailableAction", actionType).If(ActionToCategory, CategoryCount);
 
@@ -257,13 +261,12 @@ namespace TotT.Simulator {
             Home.Unique = true;
             Home.Button("Visualize", VisualizeHomes);
 
-            var InBusinessHome = Predicate("InBusinessHome", occupant, location.Indexed)
-                .If(PlaceFeatures[location, LocationType.House, __, __, BusinessStatus.InBusiness], Home);
-            var Occupancy = CountsBy("Occupancy", InBusinessHome, location, count);
+            var Occupancy = Counts("Occupancy", location, occupant)
+                .By(Place.Attributes[location, LocationType.House, __, __, BusinessStatus.InBusiness], Home);
             var Unoccupied = Predicate("Unoccupied", location)
-                .If(PlaceFeatures[location, LocationType.House, __, __, BusinessStatus.InBusiness], !Home[__, location]);
+                .If(Place.Attributes[location, LocationType.House, __, __, BusinessStatus.InBusiness], !Home[__, location]);
             var UnderOccupied = Predicate("UnderOccupied", location);
-            UnderOccupied.If(Occupancy, count <= 5);
+            UnderOccupied.If(Occupancy.Count, count <= 5);
             UnderOccupied.If(Unoccupied);
 
             var Unhoused = Predicate("Unhoused", person).If(Character[person], !Home[person, __]);
@@ -274,36 +277,36 @@ namespace TotT.Simulator {
             Home.Initially.Where(PrimordialBeing[occupant, __, __, __, __],
                 RandomElement(PrimordialHouse, location));
 
-            Home.Add.If(Gestation.End[occupant], Pregnancy[occupant, woman, __, __, __], Home[woman, location]); // Move in with mom
+            Home.Add.If(Embryo.End[occupant], Embryo.Attributes[occupant, woman, __, __, __], Home[woman, location]); // Move in with mom
             // If no UnderOccupied homes this wont get set...
             Home.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
             Home.Add.If(Unhoused[occupant], RandomElement(UnderOccupied, location));
 
             Home.Set(occupant, location).If(Character.End[occupant],
-                PlaceFeatures[location, LocationType.Cemetery, __, __, BusinessStatus.InBusiness]);
+                Place.Attributes[location, LocationType.Cemetery, __, __, BusinessStatus.InBusiness]);
             var BuriedAt = Predicate("BuriedAt", occupant, location)
-                .If(PlaceFeatures[location, LocationType.Cemetery, __, __, BusinessStatus.InBusiness], Home);
-            // with only the one cemetery for now, the follow will suffice for the GUI
+                .If(Place.Attributes[location, LocationType.Cemetery, __, __, BusinessStatus.InBusiness], Home);
             Buried = Predicate("Buried", person).If(BuriedAt[person, __]);
 
-            var ForeclosedUpon = Predicate("ForeclosedUpon", occupant).If(Home, Place.End);
-            Home.Set(occupant, location).If(ForeclosedUpon, RandomElement(UnderOccupied, location));
+            var ForeclosedUpon = Event("ForeclosedUpon", occupant)
+                                .OccursWhen(Home, Place.End)
+                                .Causes(Set(Home, occupant, location, location)
+                                           .If(RandomElement(UnderOccupied, location)));
 
             // Distance per person makes most sense when measured from either where the person is,
             // or where they live. This handles the latter:
             var DistanceFromHome = Definition("DistanceFromHome", person, location, distance)
-                .Is(PlaceFeatures[location, __, __, position, BusinessStatus.InBusiness],
+                .Is(Place.Attributes[location, __, __, position, BusinessStatus.InBusiness],
                     Home[person, otherLocation],
-                    PlaceFeatures[otherLocation, __, __, otherPosition, BusinessStatus.InBusiness],
+                    Place.Attributes[otherLocation, __, __, otherPosition, BusinessStatus.InBusiness],
                     Distance[position, otherPosition, distance]);
 
-            var WantToMove = Predicate("WantToMove", person).If(Home[person, location], Occupancy, count > 8);
+            var WantToMove = Predicate("WantToMove", person).If(Home[person, location], Occupancy.Count, count > 8);
 
-            var CanMoveToFamily = Predicate("CanMoveToFamily", person.Indexed, location);
-            CanMoveToFamily.If(WantToMove, Home[person, otherLocation], FamilialRelation,
-                               Home[otherPerson, location], location != otherLocation, Occupancy, count < 8);
-            var SelectedFamilyToMoveTo = AssignRandomly("SelectedFamilyToMoveTo", CanMoveToFamily);
-            var SelectedToMoveToFamily = Predicate("SelectedToMoveToFamily", person).If(SelectedFamilyToMoveTo);
+            var CanMoveToFamily = Assign("CanMoveToFamily", person, location)
+               .When(WantToMove, Home[person, otherLocation], FamilialRelation, 
+                     Home[otherPerson, location], location != otherLocation, Occupancy.Count, count < 8);
+            var SelectedToMoveToFamily = Predicate("SelectedToMoveToFamily", person).If(CanMoveToFamily.Assignments);
 
             var FamilyInHouse = Predicate("FamilyInHouse", person);
             FamilyInHouse.If(WantToMove, WantToMove[otherPerson], person != otherPerson,
@@ -312,7 +315,7 @@ namespace TotT.Simulator {
 
             var MovingIn = Predicate("MovingIn", person, location);
             MovingIn.If(Once[SelectedToMoveToFamily[__]],
-                        RandomElement(SelectedToMoveToFamily, person), SelectedFamilyToMoveTo);
+                        RandomElement(SelectedToMoveToFamily, person), CanMoveToFamily.Assignments);
             MovingIn.If(Once[SelectedOutsiderToMove[__]], !SelectedToMoveToFamily[__],
                         RandomElement(SelectedOutsiderToMove, person), RandomElement(UnderOccupied, location));
             MovingIn.If(Once[WantToMove[__]], !SelectedToMoveToFamily[__], !SelectedOutsiderToMove[__],
@@ -335,28 +338,23 @@ namespace TotT.Simulator {
             var StillEmployed = Definition("StillEmployed", person).Is(EmploymentStatus[person, true]);
 
             var JobToFill = Predicate("JobToFill", location, job)
-                .If(Time.CurrentTimeOfDay[timeOfDay], InBusiness, PlaceFeatures, VocationShift,
+                .If(Time.CurrentTimeOfDay[timeOfDay], InBusiness, Place.Attributes, VocationShift,
                     PositionsPerJob, Count(Employment & EmploymentStatus[employee, true]) < positions);
 
             Drifter[person, RandomSex, sexuality].If(JobToFill, PerMonth(0.5f), RandomPerson, RandomSexuality[sex, sexuality]);
 
             var BestCandidate = Predicate("BestCandidate", person, job, location)
-                .If(JobToFill, Maximal(person, aptitude,
-                                        Goals(Age, !StillEmployed[person], age >= 18, Aptitude)));
+                .If(JobToFill, Maximal(person, aptitude, And[Age, !StillEmployed[person], age >= 18, Aptitude]));
 
-            var CandidateForJob = Predicate("CandidateForJob", person.Indexed, job).If(BestCandidate);
-            var OneJobPerCandidate = AssignRandomly("OneJobPerCandidate", CandidateForJob);
+            var CandidateForJob = Assign("CandidateForJob", person, job).When(BestCandidate);
+            var CandidatePerJob = Assign("CandidatePerJob", person, location).When(CandidateForJob.Assignments, BestCandidate);
 
-            var CandidatePerJobForLocation = Predicate("CandidatePerJobForLocation",
-                                                       person.Indexed, location).If(OneJobPerCandidate, BestCandidate);
-            var OneCandidatePerJobPerLocation = AssignRandomly("OneCandidatePerJobPerLocation", CandidatePerJobForLocation);
-
-            Employment.Add[job, person, location, Time.CurrentTimeOfDay].If(OneCandidatePerJobPerLocation, OneJobPerCandidate);
+            Employment.Add[job, person, location, Time.CurrentTimeOfDay].If(CandidatePerJob.Assignments, CandidateForJob.Assignments);
 
             // ********************************** New Locations ***********************************
 
             Goal UniqueLocationType(Goal goal, LocationType locType, bool unique) => unique ?
-                !PlaceFeatures[__, locType, __, __, BusinessStatus.InBusiness] & goal : goal;
+                !Place.Attributes[__, locType, __, __, BusinessStatus.InBusiness] & goal : goal;
 
             void NewLocationNamed(LocationType locType, string name, Goal readyToAdd, bool unique = true) =>
                 NewPlace[name, locType].If(UniqueLocationType(readyToAdd, locType, unique));
@@ -371,23 +369,24 @@ namespace TotT.Simulator {
             NewLocationFromNames(LocationType.House, HouseNames, Once[WantToMove[__] | Unhoused[__]]);
 
             NewLocationFromFunc(LocationType.Hospital, HospitalName.GenerateName,
-                                Once[Goals(Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21)]);
+                                Once[And[Aptitude[person, Vocation.Doctor, aptitude], aptitude > 15, Age, age > 21]]);
 
-            NewLocationFromFunc(LocationType.Cemetery, CemeteryName.GenerateRandom, Once[Goals(Age, age >= 60)]); // before anyone can die
+            NewLocationFromFunc(LocationType.Cemetery, CemeteryName.GenerateRandom, Once[And[Age, age >= 60]]); // before anyone can die
 
             NewLocationFromFunc(LocationType.DayCare, DaycareName.GenerateName, Count(Age & (age < 6)) > 5);
 
             NewLocationFromFunc(LocationType.School, HighSchoolName.GenerateRandom, Count(Age & (age >= 5) & (age < 18)) > 5);
 
-            NewLocationNamed(LocationType.CityHall, "Big City Hall", Goals(Population[count], count > 200));
+            NewLocationNamed(LocationType.CityHall, "Big City Hall", And[Population[count], count > 150]);
 
-            NewLocationNamed(LocationType.GeneralStore, "Big Box Store", Goals(Population[count], count > 150));
+            NewLocationNamed(LocationType.GeneralStore, "Big Box Store", And[Population[count], count > 50]);
+            
+            NewLocationNamed(LocationType.Bar, "The Black Sheep", And[Population[count], NumLocations[LocationType.Bar, num], count / 25 > num], false);
+            NewLocationNamed(LocationType.Bar, "Triple Crossing", !Place.Attributes[__, LocationType.Bar, __, __, BusinessStatus.InBusiness]);
 
-            NewLocationNamed(LocationType.Bar, "Triple Crossing", Goals(Population[count], count > 125));
+            NewLocationNamed(LocationType.GroceryStore, "Trader Jewels", And[Population[count], count > 75]);
 
-            NewLocationNamed(LocationType.GroceryStore, "Trader Jewels", Goals(Population[count], count > 100));
-
-            NewLocationNamed(LocationType.TattooParlor, "Heroes and Ghosts", Goals(Population[count], count > 250));
+            NewLocationNamed(LocationType.TattooParlor, "Heroes and Ghosts", And[Population[count], count > 120]);
 
             // ************************************* Movement: ************************************
             // TODO : Visiting choose location of relative or partner (if no friends)
@@ -402,17 +401,16 @@ namespace TotT.Simulator {
             var NeedSchooling = Predicate("NeedSchooling", person).If(Kid, Age, age > 6);
             var NeedDayCare = Predicate("NeedDayCare", person).If(Kid, !NeedSchooling[person]);
 
-            var GoingToSchool = Predicate("GoingToSchool", person, location).If(
-                AvailableAction[ActionType.GoingToSchool], OpenLocationType[LocationType.School],
-                PlaceFeatures[location, LocationType.School, __, __, BusinessStatus.InBusiness],
-                NeedSchooling);
-            var GoingToDayCare = Predicate("GoingToDayCare", person, location).If(
-                AvailableAction[ActionType.GoingToSchool], OpenLocationType[LocationType.DayCare],
-                PlaceFeatures[location, LocationType.DayCare, __, __, BusinessStatus.InBusiness],
-                NeedDayCare);
+            var GoingToSchool = Predicate("GoingToSchool", person, location)
+                               .If(AvailableAction[ActionType.GoingToSchool], OpenLocationType[LocationType.School],
+                                   Place.Attributes[location, LocationType.School, __, __, BusinessStatus.InBusiness],
+                                   NeedSchooling)
+                               .If(AvailableAction[ActionType.GoingToSchool], OpenLocationType[LocationType.DayCare],
+                                   Place.Attributes[location, LocationType.DayCare, __, __, BusinessStatus.InBusiness],
+                                   NeedDayCare);
 
             var GoingToWork = Predicate("GoingToWork", person, location)
-                .If(OpenLocationType, InBusiness, PlaceFeatures, StillEmployed, Employment[__, person, location, Time.CurrentTimeOfDay]);
+                .If(OpenLocationType, InBusiness, Place.Attributes, StillEmployed, Employment[__, person, location, Time.CurrentTimeOfDay]);
 
             WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType.Indexed, location.Indexed);
             WhereTheyAt.Unique = true;
@@ -424,7 +422,6 @@ namespace TotT.Simulator {
                 .If(AvailableAction, !In(actionType, new[] { ActionType.GoingToSchool, ActionType.GoingOutForDateNight }));
             var NeedsActionAssignment = Predicate("NeedsActionAssignment", person).If(Character[person],
                 !GoingToWork[person, __],
-                !GoingToDayCare[person, __],
                 !GoingToSchool[person, __]);
             var RandomActionAssign = Predicate("RandomActionAssign", person, actionType)
                 .If(NeedsActionAssignment, RandomElement(AdultAction, actionType));
@@ -432,67 +429,50 @@ namespace TotT.Simulator {
             var LocationByActionAssign = Predicate("LocationByActionAssign", person, location);
             LocationByActionAssign.If(RandomActionAssign[person, ActionType.StayingIn], Home[person, location]);
 
-            var VisitingFriend = Predicate("VisitingFriend", person.Indexed, otherPerson);
-            VisitingFriend.If(RandomActionAssign[person, ActionType.Visiting], MutualFriendship);
-            var SelectedFriendToVisit = AssignRandomly("SelectedFriendToVisit", VisitingFriend);
+            var VisitingFriend = Assign("VisitingFriend", person, otherPerson)
+               .When(RandomActionAssign[person, ActionType.Visiting], MutualFriendship);
             var NoOneToVisit = Predicate("NoOneToVisit", person)
                .If(RandomActionAssign[person, ActionType.Visiting], !VisitingFriend[person, __]);
 
             LocationByActionAssign.If(NoOneToVisit, Home[person, location]);
-            LocationByActionAssign.If(SelectedFriendToVisit, Home[otherPerson, location]);
+            LocationByActionAssign.If(VisitingFriend.Assignments, Home[otherPerson, location]);
 
             // Choose the closest location with the action type assigned
             var OpenForBusinessByAction = Predicate("OpenForBusinessByAction", actionType, location)
-                .If(ActionToCategory, AvailableCategory, OpenLocationType, InBusiness, PlaceFeatures);
+                .If(ActionToCategory, AvailableCategory, OpenLocationType, InBusiness, Place.Attributes);
             LocationByActionAssign.If(RandomActionAssign, !In(actionType, new[] { ActionType.StayingIn, ActionType.Visiting }),
                 Minimal(location, distance, OpenForBusinessByAction & DistanceFromHome[person, location, distance]));
 
             WhereTheyAt[person, ActionType.GoingToSchool, location].If(GoingToSchool);
-            WhereTheyAt[person, ActionType.GoingToSchool, location].If(GoingToDayCare);
             WhereTheyAt[person, ActionType.GoingToWork, location].If(GoingToWork);
             WhereTheyAt.If(RandomActionAssign, LocationByActionAssign);
 
             // *********************************** Interactions: **********************************
 
             var NotWorking = Predicate("NotWorking", person.Key, location.Indexed)
-               .If(WhereTheyAt[person, actionType, location],
-                   !In(actionType, new[] { ActionType.GoingToWork, ActionType.GoingToSchool }));
+               .If(WhereTheyAt[person, actionType, location], actionType != ActionType.GoingToWork, !Kid[person]);
 
             var InteractionPair = Predicate("InteractionPair", person, otherPerson);
             InteractionPair.If(NotWorking[person, location], NotWorking[otherPerson, location], person != otherPerson);
             InteractionPair.If(GoingToWork[person, location], GoingToWork[otherPerson, location], person != otherPerson);
 
-            var PotentialInteraction = Predicate("PotentialInteraction", person, otherPerson, score);
-            PotentialInteraction.If(InteractionPair,
-                                    Friend[person, otherPerson],
-                                    RomanticInterest[person, otherPerson],
-                                    Similarity[person, otherPerson, num], score == num * 10);
-            PotentialInteraction.If(InteractionPair,
-                                    Friend[person, otherPerson],
-                                    !RomanticInterest[person, otherPerson],
-                                    Similarity[person, otherPerson, num], score == num * 5);
-            PotentialInteraction.If(InteractionPair,
-                                    !Friend[person, otherPerson],
-                                    !Enemy[person, otherPerson],
-                                    RomanticInterest[person, otherPerson],
-                                    Similarity[person, otherPerson, num], score == num * 3);
-            PotentialInteraction.If(InteractionPair,
-                                    Enemy[person, otherPerson],
-                                    RomanticInterest[person, otherPerson],
-                                    Similarity[person, otherPerson, num], score == num * 2);
-            PotentialInteraction.If(InteractionPair,
-                                    Enemy[person, otherPerson],
-                                    !RomanticInterest[person, otherPerson],
-                                    Similarity[person, otherPerson, num], score == num / 2);
-            PotentialInteraction.If(InteractionPair,
-                                    !Friend[person, otherPerson],
-                                    !Enemy[person, otherPerson],
-                                    !RomanticInterest[person, otherPerson],
-                                    Similarity[person, otherPerson, score]);
-            var SelectedInteractionPair = MatchGreedilyAsymmetric("SelectedInteractionPair", PotentialInteraction);
+            var PotentialInteracts = MatchAsymmetric("PotentialInteracts", person, otherPerson, score)
+               .When(InteractionPair, Friend[person, otherPerson], Romantic[person, otherPerson],
+                     Similarity[person, otherPerson, num], score == num * 10)
+               .When(InteractionPair, Friend[person, otherPerson], !Romantic[person, otherPerson],
+                     Similarity[person, otherPerson, num], score == num * 5)
+               .When(InteractionPair, !Friend[person, otherPerson], !Enemy[person, otherPerson], Romantic[person, otherPerson],
+                     Similarity[person, otherPerson, num], score == num * 3)
+               .When(InteractionPair, Enemy[person, otherPerson], Romantic[person, otherPerson],
+                     Similarity[person, otherPerson, num], score == num * 2)
+               .When(InteractionPair, Enemy[person, otherPerson], !Romantic[person, otherPerson],
+                     Similarity[person, otherPerson, num], score == num / 2)
+               .When(InteractionPair, !Friend[person, otherPerson], !Enemy[person, otherPerson], !Romantic[person, otherPerson],
+                     Similarity[person, otherPerson, score]);
 
             var ScoredInteraction = Predicate("ScoredInteraction", person.Indexed, otherPerson.Indexed, score);
-            ScoredInteraction[person, otherPerson, RandomNormal].If(SelectedInteractionPair);
+            ScoredInteraction[person, otherPerson, RandomNormal].If(PotentialInteracts.Matches);
+
             var PositiveInteraction = Predicate("PositiveInteraction",
                 person.Indexed, otherPerson.Indexed).If(ScoredInteraction, score > 10);
             var NeutralInteraction = Predicate("NeutralInteraction",
@@ -554,13 +534,13 @@ namespace TotT.Simulator {
         }
 
         private void VisualizeRandomFriendNetwork() => VisualizeFriendNetworkOf(
-            CharacterFeatures.ColumnValueFromRowNumber(person)((uint)Integer(0, (int)CharacterFeatures.Length)));
+            CharacterAttributes.ColumnValueFromRowNumber(person)((uint)Integer(0, (int)CharacterAttributes.Length)));
 
         private void VisualizeFriendNetworkOf(Person p) {
             // ReSharper disable InconsistentNaming
             var FriendIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Friend.IndexFor(person, false);
             var EnemyIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Enemy.IndexFor(person, false);
-            var RomanticInterestIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)RomanticInterest.IndexFor(person, false);
+            var RomanticInterestIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Romantic.IndexFor(person, false);
 
             IEnumerable<(Person, string, string)> FriendsOf(Person person, GeneralIndex<((Person, Person), Person, Person, bool), Person> friendIndex)
                 => friendIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "green"));
@@ -596,7 +576,7 @@ namespace TotT.Simulator {
             foreach (var r in Enemy)
                 g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3, true, null,
                     new Dictionary<string, object> { { "color", "red"}}));
-            foreach (var r in RomanticInterest)
+            foreach (var r in Romantic)
                 g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3, true, null,
                     new Dictionary<string, object> { { "color", "blue"}}));
             TEDGraphVisualization.ShowGraph(g);
@@ -646,7 +626,7 @@ namespace TotT.Simulator {
 
         private string PersonDescription(Person p) {
             var b = new StringBuilder();
-            var info = CharacterFeatures.KeyIndex(person)[p];
+            var info = CharacterAttributes.KeyIndex(person)[p];
             var dead = info.Item6 == VitalStatus.Dead;
             var living = dead ? "Dead" : "Living";
             var job = "Unemployed";

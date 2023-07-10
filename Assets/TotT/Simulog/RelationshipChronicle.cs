@@ -30,9 +30,9 @@ namespace TotT.Simulog {
             Add[pairVar, main, other, true, time, TimePoint.Eschaton]
                .If(Start, RelationshipInstance<T1, T2>.NewRelationshipInstance[main, other, pairVar], TalkOfTheTown.Time.CurrentTimePoint[time]);
             Set(pairVar, _end, time)
-               .If(End, this[pairVar, __, __, true, __, TimePoint.Eschaton], TalkOfTheTown.Time.CurrentTimePoint[time]);
+               .If(End, this[pairVar, main, other, true, __, TimePoint.Eschaton], TalkOfTheTown.Time.CurrentTimePoint[time]);
             Set(pairVar, _exists, false)
-               .If(End, this[pairVar, __, __, true, __, TimePoint.Eschaton]);
+               .If(End, this[pairVar, main, other, true, __, TimePoint.Eschaton]);
             this.Colorize(_exists, s => s ? Color.white : Color.gray);
         }
 

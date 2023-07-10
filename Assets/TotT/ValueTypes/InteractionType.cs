@@ -7,5 +7,11 @@
         Assisting,
         Chatting,
         Flirting,
+        Snogging,
+        Procreating,
+        Negging,
+        Compliment,
+        Fighting,
+        Murder,
     }
 }

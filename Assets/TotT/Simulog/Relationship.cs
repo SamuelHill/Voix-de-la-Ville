@@ -1,12 +1,14 @@
-﻿using TED;
+﻿using System;
+using TED;
 using TED.Interpreter;
 using TED.Primitives;
+using TotT.Unity;
 using static TED.Language;
 
 namespace TotT.Simulog {
     using static SimuLang;
 
-    public class Relationship<T1, T2> : TablePredicate<(T1, T2), T1, T2, bool> {
+    public class Relationship<T1, T2> : TablePredicate<(T1, T2), T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         public readonly Event<T1, T2> Start;
         public readonly Event<T1, T2> End;
 
@@ -21,6 +23,7 @@ namespace TotT.Simulog {
             Add[pair, main, other, true].If(Start, NewTuple[main, other, pair], !this[pair, main, other, __]);
             Set(pair, state, false).If(End, this[pair, main, other, true]);
             Set(pair, state, true).If(Start, this[pair, main, other, false]);
+            this.Colorize(state);
         }
 
         public Relationship<T1, T2> StartWhen(params Goal[] conditions) {
@@ -41,15 +44,23 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public RelationshipGoal this[Term<T1> main, Term<T2> other] => new(this, __, main, other, true);
+        private RelationshipChronicle<T1, T2> _chronicle;
+        private readonly Var<RelationshipInstance<T1, T2>> _pair = (Var<RelationshipInstance<T1, T2>>)"pair";
 
-        public class RelationshipGoal : TableGoal<(T1, T2), T1, T2, bool> {
-            public RelationshipGoal(TablePredicate predicate, Term<(T1, T2)> pair, Term<T1> main, Term<T2> other, Term<bool> value)
-                : base(predicate, pair, main, other, value) { }
+        // ReSharper disable once MemberCanBePrivate.Global
+        public RelationshipChronicle<T1, T2> Chronicle {
+            get {
+                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", _pair, (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
+                _chronicle.StartWhen(Start);
+                _chronicle.EndWhen(End);
+                return _chronicle;
+            }
         }
+
+        public TableGoal<(T1, T2), T1, T2, bool> this[Term<T1> main, Term<T2> other] => new(this, __, main, other, true);
     }
 
-    public class AffinityRelationship<T1, T2> : TablePredicate<(T1, T2), T1, T2, bool> {
+    public class AffinityRelationship<T1, T2> : TablePredicate<(T1, T2), T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         public readonly Event<T1, T2> Start;
         public readonly Event<T1, T2> End;
 
@@ -75,6 +86,7 @@ namespace TotT.Simulog {
             Start.OccursWhen(Set(pair, state, true), this);
             End = Event($"{name}End", main, other);
             End.OccursWhen(Set(pair, state, false), this);
+            this.Colorize(state);
         }
 
         public AffinityRelationship<T1, T2> StartCauses(params Effect[] effects) {
@@ -86,15 +98,23 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public RelationshipGoal this[Term<T1> main, Term<T2> other] => new(this, __, main, other, true);
+        private RelationshipChronicle<T1, T2> _chronicle;
+        private readonly Var<RelationshipInstance<T1, T2>> _pair = (Var<RelationshipInstance<T1, T2>>)"pair";
 
-        public class RelationshipGoal : TableGoal<(T1, T2), T1, T2, bool> {
-            public RelationshipGoal(TablePredicate predicate, Term<(T1, T2)> pair, Term<T1> main, Term<T2> other, Term<bool> value)
-                : base(predicate, pair, main, other, value) { }
+        // ReSharper disable once MemberCanBePrivate.Global
+        public RelationshipChronicle<T1, T2> Chronicle {
+            get {
+                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", _pair, (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
+                _chronicle.StartWhen(Start);
+                _chronicle.EndWhen(End);
+                return _chronicle;
+            }
         }
+
+        public TableGoal<(T1, T2), T1, T2, bool> this[Term<T1> main, Term<T2> other] => new(this, __, main, other, true);
     }
 
-    public class FloatAffinityRelationship<T1, T2> : TablePredicate<(T1, T2), T1, T2, bool> {
+    public class FloatAffinityRelationship<T1, T2> : TablePredicate<(T1, T2), T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         public readonly Event<T1, T2> Start;
         public readonly Event<T1, T2> End;
 
@@ -120,6 +140,7 @@ namespace TotT.Simulog {
             Start.OccursWhen(Set(pair, state, true), this);
             End = Event($"{name}End", main, other);
             End.OccursWhen(Set(pair, state, false), this);
+            this.Colorize(state);
         }
 
         public FloatAffinityRelationship<T1, T2> StartCauses(params Effect[] effects) {
@@ -131,11 +152,19 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public RelationshipGoal this[Term<T1> main, Term<T2> other] => new(this, __, main, other, true);
+        private RelationshipChronicle<T1, T2> _chronicle;
+        private readonly Var<RelationshipInstance<T1, T2>> _pair = (Var<RelationshipInstance<T1, T2>>)"pair";
 
-        public class RelationshipGoal : TableGoal<(T1, T2), T1, T2, bool> {
-            public RelationshipGoal(TablePredicate predicate, Term<(T1, T2)> pair, Term<T1> main, Term<T2> other, Term<bool> value)
-                : base(predicate, pair, main, other, value) { }
+        // ReSharper disable once MemberCanBePrivate.Global
+        public RelationshipChronicle<T1, T2> Chronicle {
+            get {
+                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", _pair, (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
+                _chronicle.StartWhen(Start);
+                _chronicle.EndWhen(End);
+                return _chronicle;
+            }
         }
+
+        public TableGoal<(T1, T2), T1, T2, bool> this[Term<T1> main, Term<T2> other] => new(this, __, main, other, true);
     }
 }

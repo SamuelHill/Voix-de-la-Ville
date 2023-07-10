@@ -116,7 +116,7 @@ namespace TotT.Unity {
         public void Initialize() {
             // This is how I am doing bold label display for now, so ditto for size calc:
             GUI.skin.label.fontStyle = FontStyle.Bold;
-            CalcHeaderLengths(_headings, ref _headingLengths);
+            CalcStringLengths(_headings, ref _headingLengths);
             GUI.skin.label.fontStyle = FontStyle.Normal;
             // If the table is empty now or could be empty in future ticks...
             if (RowCount == 0 || _predicate.IsIntensional) {
@@ -155,13 +155,14 @@ namespace TotT.Unity {
             _longestBufferStrings = updatedBufferStrings;
             _newlySorted = false;
         }
-
-        private void CalcHeaderLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
+        
+        private void CalcStringLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
             for (var i = 0; i < NumColumns; i++) {
-                var stringLength = (int)GUI.skin.button.CalcSize(new GUIContent(strings[i])).x;
+                var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
                 if (stringLengths[i] < stringLength) stringLengths[i] = stringLength;
             }
         }
+
         private void LayoutHeaderRow(IReadOnlyList<string> strings) {
             GUILayout.BeginHorizontal();
             for (var i = 0; i < NumColumns; i++)
@@ -170,13 +171,6 @@ namespace TotT.Unity {
                     _newlySorted = true;
                 }
             GUILayout.EndHorizontal();
-        }
-
-        private void CalcStringLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
-            for (var i = 0; i < NumColumns; i++) {
-                var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
-                if (stringLengths[i] < stringLength) stringLengths[i] = stringLength;
-            }
         }
         private void LayoutRow(IReadOnlyList<string> strings, Color c) {
             GUILayout.BeginHorizontal();
