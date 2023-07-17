@@ -21,6 +21,7 @@ namespace TotT.Simulator {
         public static readonly PrimitiveTest<Sexuality, Sex> AttractedTo = new(nameof(AttractedTo), (se, s) => se.IsAttracted(s));
         public static readonly Function<Person, Person, int> Compatibility = new(nameof(Compatibility), (p1, p2) => p1.Compatibility(p2));
         public static readonly Function<Person, Person, int> Similarity = new(nameof(Similarity), (p1, p2) => p1.Similarity(p2));
+        public static readonly Function<Favorability> Favorable = Method(Sims.Favorable, false);
 
         // Should we have Actions? this doesn't neatly fit Function or PrimitiveTest patterns
         public static readonly PrimitiveTest<Person, Person> TakeLastName = new(nameof(TakeLastName), (person, other) => person.TakeLastName(other));

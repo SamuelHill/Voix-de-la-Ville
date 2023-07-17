@@ -66,7 +66,7 @@ namespace TotT.Simulator {
         public string YearsAgo(TimePoint timePoint) {
             var yearsAgo = YearsSince(timePoint);
             return yearsAgo switch {
-                0 => "Within the past year", 1 => "One year ago", _ => $"{yearsAgo.ToNumeral()} years ago"
+                0 => "Within the past year", 1 => "One year ago", _ => $"{yearsAgo.ToCardinal()} years ago"
             };
         }
         public override string ToString() => $"{DayOfWeek} {TimeOfDay} - {Month} {Day.Suffixed()}, {Year}";

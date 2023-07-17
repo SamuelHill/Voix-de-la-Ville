@@ -4,6 +4,7 @@ using TotT.ValueTypes;
 
 namespace TotT.Utilities {
     using static Calendar;
+    using static Favorability;
     using static Randomize;
 
     /// <summary>
@@ -83,6 +84,14 @@ namespace TotT.Utilities {
         #endregion
 
         public static float FertilityRate(int age) => 
-            age >= FertilityForAge.Length ? 0 : ChancePerYear(FertilityForAge[age]);
+            age >= FertilityForAge.Length ? 0 : ChancePerDay(FertilityForAge[age]);
+
+        public static Favorability Favorable() => BellCurve() switch {
+            > 18 => MostPositive,
+            > 8 => Positive,
+            >= -8 => Neutral,
+            >= -18 => Negative,
+            _ => MostNegative
+        };
     }
 }

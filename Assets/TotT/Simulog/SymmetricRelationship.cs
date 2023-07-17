@@ -67,7 +67,7 @@ namespace TotT.Simulog {
         public readonly Event<T, T> End;
 
         public ExclusiveSymmetricRelationship(string name, Var<SymmetricTuple<T>> pair, Var<T> main, Var<T> other, Var<bool> state) :
-            base(name, pair, main, other, state) {
+            base(name, pair.Key, main.Indexed, other.Indexed, state.Indexed) {
             Start = Event($"{name}Start", main, other);
             End = Event($"{name}End", main, other);
 

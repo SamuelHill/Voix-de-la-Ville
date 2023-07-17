@@ -221,7 +221,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a160d838ff8b4b4693ac20007e008c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AssetsPPU: 16
+  m_AssetsPPU: 32
   m_RefResolutionX: 1920
   m_RefResolutionY: 1080
   m_UpscaleRT: 1
@@ -242,7 +242,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PrettyNamesOnly: 1
-  TownCenter: {x: 25, y: 0}
+  TownCenter: {x: 12, y: 0}
   Tilemap: {fileID: 1000091122}
   OccupiedLot: {fileID: 11400000, guid: d9d4319b8860fe748b914d7823963c6d, type: 2}
 --- !u!1 &646401261

@@ -21,10 +21,6 @@ namespace TotT.Simulator {
         public static TablePredicate<string> MaleNames;
         public static TablePredicate<string> Surnames;
 
-        private static TablePredicate<string, LocationType> _locationNames;
-        public static TablePredicate<string> BarNames;
-        public static TablePredicate<string> HouseNames;
-
         // ***************************************** Enums ****************************************
         //public static TablePredicate<Facet> Facets;
         public static TablePredicate<Vocation> Jobs;
@@ -55,12 +51,6 @@ namespace TotT.Simulator {
             FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
             MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);
             Surnames = FromCsv("Surnames", Csv("english_surnames"), lastName);
-
-            _locationNames = FromCsv("LocationNames", Csv("locationNames"), locationName, locationType);
-            BarNames = Predicate("BarNames", locationName);
-            BarNames.Initially.Where(_locationNames[locationName, LocationType.Bar]);
-            HouseNames = Predicate("HouseNames", locationName);
-            HouseNames.Initially.Where(_locationNames[locationName, LocationType.House]);
 
             //Facets = EnumTable("Facets", facet);
             Jobs = EnumTable("Jobs", job);

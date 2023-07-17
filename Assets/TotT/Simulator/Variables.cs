@@ -66,6 +66,7 @@ namespace TotT.Simulator {
 
         public static readonly Var<ActionType> actionType = (Var<ActionType>)"actionType";
         public static readonly Var<InteractionType> interactionType = (Var<InteractionType>)"interactionType";
+        public static readonly Var<Favorability> favorability = (Var<Favorability>)"favorability";
 
         public static readonly Var<ValueTuple<Person, Person>> pairing = (Var<ValueTuple<Person, Person>>)"pairing";
         public static readonly Var<SymmetricTuple<Person>> symmetricPair = (Var<SymmetricTuple<Person>>)"symmetricPair";

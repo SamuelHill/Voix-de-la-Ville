@@ -67,10 +67,10 @@ namespace TotT.Utilities {
             (operation is DailyOperation.Morning && timeOfDay == TimeOfDay.AM) ||
             (operation is DailyOperation.Evening && timeOfDay == TimeOfDay.PM);
 
-        private static float ChancePerDay(float chance) => chance / TimesOfDay;
+        public static float ChancePerDay(float chance) => chance / TimesOfDay;
         private static float ChancePerWeek(float chance) => chance / (TimesOfDay * DaysOfWeek);
         private static float ChancePerMonth(float chance) => chance / TicksPerMonth;
-        public static float ChancePerYear(float chance) => chance / NumTicks;
+        private static float ChancePerYear(float chance) => chance / NumTicks;
 
         public static Goal PerDay(float chance) => Prob[ChancePerDay(chance)];
         public static Goal PerWeek(float chance) => Prob[ChancePerWeek(chance)];

@@ -2164,6 +2164,89 @@
             This is an intensional table that is the output of an operator.
             </summary>
         </member>
+        <member name="T:TED.Interpreter.ValueCell">
+            <summary>
+            Run-time representation of a variable or a constant
+            A typed object whose only purpose is to hold a value.  For constants, the values is
+            pre-stored in the cell. For variables, it's stored during write-mode matching.
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.ValueCell.ConstantName">
+            <summary>
+            Name to use for cells representing constants
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.ValueCell.Variable">
+            <summary>
+            The variable this cell corresponds to
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.ValueCell.Name">
+            <summary>
+            Name, for debugging purposes
+            </summary>
+        </member>
+        <member name="M:TED.Interpreter.ValueCell.#ctor(TED.Interpreter.IVariable)">
+            <summary>
+            Make a cell with the specified v (v used only for debugging)
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.ValueCell.IsVariable">
+            <summary>
+            Is this the value cell for a variable or for a constant?
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.ValueCell.BoxedValue">
+            <summary>
+            Value stored in the cell, typed as object
+            </summary>
+        </member>
+        <member name="T:TED.Interpreter.ValueCell`1">
+            <summary>
+            A container for a run-time value manipulated by Calls in a Rule
+            These are used to hold:
+            - The run-time values of variables (Vars) within a Rule.
+            - Constants
+            These get read and written through MatchInstructions, which get run when a Pattern is Matched
+            or written to a row in a table using its Write method.
+            </summary>
+            <typeparam name="T">Type of data to be stored in the cell</typeparam>
+        </member>
+        <member name="F:TED.Interpreter.ValueCell`1.Value">
+            <summary>
+            Data stored in the cell.
+            </summary>
+        </member>
+        <member name="P:TED.Interpreter.ValueCell`1.BoxedValue">
+            <inheritdoc />
+        </member>
+        <member name="F:TED.Interpreter.ValueCell`1.Equal">
+            <summary>
+            Object used to test equality of two objects of type T
+            We need this because C# generics don't allow you to use ==
+            </summary>
+        </member>
+        <member name="F:TED.Interpreter.ValueCell`1.ConstantTable">
+            <summary>
+            Table of ValueCells used for different constants of type T
+            </summary>
+        </member>
+        <member name="M:TED.Interpreter.ValueCell`1.MakeVariable(TED.Var{`0})">
+            <summary>
+            Make a ValueCell to hold the run-time value of a variable (a Var[T]).
+            </summary>
+        </member>
+        <member name="M:TED.Interpreter.ValueCell`1.Constant(`0)">
+            <summary>
+            Return a ValueCell holding the specified constant
+            There will only be one such cell per constant.
+            </summary>
+        </member>
+        <member name="M:TED.Interpreter.ValueCell`1.Match(`0@)">
+            <summary>
+            Test of the cell holds the specified value
+            </summary>
+        </member>
         <member name="T:TED.MatchOperation`1">
             <summary>
             Represents an instance of an argument being passed to a predicate
@@ -2223,12 +2306,12 @@
             A MatchOperation that tests whether the value we're matching to is a specified constant
             </summary>
         </member>
-        <member name="M:TED.MatchOperation`1.Read(TED.ValueCell{`0})">
+        <member name="M:TED.MatchOperation`1.Read(TED.Interpreter.ValueCell{`0})">
             <summary>
             A MatchOperation that tests whether the value we're matching is the value of a bound variable
             </summary>
         </member>
-        <member name="M:TED.MatchOperation`1.Write(TED.ValueCell{`0})">
+        <member name="M:TED.MatchOperation`1.Write(TED.Interpreter.ValueCell{`0})">
             <summary>
             A MatchOperation that stores the value being matched to into a variable (variable should not be previously bound)
             </summary>
@@ -2754,84 +2837,6 @@
         </member>
         <member name="M:TED.Pattern`8.ToString">
             <inheritdoc />
-        </member>
-        <member name="T:TED.ValueCell">
-            <summary>
-            Run-time representation of a variable or a constant
-            A typed object whose only purpose is to hold a value.  For constants, the values is
-            pre-stored in the cell. For variables, it's stored during write-mode matching.
-            </summary>
-        </member>
-        <member name="F:TED.ValueCell.ConstantName">
-            <summary>
-            Name to use for cells representing constants
-            </summary>
-        </member>
-        <member name="F:TED.ValueCell.Name">
-            <summary>
-            Name, for debugging purposes
-            </summary>
-        </member>
-        <member name="M:TED.ValueCell.#ctor(System.String)">
-            <summary>
-            Make a cell with the specified name (name used only for debugging)
-            </summary>
-        </member>
-        <member name="P:TED.ValueCell.IsVariable">
-            <summary>
-            Is this the value cell for a variable or for a constant?
-            </summary>
-        </member>
-        <member name="P:TED.ValueCell.BoxedValue">
-            <summary>
-            Value stored in the cell, typed as object
-            </summary>
-        </member>
-        <member name="T:TED.ValueCell`1">
-            <summary>
-            A container for a run-time value manipulated by Calls in a Rule
-            These are used to hold:
-            - The run-time values of variables (Vars) within a Rule.
-            - Constants
-            These get read and written through MatchInstructions, which get run when a Pattern is Matched
-            or written to a row in a table using its Write method.
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="F:TED.ValueCell`1.Value">
-            <summary>
-            Data stored in the cell.
-            </summary>
-        </member>
-        <member name="P:TED.ValueCell`1.BoxedValue">
-            <inheritdoc />
-        </member>
-        <member name="F:TED.ValueCell`1.Equal">
-            <summary>
-            Object used to test equality of two objects of type T
-            We need this because C# generics don't allow you to use ==
-            </summary>
-        </member>
-        <member name="F:TED.ValueCell`1.ConstantTable">
-            <summary>
-            Table of ValueCells used for different constants of type T
-            </summary>
-        </member>
-        <member name="M:TED.ValueCell`1.MakeVariable(System.String)">
-            <summary>
-            Make a ValueCell to hold the run-time value of a variable (a Var[T]).
-            </summary>
-        </member>
-        <member name="M:TED.ValueCell`1.Constant(`0)">
-            <summary>
-            Return a ValueCell holding the specified constant
-            There will only be one such cell per constant.
-            </summary>
-        </member>
-        <member name="M:TED.ValueCell`1.Match(`0@)">
-            <summary>
-            Test of the cell holds the specified value
-            </summary>
         </member>
         <member name="T:TED.InvalidProgramException">
             <summary>

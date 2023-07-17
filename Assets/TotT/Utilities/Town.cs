@@ -9,8 +9,8 @@ namespace TotT.Utilities {
     /// Location creation wrapper, distance calculations, and a random lot/position function
     /// </summary>
     public static class Town {
-        private static Vector2Int _max = new(10, 10);
-        private static Vector2Int _min = new(-10, -10);
+        private static Vector2Int _max = new(8, 8);
+        private static Vector2Int _min = new(-8, -8);
 
         private static int GridSpaces() => (Math.Abs(_min.x) + _max.x) * (Math.Abs(_min.y) + _max.y);
         private static void ExpandAllSides() { _min.x--; _max.x++; _min.y--; _max.y++; }
