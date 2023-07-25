@@ -1,8 +1,10 @@
 ﻿using System.Linq;
 using GraphVisualization;
+using TED;
 using TED.Utilities;
 using TotT.Simulator;
 using TotT.Utilities;
+using TotT.ValueTypes;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using static UnityEngine.Input;
@@ -47,7 +49,7 @@ namespace TotT.Unity {
                 : TalkOfTheTown.Simulation.Tables;
             AvailableTables(simulationTables.Append(TalkOfTheTown.Simulation.Exceptions).Append(TalkOfTheTown.Simulation.Problems));
             ActiveTables(new[] { "Character", "Parent", "Employment", "WhereTheyAt" });
-            AddPopulationInfo(() => $"Population of {_simulationInfo.Population}");
+            AddPopulationInfo(() => $"Population of {SimulationInfo.Population}");
             AddSelectedTileInfo(_simulationInfo.SelectedLocation);
         }
 
@@ -58,9 +60,16 @@ namespace TotT.Unity {
             if (GetKeyDown(KeyCode.BackQuote)) _profileRuleExecutionTime = !_profileRuleExecutionTime;
             if (GetKeyDown(KeyCode.F1)) ToggleShowTables();
             if (_simulationRunning || _simulationSingleStep) {
-                try { TalkOfTheTown.UpdateSimulator(); } catch { _simulationRunning = false; throw; }
+                try { TalkOfTheTown.UpdateSimulator(); } catch {
+                    _simulationRunning = false;
+                    throw;
+                }
                 _simulationInfo.ProcessLots();
                 _simulationSingleStep = false;
+                if (PoppedTable & _simulationRunning) {
+                    _simulationRunning = false;
+                    PoppedTable = false;
+                }
             }
             _tileManager.UpdateSelectedTile();
         }

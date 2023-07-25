@@ -39,6 +39,8 @@ namespace TotT.Unity {
         private static readonly Rect ChangeTablesRect = new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
         private static readonly Rect ShowTablesRect = new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
 
+        public static bool PoppedTable;
+
         // ReSharper disable once CollectionNeverUpdated.Global
         public static readonly DictionaryWithDefault<TablePredicate, Dictionary<string, Action>> tableButtons =
             new(_ => new Dictionary<string, Action>());
@@ -131,6 +133,7 @@ namespace TotT.Unity {
                 PreviousLengths[p] = length = p.Length;
             if (p.Length <= length) return;
             PopTable(p);
+            PoppedTable = true;
             PreviousLengths[p] = p.Length;
         }
 

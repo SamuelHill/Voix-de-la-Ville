@@ -11,7 +11,7 @@ namespace TotT.Simulator {
     /// Internal clock, keeps time during a simulation by ticking along with Simulator.Update
     /// </summary>
     public class Time {
-        private uint _clock;
+        public uint _clock;
 
         #pragma warning disable IDE1006
         // ReSharper disable once InconsistentNaming

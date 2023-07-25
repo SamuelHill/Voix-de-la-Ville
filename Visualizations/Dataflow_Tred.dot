@@ -1,0 +1,470 @@
+digraph {
+	graph [overlap=false,
+		splines=true
+	];
+	node [style=filled];
+	subgraph cluster_CharacterAttributes {
+		v36	[fillcolor=limegreen,
+			label=CharacterAttributes];
+		v37	[label=Add];
+		v64	[fillcolor=deepskyblue,
+			label=Initially,
+			shape=diamond];
+		v65	[label="set vitalStatus"];
+		v66	[label="set age"];
+	}
+	subgraph cluster_VocationShift {
+		v9	[fillcolor=gold,
+			label=VocationShift,
+			shape=diamond];
+		v10	[fillcolor=deepskyblue,
+			label=Initially,
+			shape=diamond];
+	}
+	subgraph cluster_EmbryoAttributes {
+		v62	[fillcolor=limegreen,
+			label=EmbryoAttributes];
+		v63	[label=Add];
+	}
+	subgraph cluster_LocationColors {
+		v14	[fillcolor=gold,
+			label=LocationColors,
+			shape=diamond];
+		v15	[fillcolor=deepskyblue,
+			label=Initially,
+			shape=diamond];
+	}
+	subgraph cluster_Employment {
+		v41	[fillcolor=limegreen,
+			label=Employment];
+		v42	[label=Add];
+	}
+	subgraph cluster_EmploymentStatus {
+		v48	[fillcolor=limegreen,
+			label=EmploymentStatus];
+		v49	[label=Add];
+		v50	[label="set state"];
+	}
+	subgraph cluster_Character {
+		v16	[fillcolor=limegreen,
+			label=Character];
+		v17	[label=Add];
+		v142	[fillcolor=deepskyblue,
+			label=Initially,
+			shape=diamond];
+		v143	[label="set end"];
+		v144	[label="set exists"];
+	}
+	subgraph cluster_PlaceAttributes {
+		v31	[fillcolor=limegreen,
+			label=PlaceAttributes];
+		v32	[label=Add];
+		v90	[fillcolor=deepskyblue,
+			label=Initially,
+			shape=diamond];
+		v91	[label="set businessStatus"];
+	}
+	subgraph cluster_Aptitude {
+		v59	[fillcolor=limegreen,
+			label=Aptitude];
+		v60	[label=Add];
+		v61	[fillcolor=deepskyblue,
+			label=Initially,
+			shape=diamond];
+	}
+	subgraph cluster_Charge {
+		v120	[fillcolor=limegreen,
+			label=Charge];
+		v121	[label=Add];
+		v123	[label="set charge"];
+	}
+	subgraph cluster_Friend {
+		v118	[fillcolor=limegreen,
+			label=Friend];
+		v119	[label=Add];
+		v125	[label="set state"];
+	}
+	subgraph cluster_Enemy {
+		v127	[fillcolor=limegreen,
+			label=Enemy];
+		v128	[label=Add];
+		v129	[label="set state"];
+	}
+	subgraph cluster_Romantic {
+		v98	[fillcolor=limegreen,
+			label=Romantic];
+		v99	[label=Add];
+		v133	[label="set state"];
+	}
+	subgraph cluster_Lover {
+		v134	[fillcolor=limegreen,
+			label=Lover];
+		v135	[label=Add];
+		v137	[label="set state"];
+	}
+	subgraph cluster_Spark {
+		v100	[fillcolor=limegreen,
+			label=Spark];
+		v101	[label=Add];
+		v131	[label="set spark"];
+	}
+	subgraph cluster_Embryo {
+		v20	[fillcolor=limegreen,
+			label=Embryo];
+		v21	[label=Add];
+		v140	[label="set end"];
+		v141	[label="set exists"];
+	}
+	subgraph cluster_Parent {
+		v84	[fillcolor=limegreen,
+			label=Parent];
+		v85	[label=Add];
+	}
+	subgraph cluster_Place {
+		v53	[fillcolor=limegreen,
+			label=Place];
+		v54	[label=Add];
+		v56	[fillcolor=deepskyblue,
+			label=Initially,
+			shape=diamond];
+		v57	[label="set end"];
+		v58	[label="set exists"];
+	}
+	subgraph cluster_Home {
+		v69	[fillcolor=limegreen,
+			label=Home];
+		v70	[label=Add];
+		v76	[fillcolor=deepskyblue,
+			label=Initially,
+			shape=diamond];
+		v78	[label="set location"];
+	}
+	v40	[label=JobToFill];
+	v9 -> v40;
+	v10 -> v9	[color=blue];
+	v15 -> v14	[color=blue];
+	v67	[label=CharacterCount];
+	v16 -> v67;
+	v17 -> v16	[color=green];
+	v17 -> v60	[constraint=false];
+	v142 -> v16	[color=blue];
+	v143 -> v16	[color=red];
+	v144 -> v16	[color=red];
+	v24	[label=PotentialProcreation];
+	v36 -> v24;
+	v51	[label=CharacterEnd];
+	v36 -> v51;
+	v96	[label=NeedDayCare];
+	v36 -> v96;
+	v97	[label=NeedSchooling];
+	v36 -> v97;
+	v37 -> v36	[color=green];
+	v64 -> v36	[color=blue];
+	v65 -> v36	[color=red];
+	v66 -> v36	[color=red];
+	v35	[label=NewPlace];
+	v59 -> v35;
+	v60 -> v59	[color=green];
+	v61 -> v59	[color=blue];
+	v120 -> v119	[constraint=false];
+	v120 -> v128	[constraint=false];
+	v121 -> v120	[color=green];
+	v123 -> v120	[color=red];
+	v118 -> v125	[constraint=false];
+	v103	[label=Interaction];
+	v118 -> v103;
+	v119 -> v118	[color=green];
+	v125 -> v118	[color=red];
+	v145	[label=FriendStart];
+	v125 -> v145;
+	v146	[label=FriendEnd];
+	v125 -> v146;
+	v127 -> v129	[constraint=false];
+	v127 -> v103;
+	v128 -> v127	[color=green];
+	v129 -> v127	[color=red];
+	v147	[label=EnemyStart];
+	v129 -> v147;
+	v148	[label=EnemyEnd];
+	v129 -> v148;
+	v100 -> v99	[constraint=false];
+	v101 -> v100	[color=green];
+	v131 -> v100	[color=red];
+	v98 -> v133	[constraint=false];
+	v25	[label=GoingOnADate];
+	v98 -> v25;
+	v136	[label=LoverStart];
+	v98 -> v136;
+	v99 -> v98	[color=green];
+	v133 -> v98	[color=red];
+	v149	[label=RomanticStart];
+	v133 -> v149;
+	v150	[label=RomanticEnd];
+	v133 -> v150;
+	v134 -> v25;
+	v135 -> v134	[color=green];
+	v137 -> v134	[color=red];
+	v19	[label=EmbryoEnd];
+	v20 -> v19;
+	v21 -> v20	[color=green];
+	v140 -> v20	[color=red];
+	v141 -> v20	[color=red];
+	v62 -> v37	[constraint=false];
+	v63 -> v62	[color=green];
+	v83	[label=CanMoveToFamily];
+	v84 -> v83;
+	v85 -> v84	[color=green];
+	v52	[label=PlaceEnd];
+	v53 -> v52;
+	v89	[label=PlaceCount];
+	v53 -> v89;
+	v54 -> v53	[color=green];
+	v56 -> v53	[color=blue];
+	v57 -> v53	[color=red];
+	v58 -> v53	[color=red];
+	v31 -> v78	[constraint=false];
+	v30	[label=CategoryCount];
+	v31 -> v30;
+	v88	[label=NumLocations];
+	v31 -> v88;
+	v152	[label=DisplayLocations];
+	v31 -> v152;
+	v32 -> v31	[color=green];
+	v90 -> v31	[color=blue];
+	v91 -> v31	[color=red];
+	v73	[label=Occupancy];
+	v69 -> v73;
+	v74	[label=Unoccupied];
+	v69 -> v74;
+	v75	[label=Unhoused];
+	v69 -> v75;
+	v153	[label=BuriedAt];
+	v69 -> v153;
+	v70 -> v69	[color=green];
+	v76 -> v69	[color=blue];
+	v78 -> v69	[color=red];
+	v48 -> v40;
+	v49 -> v48	[color=green];
+	v50 -> v48	[color=red];
+	v41 -> v50	[constraint=false];
+	v94	[label=Working];
+	v41 -> v94;
+	v42 -> v49	[constraint=false];
+	v42 -> v41	[color=green];
+	v0	[fillcolor=gold,
+		label=FemaleNames,
+		shape=diamond];
+	v23	[label=Procreation];
+	v0 -> v23;
+	v1	[fillcolor=gold,
+		label=MaleNames,
+		shape=diamond];
+	v1 -> v23;
+	v2	[fillcolor=gold,
+		label=Surnames,
+		shape=diamond];
+	v39	[label=Drifter];
+	v2 -> v39;
+	v3	[fillcolor=gold,
+		label=Jobs,
+		shape=diamond];
+	v3 -> v60	[constraint=false];
+	v3 -> v61	[constraint=false];
+	v4	[fillcolor=gold,
+		label=PrimordialBeing,
+		shape=diamond];
+	v4 -> v142	[constraint=false];
+	v4 -> v64	[constraint=false];
+	v4 -> v61	[constraint=false];
+	v4 -> v76	[constraint=false];
+	v5	[fillcolor=gold,
+		label=PrimordialLocation,
+		shape=diamond];
+	v5 -> v56	[constraint=false];
+	v5 -> v90	[constraint=false];
+	v77	[fillcolor=deepskyblue,
+		label=PrimordialHouse,
+		shape=diamond];
+	v5 -> v77;
+	v6	[fillcolor=gold,
+		label=LocationInformation,
+		shape=diamond];
+	v6 -> v10	[constraint=false];
+	v6 -> v15	[constraint=false];
+	v6 -> v90	[constraint=false];
+	v92	[label=OpenLocationType];
+	v6 -> v92;
+	v7	[fillcolor=gold,
+		label=VocationLocations,
+		shape=diamond];
+	v7 -> v10	[constraint=false];
+	v8	[fillcolor=gold,
+		label=OperatingTimes,
+		shape=diamond];
+	v8 -> v10	[constraint=false];
+	v11	[fillcolor=gold,
+		label=PositionsPerJob,
+		shape=diamond];
+	v11 -> v40;
+	v12	[fillcolor=gold,
+		label=ActionToCategory,
+		shape=diamond];
+	v28	[label=OpenForBusiness];
+	v12 -> v28;
+	v13	[fillcolor=gold,
+		label=CategoryColors,
+		shape=diamond];
+	v13 -> v15	[constraint=false];
+	v18	[label=CharacterStart];
+	v18 -> v17	[constraint=false];
+	v19 -> v37	[constraint=false];
+	v19 -> v66	[constraint=false];
+	v19 -> v140	[constraint=false];
+	v19 -> v141	[constraint=false];
+	v19 -> v85	[constraint=false];
+	v19 -> v18;
+	v22	[label=EmbryoStart];
+	v22 -> v21	[constraint=false];
+	v23 -> v63	[constraint=false];
+	v23 -> v22;
+	v24 -> v23;
+	v25 -> v24;
+	v26	[label=AvailableAction];
+	v26 -> v25;
+	v114	[label=IndividualActions];
+	v26 -> v114;
+	v27	[label=ActionCount];
+	v27 -> v26;
+	v28 -> v27;
+	v112	[label=DateLocations];
+	v28 -> v112;
+	v29	[label=AvailableCategory];
+	v29 -> v28;
+	v30 -> v29;
+	v33	[label=PlaceStart];
+	v33 -> v54	[constraint=false];
+	v34	[label=CreatedLocation];
+	v34 -> v32	[constraint=false];
+	v34 -> v33;
+	v35 -> v34;
+	v38	[label=CharacterStartWith];
+	v38 -> v17	[constraint=false];
+	v39 -> v37	[constraint=false];
+	v39 -> v38;
+	v40 -> v39;
+	v47	[label=BestCandidate];
+	v40 -> v47;
+	v43	[label=CandidatePerJobAssignments];
+	v43 -> v42	[constraint=false];
+	v44	[label=CandidatePerJob];
+	v44 -> v43;
+	v45	[label=CandidateForJobAssignments];
+	v45 -> v42	[constraint=false];
+	v46	[label=CandidateForJob];
+	v46 -> v45;
+	v47 -> v44;
+	v47 -> v46;
+	v51 -> v143	[constraint=false];
+	v51 -> v144	[constraint=false];
+	v51 -> v65	[constraint=false];
+	v138	[label=LoverEnd];
+	v51 -> v138;
+	v52 -> v57	[constraint=false];
+	v52 -> v58	[constraint=false];
+	v52 -> v91	[constraint=false];
+	v52 -> v50	[constraint=false];
+	v79	[label=ForeclosedUpon];
+	v52 -> v79;
+	v151	[label=VacatedLocation];
+	v52 -> v151;
+	v55	[fillcolor=gold,
+		label=PlaceStartWith,
+		shape=diamond];
+	v55 -> v54	[constraint=false];
+	v67 -> v35;
+	v68	[label=WantToMove];
+	v68 -> v35;
+	v87	[label=FamilyInHouse];
+	v68 -> v87;
+	v71	[label=UnderOccupied];
+	v71 -> v70	[constraint=false];
+	v72	[label=OccupancyCount];
+	v72 -> v68;
+	v73 -> v72;
+	v74 -> v71;
+	v75 -> v70	[constraint=false];
+	v77 -> v76	[constraint=false];
+	v79 -> v78	[constraint=false];
+	v80	[label=MovingIn];
+	v80 -> v78	[constraint=false];
+	v81	[label=SelectedToMoveToFamily];
+	v81 -> v80;
+	v82	[label=CanMoveToFamilyAssignments];
+	v82 -> v81;
+	v83 -> v82;
+	v86	[label=SelectedOutsiderToMove];
+	v86 -> v80;
+	v87 -> v86;
+	v88 -> v35;
+	v89 -> v34;
+	v92 -> v28;
+	v93	[label=NeedsActionAssignment];
+	v93 -> v25;
+	v94 -> v93;
+	v95	[label=AtSchool];
+	v95 -> v93;
+	v96 -> v95;
+	v97 -> v95;
+	v102	[label=SparkChanged];
+	v102 -> v101	[constraint=false];
+	v132	[label=SparkUnchanged];
+	v102 -> v132;
+	v103 -> v102;
+	v122	[label=ChargeChanged];
+	v103 -> v122;
+	v104	[label=IsPlatonic];
+	v104 -> v103;
+	v105	[label=InteractFavorability];
+	v105 -> v104;
+	v130	[label=IsRomantic];
+	v105 -> v130;
+	v106	[label=PotentialInteractsMatches];
+	v106 -> v105;
+	v107	[label=PotentialInteracts];
+	v107 -> v106;
+	v108	[label=InteractionPair];
+	v108 -> v107;
+	v109	[label=NotWorking];
+	v109 -> v108;
+	v110	[label=WhereTheyAt];
+	v110 -> v109;
+	v111	[label=LocationOfDates];
+	v111 -> v110;
+	v112 -> v111;
+	v113	[label=RandomActionAssign];
+	v117	[label=VisitingFriend];
+	v113 -> v117;
+	v114 -> v113;
+	v115	[label=LocationByActionAssign];
+	v115 -> v110;
+	v116	[label=NoOneToVisit];
+	v116 -> v115;
+	v117 -> v116;
+	v126	[label=VisitingFriendAssignments];
+	v117 -> v126;
+	v122 -> v121	[constraint=false];
+	v124	[label=ChargeUnchanged];
+	v122 -> v124;
+	v124 -> v123	[constraint=false];
+	v126 -> v115;
+	v130 -> v102;
+	v132 -> v131	[constraint=false];
+	v136 -> v135	[constraint=false];
+	v138 -> v137	[constraint=false];
+	v139	[fillcolor=gold,
+		label=EmbryoStartWith,
+		shape=diamond];
+	v139 -> v21	[constraint=false];
+	v154	[label=Buried];
+	v153 -> v154;
+}

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using GraphVisualization;
@@ -14,6 +16,7 @@ using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
 using static TED.Language;
+using Debug = UnityEngine.Debug;
 
 namespace TotT.Simulator {
     using WhereTheyAtIndex = GeneralIndex<(Person, ActionType, Location), Location>;
@@ -42,6 +45,8 @@ namespace TotT.Simulator {
         public static Time Time;
         private const int Seed = 349571286;
 
+        public static readonly List<(uint, uint, float)> PerformanceDate = new();
+
         private TalkOfTheTown() {
             DeclareParsers();
             Seed(Seed, Seed);
@@ -50,6 +55,7 @@ namespace TotT.Simulator {
             BindingList.BindGlobal(RandomNumber, "");
             TEDGraphVisualization.SetTableDescription();
             Graph.SetDescriptionMethod<Person>(PersonDescription);
+            using var file = File.CreateText("PerformanceData.csv");
         }
         public TalkOfTheTown(ushort tick = 1) : this() => Time = new Time(tick);
         public TalkOfTheTown(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) :
@@ -61,7 +67,7 @@ namespace TotT.Simulator {
         #region Tables and Indexers for GUI and Graph visuals
         private TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterAttributes;
         private TablePredicate<Person, Person, InteractionType> Interaction;
-        private TablePredicate<Person, ActionType, Location> WhereTheyAt;
+        private static TablePredicate<Person, ActionType, Location> WhereTheyAt;
         private TablePredicate<Person, Location> Home;
         private TablePredicate<Person, Person> Parent;
         private AffinityRelationship<Person, Person> Friend;
@@ -72,7 +78,7 @@ namespace TotT.Simulator {
         public TablePredicate<Vector2Int, Location, LocationType> CreatedLocation;
         public TablePredicate<Vector2Int> VacatedLocation;
         public TablePredicate<Person> Buried;
-        public KeyIndex<(bool, int), bool> PopulationCountIndex;
+        public static KeyIndex<(bool, int), bool> PopulationCountIndex;
         public WhereTheyAtIndex WhereTheyAtLocationIndex;
         public KeyIndex<(Vector2Int, Location, LocationType, TimePoint), Vector2Int> LocationsPositionIndex;
         private ColumnAccessor<LocationType, Location> LocationToType;
@@ -247,8 +253,7 @@ namespace TotT.Simulator {
             #endregion
 
             Place.StartWhen(CreatedLocation)
-                 .StartCauses(Add(Place.Attributes[location, locationType, locationCategory,
-                                                position, InBusiness])
+                 .StartCauses(Add(Place.Attributes[location, locationType, locationCategory, position, InBusiness])
                                  .If(CreatedLocation, LocationInformation))
                  .EndWhen(Place.Attributes, !In(locationType, permanentLocationTypes),
                           Place, Time.YearsOld[founding, age], age > 40, PerYear(0.1f))
@@ -410,12 +415,12 @@ namespace TotT.Simulator {
             // Houses whenever there is a need for housing
             MultipleLocations(House, Once[WantToMove[__] | Unhoused[__]]);
             // Spawn once per population density
-            PerCapita(Bar, 30);
-            PerCapita(Diner, 45);
-            PerCapita(Bakery, 115);
+            PerCapita(Bar, 35);
+            PerCapita(Diner, 55);
+            PerCapita(Bakery, 125);
             PerCapita(ButcherShop, 170);
             PerCapita(CandyShop, 250);
-            PerCapita(GroceryStore, 85);
+            PerCapita(GroceryStore, 95);
             PerCapita(GeneralStore, 150);
             PerCapita(Barbershop, 250);
             PerCapita(TailorShop, 100);
@@ -436,7 +441,9 @@ namespace TotT.Simulator {
                .If(ActionCount[actionType, __]);
             var IndividualActions = Predicate("IndividualActions", actionType)
                .If(AvailableAction, !In(actionType, new[] { GoingToSchool, GoingOutForDateNight }));
-            
+            var DrifterActions = Predicate("DrifterActions", actionType)
+               .If(IndividualActions, !In(actionType, new[] { StayingIn, Visiting }));
+
             var NeedSchooling = Predicate("NeedSchooling", person).If(Age, age < 18, age > 6);
             var NeedDayCare = Predicate("NeedDayCare", person).If(Age, age <= 6);
 
@@ -448,23 +455,38 @@ namespace TotT.Simulator {
                 .If(OpenLocationType, PlaceInBusiness, Place.Attributes, StillEmployed,
                     Employment[__, person, location, Time.CurrentTimeOfDay]);
 
-            var NeedsActionAssignment = Predicate("NeedsActionAssignment", person)
+            var AvailableIndividual = Predicate("AvailableIndividual", person)
                .If(Character[person], !Working[person, __], !AtSchool[person, __]);
 
-            var GoingOnADate = Predicate("GoingOnADate", person, otherPerson)
-               .If(AvailableAction[GoingOutForDateNight], NeedsActionAssignment[person], NeedsActionAssignment[otherPerson], person != otherPerson, 
-                   MutualRomanticInterest[person, otherPerson], (!Lover[person, otherPerson] & Prob[0.1f]) | (Lover & Prob[0.25f]));
+            var temp = Predicate("temp", symmetricPair, person, otherPerson)
+               .If(AvailableAction[GoingOutForDateNight], AvailableIndividual[person], AvailableIndividual[otherPerson], 
+                   person != otherPerson, MutualRomanticInterest[person, otherPerson], 
+                   SymmetricTuple<Person>.NewSymmetricTuple[person, otherPerson, symmetricPair],
+                   SymmetricTuple<Person>.InOrder[symmetricPair, person, otherPerson]);
+
+            var tempFilter = Predicate("tempFilter", symmetricPair, rate);
+            tempFilter[symmetricPair, 0.25f].If(temp, Lover[symmetricPair, __, __, true]);
+            tempFilter[symmetricPair, 0.1f].If(temp, !Lover[symmetricPair, __, __, true]);
+
+            var tempToMatch = Predicate("tempToMatch", person, otherPerson, score);
+            tempToMatch.If(tempFilter, Prob[rate], temp, RandomNormal[num], score == (num + 50));
+            var dateGoers = MatchGreedily("dateGoers", tempToMatch);
+
             var DateLocations = Predicate("DateLocations", location)
                .If(OpenForBusiness[GoingOutForDateNight, location]);
             var LocationOfDates = Predicate("LocationOfDates", person, otherPerson, location)
-               .If(GoingOnADate, RandomElement(DateLocations, location));
+               .If(dateGoers, RandomElement(DateLocations, location));
 
+            var NeedsActionAssignment = Predicate("NeedsActionAssignment", person)
+               .If(AvailableIndividual, !dateGoers[person, __], !dateGoers[__, person]);
+            var UnhousedActionAssignment = Predicate("UnhousedActionAssignment", person)
+                .If(NeedsActionAssignment, Unhoused).If(Character.StartWith[person, __]);
             var RandomActionAssign = Predicate("RandomActionAssign", person, actionType)
-                .If(NeedsActionAssignment, !GoingOnADate[person, __], !GoingOnADate[__, person], 
-                    RandomElement(IndividualActions, actionType));
+                .If(NeedsActionAssignment, !UnhousedActionAssignment[person], RandomElement(IndividualActions, actionType))
+                .If(UnhousedActionAssignment, RandomElement(DrifterActions, actionType));
 
             var VisitingFriend = Assign("VisitingFriend", person, otherPerson)
-               .When(RandomActionAssign[person, Visiting], MutualFriendship);
+               .When(RandomActionAssign[person, Visiting], MutualFriendship, !Unhoused[otherPerson]);
             var NoOneToVisit = Predicate("NoOneToVisit", person)
                .If(RandomActionAssign[person, Visiting], !VisitingFriend[person, __]);
 
@@ -473,8 +495,10 @@ namespace TotT.Simulator {
             LocationByActionAssign.If(NoOneToVisit, Home[person, location]);
             LocationByActionAssign.If(VisitingFriend.Assignments, Home[otherPerson, location]);
             // Choose the closest location with the action type assigned
-            LocationByActionAssign.If(RandomActionAssign, !In(actionType, new[] { StayingIn, Visiting }),
-                Minimal(location, distance, OpenForBusiness & DistanceFromHome[person, location, distance]));
+            LocationByActionAssign.If(RandomActionAssign, !UnhousedActionAssignment[person], !In(actionType, new[] { StayingIn, Visiting }), 
+                                      Minimal(location, distance, OpenForBusiness & DistanceFromHome[person, location, distance]));
+            LocationByActionAssign.If(RandomActionAssign, UnhousedActionAssignment,
+                                      Minimal(location, distance, OpenForBusiness & RandomNormal[distance]));
 
             WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType.Indexed, location.Indexed);
             WhereTheyAt.Colorize(location);
@@ -482,15 +506,21 @@ namespace TotT.Simulator {
             WhereTheyAtLocationIndex = (WhereTheyAtIndex)WhereTheyAt.IndexFor(location, false);
             WhereTheyAt[person, GoingToSchool, location].If(AtSchool);
             WhereTheyAt[person, GoingToWork, location].If(Working);
-            WhereTheyAt[person, GoingOutForDateNight, location]
-               .If(LocationOfDates[person, __, location] | LocationOfDates[__, person, location]);
+            WhereTheyAt[person, GoingOutForDateNight, location].If(LocationOfDates[person, __, location]);
+            WhereTheyAt[person, GoingOutForDateNight, location].If(LocationOfDates[__, person, location]);
             WhereTheyAt.If(RandomActionAssign, LocationByActionAssign);
+
+            // This relies on the mom having a house when the baby is born
+            WhereTheyAt[person, StayingIn, location].If(Character.Start[person], 
+                                                        Embryo.Attributes[person, woman, __, __, __], Home[woman, location]);
+
+            //WhereTheyAt.Problem("Not everyone moved").If(Character[person], !WhereTheyAt[person, __, __]);
 
             // *********************************** Interactions: **********************************
 
             var NotWorking = Predicate("NotWorking", person.Key, location.Indexed)
                .If(WhereTheyAt[person, actionType, location], 
-                   !In(actionType, new[] { GoingToWork, GoingOutForDateNight }), Age, age >= 18);
+                   !In(actionType, new[] { GoingToWork, GoingToSchool, GoingOutForDateNight }), Age, age >= 18);
             var InteractionPair = Predicate("InteractionPair", person, otherPerson);
             InteractionPair.If(NotWorking[person, location], NotWorking[otherPerson, location], person != otherPerson);
             InteractionPair.If(Working[person, location], Working[otherPerson, location], person != otherPerson);
@@ -542,12 +572,12 @@ namespace TotT.Simulator {
             InteractionOfType(Negging).If(RomanticFavorability(Negative));
             InteractionOfType(Insulting).If(RomanticFavorability(MostNegative));
 
-            PotentialProcreation.If(GoingOnADate[woman, man] | GoingOnADate[man, woman],
+            PotentialProcreation.If(dateGoers[woman, man] | dateGoers[man, woman],
                                     Woman, Man, !Pregnant[woman], Age[woman, age], Prob[FertilityRate[age]]);
 
-            InteractionOfType(Snogging).If(GoingOnADate[person, otherPerson],
-                Once[!PotentialProcreation[person, otherPerson] | !PotentialProcreation[otherPerson, person]]);
-            InteractionOfType(Snogging).If(GoingOnADate[otherPerson, person], 
+            InteractionOfType(Snogging).If(dateGoers[person, otherPerson],
+                                           Once[!PotentialProcreation[person, otherPerson] | !PotentialProcreation[otherPerson, person]]);
+            InteractionOfType(Snogging).If(dateGoers[otherPerson, person], 
                 Once[!PotentialProcreation[person, otherPerson] | !PotentialProcreation[otherPerson, person]]);
             InteractionOfType(Procreating).If(PotentialProcreation[person, otherPerson]);
             InteractionOfType(Procreating).If(PotentialProcreation[otherPerson, person]);
@@ -728,6 +758,13 @@ namespace TotT.Simulator {
             if (update == null) LoopSimulator();
 #else
             Time.Tick();
+            PerformanceDate.Add((WhereTheyAt.Length, Time._clock - InitialClockTick, Simulation.RuleExecutionTime));
+            if (Time.Day == 1 && Time.Month == Month.January) {
+                using var file = File.AppendText("PerformanceData.csv");
+                foreach ((var population, var clock, var execution) in PerformanceDate)
+                    file.WriteLine($"{population}, {clock}, {execution}");
+                PerformanceDate.Clear();
+            }
             Simulation.Update();
             PopTableIfNewActivity(Simulation.Problems);
             PopTableIfNewActivity(Simulation.Exceptions);

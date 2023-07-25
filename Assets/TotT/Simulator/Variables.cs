@@ -27,6 +27,7 @@ namespace TotT.Simulator {
 
         public static readonly Var<int> age = (Var<int>)"age";
         public static readonly Var<int> num = (Var<int>)"num";
+        public static readonly Var<float> rate = (Var<float>)"rate";
         public static readonly Var<int> count = (Var<int>)"count";
         public static readonly Var<int> score = (Var<int>)"score";
         public static readonly Var<int> spark = (Var<int>)"spark";
