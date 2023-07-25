@@ -23,8 +23,8 @@ namespace TotT.Utilities {
         public const ushort NumTicks = Months * TicksPerMonth;          // 672
 
         public const byte NineMonths = 9 * DaysPerMonth; // 252
-        
-        public const int StartYear = 1915;
+
+        private const int StartYear = 1915;
         private const ushort PrimordialOffset = 100; // years before start that TimePoints can exist at
         public const uint InitialClockTick = NumTicks * PrimordialOffset;
         private const int CalcYearOffset = StartYear - PrimordialOffset;

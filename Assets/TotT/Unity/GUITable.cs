@@ -6,11 +6,18 @@ using TotT.Simulator;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
-using static UnityEngine.Input; // Event.current.mousePosition doesn't work as expected for Rect check
 
 namespace TotT.Unity {
-    using static StringProcessing;
+    using static Array;
+    using static Color;
+    using static Event;
+    using static GUI;
+    using static GUILayout;
     using static GUIManager;
+    using static Input; // Event.current.mousePosition doesn't work as expected for Rect check
+    using static Math;
+    using static Screen;
+    using static StringProcessing;
 
     // ReSharper disable once InconsistentNaming
     /// <summary>OnGUI based TablePredicate viewer.</summary>
@@ -56,14 +63,14 @@ namespace TotT.Unity {
             _longestBufferStrings = new int[NumColumns];
             _columnWidths = new float[NumColumns];
             _colorizer = predicate.Property.TryGetValue("Colorizer", out var func) ? 
-                             (Func<uint,Color>)func : _ => Color.white;
+                             (Func<uint,Color>)func : _ => white;
         }
 
         // *********************************** Table properties ***********************************
         private int NumColumns => _headings.Length;
         private uint RowCount => _predicate.Length;
-        private bool Scrolled => Math.Abs(_scrollPosition - _oldScroll) > 0.0001f;
-        private uint ScrollRow => (uint)Math.Floor(_scrollPosition);
+        private bool Scrolled => Abs(_scrollPosition - _oldScroll) > 0.0001f;
+        private uint ScrollRow => (uint)Floor(_scrollPosition);
         private int[] LongestStrings => _longestBufferStrings.Zip(_headingLengths, Mathf.Max).ToArray();
         private int LongestRow => LongestStrings.Sum() + NumColumns * ColumnPadding;
         private float TableWidth {
@@ -85,19 +92,24 @@ namespace TotT.Unity {
         private bool TrySetLastMonth() => _lastMonth != TalkOfTheTown.Time.Month && SetLastMonth();
         private bool MonthlyUpdate() => UpdateMonthly && TrySetLastMonth();
         private bool UpdateCheck => UpdateEveryTick || MonthlyUpdate() || _newlySorted;
+        public bool NewActivity { get; private set; }
         private bool UpdateRowCount() {
-            if (_previousRowCount == RowCount) return false;
+            if (_previousRowCount == RowCount) {
+                NewActivity = false;
+                return false;
+            }
             _previousRowCount = RowCount;
+            NewActivity = true;
             return true;
         }
         private bool RowCountChange => !_usingScroll && UpdateRowCount();
 
-        private GUILayoutOption ScrollHeight => GUILayout.Height((NumDisplayRows + 3) * LabelHeight);
+        private GUILayoutOption ScrollHeight => Height((NumDisplayRows + 3) * LabelHeight);
         private GUILayoutOption ColumnWidth(int i) {
             var len = LongestStrings[i] + ColumnPadding;
             if (len > _columnWidths[i]) _columnWidths[i] = len;
             else if (len < _columnWidths[i] - 1) _columnWidths[i] -= 0.002f;
-            return GUILayout.Width(_columnWidths[i]);
+            return Width(_columnWidths[i]);
         }
 
         private Rect TableRect(int x, int y, int height) => // no width control - size of columns is calculated
@@ -105,25 +117,26 @@ namespace TotT.Unity {
         private Rect LeftSideTables(int tableNum) => // special case for the 4 tables on the left side
             TableRect(TablePadding, tableNum * (DefaultTableHeight + TablePadding) + TablePadding, 
                 DefaultTableHeight); // used in conjunction with DefaultNumRowsToDisplay - num rows dictates height
+
         private static int NumRowsToHeight(int numRows) => (numRows + 5) * LabelHeight + 2 * TablePadding;
         private Rect TableRect(int x, int y) => TableRect(x, y, NumRowsToHeight(NumDisplayRows));
         
         private static bool ScrollingInRect(Rect rect) => // Scroll check based on Rects
-            rect.Contains(new Vector2(mousePosition.x, Screen.height - mousePosition.y)) &&
-            Event.current.type is EventType.ScrollWheel or EventType.MouseDrag;
+            rect.Contains(new Vector2(mousePosition.x, height - mousePosition.y)) &&
+            current.type is EventType.ScrollWheel or EventType.MouseDrag;
 
         // ************************************ Table control *************************************
         public void Initialize() {
             // This is how I am doing bold label display for now, so ditto for size calc:
-            GUI.skin.label.fontStyle = FontStyle.Bold;
+            skin.label.fontStyle = FontStyle.Bold;
             CalcStringLengths(_headings, ref _headingLengths);
-            GUI.skin.label.fontStyle = FontStyle.Normal;
+            skin.label.fontStyle = FontStyle.Normal;
             // If the table is empty now or could be empty in future ticks...
             if (RowCount == 0 || _predicate.IsIntensional) {
                 // Consider the no entries conditions as well
                 _noEntries = new GUIContent($"No entries in table {_predicate.Name}");
-                _noEntriesWidth = (int)GUI.skin.label.CalcSize(_noEntries).x;
-                _noEntriesWidth = Math.Max(_noEntriesWidth, LongestRow); }
+                _noEntriesWidth = (int)skin.label.CalcSize(_noEntries).x;
+                _noEntriesWidth = Max(_noEntriesWidth, LongestRow); }
             // GUITables must be initialized after Time (inside TalkOfTheTown):
             if (UpdateMonthly) _lastMonth = TalkOfTheTown.Time.Month;
             // Normal update, try to get row strings for the buffer:
@@ -135,7 +148,7 @@ namespace TotT.Unity {
                 if (_sortBuffer == null || _sortBuffer.Length < _predicate.Length) 
                     _sortBuffer = new uint[_predicate.Length * 2];
                 for (uint i = 0; i < _predicate.Length; i++) _sortBuffer[i] = i;
-                Array.Sort(_sortBuffer, _sortComparer);
+                Sort(_sortBuffer, _sortComparer);
                 _bufferedRows = 0;
                 for (var i = 0; i < _buffer.Length && ScrollRow + i < _predicate.Length; i++) {
                     _predicate.RowToStrings(_sortBuffer[ScrollRow + i], _buffer[i]);
@@ -158,53 +171,52 @@ namespace TotT.Unity {
         
         private void CalcStringLengths(IReadOnlyList<string> strings, ref int[] stringLengths) {
             for (var i = 0; i < NumColumns; i++) {
-                var stringLength = (int)GUI.skin.label.CalcSize(new GUIContent(strings[i])).x;
+                var stringLength = (int)skin.label.CalcSize(new GUIContent(strings[i])).x;
                 if (stringLengths[i] < stringLength) stringLengths[i] = stringLength;
             }
         }
 
         private void LayoutHeaderRow(IReadOnlyList<string> strings) {
-            GUILayout.BeginHorizontal();
+            BeginHorizontal();
             for (var i = 0; i < NumColumns; i++)
                 if (HeaderButton(strings[i], ColumnWidth(i))) {
                     _sortComparer = _predicate.RowComparison(i);
                     _newlySorted = true;
                 }
-            GUILayout.EndHorizontal();
+            EndHorizontal();
         }
         private void LayoutRow(IReadOnlyList<string> strings, Color c) {
-            GUILayout.BeginHorizontal();
-            GUI.skin.label.normal.textColor = c;
+            BeginHorizontal();
+            skin.label.normal.textColor = c;
             for (var i = 0; i < NumColumns; i++) 
-                GUILayout.Label(strings[i], ColumnWidth(i));
-            GUI.skin.label.normal.textColor = Color.white;
-            GUILayout.EndHorizontal();
+                Label(strings[i], ColumnWidth(i));
+            skin.label.normal.textColor = white;
+            EndHorizontal();
         }
 
         private void OnGUI(Rect screenRect, int tableNum = -1) {
-            GUILayout.BeginArea(screenRect); // table area
+            BeginArea(screenRect); // table area
             // Title and Header:
-            GUILayout.BeginHorizontal();
+            BeginHorizontal();
             TableTitle(tableNum, $"{_predicate.Name} ({_predicate.Length})");
             foreach (var binding in tableButtons[_predicate])
-                if (GUILayout.Button(binding.Key, GUILayout.Width(
-                                         (int)GUI.skin.button.CalcSize(new GUIContent(binding.Key)).x)))
-                    binding.Value();
-            GUILayout.Space((_usingScroll ? ScrollbarOffset : 0) + 2 * ColumnPadding);
-            GUILayout.EndHorizontal();
+                if (Button(binding.Key, Width((int)skin.button.CalcSize(
+                    new GUIContent(binding.Key)).x))) binding.Value();
+            Space((_usingScroll ? ScrollbarOffset : 0) + 2 * ColumnPadding);
+            EndHorizontal();
             LayoutHeaderRow(_headings);
-            GUILayout.BeginHorizontal(); // table and scroll bar area
+            BeginHorizontal(); // table and scroll bar area
             // Table contents:
-            GUILayout.BeginVertical();
-            if (RowCount == 0) GUILayout.Label($"No entries in table {_predicate.Name}");
+            BeginVertical();
+            if (RowCount == 0) Label($"No entries in table {_predicate.Name}");
             else for (var i = 0; i < _buffer.Length; i++) LayoutRow(_buffer[i], _rowColors[i]);
-            GUILayout.EndVertical();
+            EndVertical();
             // Scrollbar and Update logic:
             if (RowCount != 0 && RowCount >= NumDisplayRows) {
-                _scrollPosition = GUILayout.VerticalScrollbar(_scrollPosition,
+                _scrollPosition = VerticalScrollbar(_scrollPosition,
                     NumDisplayRows - 0.1f, 0f, RowCount, ScrollHeight);
                 if (ScrollingInRect(screenRect)) {
-                    var scrollTo = _scrollPosition + Event.current.delta.y;
+                    var scrollTo = _scrollPosition + current.delta.y;
                     _scrollPosition = scrollTo < 0f ? 0f : scrollTo > RowCount ? RowCount : scrollTo;
                 }
                 if (Scrolled || !_usingScroll || UpdateCheck) {
@@ -213,8 +225,8 @@ namespace TotT.Unity {
                 }
                 if (!_usingScroll) _usingScroll = true;
             } else if (RowCountChange || UpdateCheck) Update();
-            GUILayout.EndHorizontal();
-            GUILayout.EndArea();
+            EndHorizontal();
+            EndArea();
         }
 
         public void OnGUI(int tableNum) { // Default check is not needed, more of a reminder that this

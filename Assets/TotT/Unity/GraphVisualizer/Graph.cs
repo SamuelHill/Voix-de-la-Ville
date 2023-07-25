@@ -796,7 +796,7 @@ namespace GraphVisualization
 
         void OnGUI() {
             if (nodes.Count == 0) return;
-            if (GUI.Button(GUIManager.BottomMiddleRect(100, 30), "Remove graph")) 
+            if (GUI.Button(GUIManager.RemoveGraphButton(), "Remove graph")) 
                 Clear();
         }
     }

@@ -1,16 +1,18 @@
 ﻿using System.Linq;
-using GraphVisualization;
-using TED;
 using TED.Utilities;
 using TotT.Simulator;
 using TotT.Utilities;
-using TotT.ValueTypes;
+using GraphVisualization;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using static UnityEngine.Input;
 
 namespace TotT.Unity {
+    using static GUI;
     using static GUIManager;
+    using static Input;
+    using static SimulationInfo;
+    using static TalkOfTheTown;
+    using static TEDGraphVisualization;
 
     // ReSharper disable once UnusedMember.Global
     /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>
@@ -45,11 +47,11 @@ namespace TotT.Unity {
             TalkOfTheTown.InitSimulator();
             _simulationInfo.ProcessInitialLocations();
             var simulationTables = PrettyNamesOnly
-                ? TalkOfTheTown.Simulation.Tables.Where(t => !t.Name.Contains("_"))
-                : TalkOfTheTown.Simulation.Tables;
-            AvailableTables(simulationTables.Append(TalkOfTheTown.Simulation.Exceptions).Append(TalkOfTheTown.Simulation.Problems));
+                ? Simulation.Tables.Where(t => !t.Name.Contains("_"))
+                : Simulation.Tables;
+            AvailableTables(simulationTables.Append(Simulation.Exceptions).Append(Simulation.Problems));
             ActiveTables(new[] { "Character", "Parent", "Employment", "WhereTheyAt" });
-            AddPopulationInfo(() => $"Population of {SimulationInfo.Population}");
+            AddPopulationInfo(() => $"Population of {Population}");
             AddSelectedTileInfo(_simulationInfo.SelectedLocation);
         }
 
@@ -60,7 +62,7 @@ namespace TotT.Unity {
             if (GetKeyDown(KeyCode.BackQuote)) _profileRuleExecutionTime = !_profileRuleExecutionTime;
             if (GetKeyDown(KeyCode.F1)) ToggleShowTables();
             if (_simulationRunning || _simulationSingleStep) {
-                try { TalkOfTheTown.UpdateSimulator(); } catch {
+                try { UpdateSimulator(); } catch {
                     _simulationRunning = false;
                     throw;
                 }
@@ -91,11 +93,11 @@ namespace TotT.Unity {
         }
 
         private static void ShowFlowButtons() {
-            if (!TEDGraphVisualization.GraphVisible) return;
-            if (GUI.Button(BottomMiddleSplit(100, 30, true), "Show dataflow"))
-                TEDGraphVisualization.ShowGraph(DataflowVisualizer.MakeGraph(TalkOfTheTown.Simulation));
-            if (GUI.Button(BottomMiddleSplit(100, 30, false), "Update graph"))
-                TEDGraphVisualization.ShowGraph(UpdateFlowVisualizer.MakeGraph(TalkOfTheTown.Simulation));
+            if (!GraphVisible) return;
+            if (Button(DataFlowButton(true), "Show dataflow"))
+                ShowGraph(DataflowVisualizer.MakeGraph(Simulation));
+            if (Button(DataFlowButton(false), "Update graph"))
+                ShowGraph(UpdateFlowVisualizer.MakeGraph(Simulation));
         }
     }
 }

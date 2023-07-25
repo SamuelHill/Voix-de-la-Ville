@@ -7826,6 +7826,16 @@
             Call Clear() first.
             </summary>
         </member>
+        <member name="M:TED.Tables.GeneralIndex`2.RowsMatching(`1)">
+            <summary>
+            Tuples in the table matching the specified column value
+            </summary>
+        </member>
+        <member name="M:TED.Tables.GeneralIndex`2.RowsMatchingCount(`1)">
+            <summary>
+            The number of columns in the table with the specified value.
+            </summary>
+        </member>
         <member name="T:TED.Tables.IndexMode">
             <summary>
             Specifies indexing to be used for a column of a TablePredicate
