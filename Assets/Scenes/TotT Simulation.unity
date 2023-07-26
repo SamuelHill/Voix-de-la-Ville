@@ -242,6 +242,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PrettyNamesOnly: 1
+  RecordPerformance: 0
   TownCenter: {x: 12, y: 0}
   Tilemap: {fileID: 1000091122}
   OccupiedLot: {fileID: 11400000, guid: d9d4319b8860fe748b914d7823963c6d, type: 2}
@@ -756,7 +757,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:

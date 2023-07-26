@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,23 +14,30 @@ using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
 using static TED.Language;
-using Debug = UnityEngine.Debug;
 
 namespace TotT.Simulator {
     using WhereTheyAtIndex = GeneralIndex<(Person, ActionType, Location), Location>;
+    using PersonRelationIndex = GeneralIndex<((Person, Person), Person, Person, bool), Person>;
     using static ActionType;
     using static BusinessStatus;
     using static Favorability;
     using static InteractionType;
     using static LocationType;
     using static Sex;
+    using static TimeOfDay;
     using static VitalStatus;
     // "Utils" (not just from Utilities)
-    using static Calendar;   // Prob per interval type
-    using static CsvParsing; // DeclareParsers
-    using static Generators; // Name Generation
-    using static GUIManager; // Colorize Extension
-    using static Randomize;  // Seed and RandomElement
+    using static BindingList; // Parameters for name generation
+    using static Calendar;    // Prob per interval type
+    using static CsvParsing;  // DeclareParsers
+    using static File;        // Performance CSV output
+    using static Generators;  // Name generation
+    using static Randomize;   // Seed and RandomElement
+    // GUI/graphics
+    using static Color;
+    using static GUIManager; // Colorize Extension and Buttons
+    using static GraphViz<object>;
+    using static TEDGraphVisualization;
     // The following offload static components of a TED program...
     using static Functions;    // C# function hookups to TED predicates
     using static StaticTables; // non dynamic tables - classic datalog EDB
@@ -41,24 +46,24 @@ namespace TotT.Simulator {
     using static SimuLang;
 
     public class TalkOfTheTown {
+        private const int Seed = 349571286;
         public static Simulation Simulation = null!;
         public static Time Time;
-        private const int Seed = 349571286;
-
-        public static readonly List<(uint, uint, float)> PerformanceDate = new();
+        public static bool RecordPerformanceData;
+        private static readonly List<(uint, uint, float)> PerformanceData = new();
 
         private TalkOfTheTown() {
             DeclareParsers();
             Seed(Seed, Seed);
             Time = new Time();
-            BindingList.BindGlobal(TownName, PossibleTownName.Random);
-            BindingList.BindGlobal(RandomNumber, "");
-            TEDGraphVisualization.SetTableDescription();
+            BindGlobal(TownName, PossibleTownName.Random);
+            BindGlobal(RandomNumber, "");
+            SetTableDescription();
             Graph.SetDescriptionMethod<Person>(PersonDescription);
-            using var file = File.CreateText("PerformanceData.csv");
+            using var file = CreateText("PerformanceData.csv");
         }
         public TalkOfTheTown(ushort tick = 1) : this() => Time = new Time(tick);
-        public TalkOfTheTown(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) :
+        public TalkOfTheTown(Month month, byte day = 1, TimeOfDay time = AM) :
             this() => Time = new Time(month, day, time);
 
         // ReSharper disable InconsistentNaming
@@ -89,16 +94,16 @@ namespace TotT.Simulator {
 
         private void DefaultColorizers() {
             SetDefaultColorizer<Location>(PlaceColor);
-            SetDefaultColorizer<bool>(s => s ? Color.white : Color.gray);
-            SetDefaultColorizer<VitalStatus>(s => s == Alive ? Color.white : Color.gray);
-            SetDefaultColorizer<BusinessStatus>(s => s == InBusiness ? Color.white : Color.gray);
+            SetDefaultColorizer<bool>(s => s ? white : gray);
+            SetDefaultColorizer<VitalStatus>(s => s == Alive ? white : gray);
+            SetDefaultColorizer<BusinessStatus>(s => s == InBusiness ? white : gray);
         }
         #endregion
 
         public void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
-            Simulation.Exceptions.Colorize(_ => Color.red);
-            Simulation.Problems.Colorize(_ => Color.red);
+            Simulation.Exceptions.Colorize(_ => red);
+            Simulation.Problems.Colorize(_ => red);
             DefaultColorizers();
             Simulation.BeginPredicates();
             InitStaticTables();
@@ -458,18 +463,18 @@ namespace TotT.Simulator {
             var AvailableIndividual = Predicate("AvailableIndividual", person)
                .If(Character[person], !Working[person, __], !AtSchool[person, __]);
 
-            var temp = Predicate("temp", symmetricPair, person, otherPerson)
+            var AvailablePair = Predicate("AvailablePair", symmetricPair, person, otherPerson)
                .If(AvailableAction[GoingOutForDateNight], AvailableIndividual[person], AvailableIndividual[otherPerson], 
                    person != otherPerson, MutualRomanticInterest[person, otherPerson], 
                    SymmetricTuple<Person>.NewSymmetricTuple[person, otherPerson, symmetricPair],
                    SymmetricTuple<Person>.InOrder[symmetricPair, person, otherPerson]);
 
-            var tempFilter = Predicate("tempFilter", symmetricPair, rate);
-            tempFilter[symmetricPair, 0.25f].If(temp, Lover[symmetricPair, __, __, true]);
-            tempFilter[symmetricPair, 0.1f].If(temp, !Lover[symmetricPair, __, __, true]);
+            var ScoredPairing = Predicate("ScoredPairing", symmetricPair, rate);
+            ScoredPairing[symmetricPair, 0.25f].If(AvailablePair, Lover[symmetricPair, __, __, true]);
+            ScoredPairing[symmetricPair, 0.1f].If(AvailablePair, !Lover[symmetricPair, __, __, true]);
 
             var tempToMatch = Predicate("tempToMatch", person, otherPerson, score);
-            tempToMatch.If(tempFilter, Prob[rate], temp, RandomNormal[num], score == (num + 50));
+            tempToMatch.If(ScoredPairing, Prob[rate], AvailablePair, RandomNormal[num], score == (num + 50));
             var dateGoers = MatchGreedily("dateGoers", tempToMatch);
 
             var DateLocations = Predicate("DateLocations", location)
@@ -616,10 +621,10 @@ namespace TotT.Simulator {
                     g.Nodes.Add(place);
                     g.NodeAttributes[place] = new Dictionary<string, object> { { "rgbcolor", color } };
                 }
-                g.AddEdge(new GraphViz<object>.Edge(person, place, true, null,
-                                                    new Dictionary<string, object> { { "rgbcolor", color } }));
+                g.AddEdge(new Edge(person, place, true, null,
+                                   new Dictionary<string, object> { { "rgbcolor", color } }));
             }
-            TEDGraphVisualization.ShowGraph(g);
+            ShowGraph(g);
         }
 
         private void VisualizeJobs() {
@@ -629,33 +634,34 @@ namespace TotT.Simulator {
                 var color = PlaceColor(place);
                 if (!g.Nodes.Contains(place)) {
                     g.Nodes.Add(place);
-                    g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
+                    g.NodeAttributes[place] = new Dictionary<string, object> { { "rgbcolor", color } };
                 }
-                g.AddEdge(new GraphViz<object>.Edge(job.Item2, place, true, job.Item1.ToString(),
-                                                    new Dictionary<string, object> { { "rgbcolor", color } }));
+                g.AddEdge(new Edge(job.Item2, place, true, job.Item1.ToString(),
+                                   new Dictionary<string, object> { { "rgbcolor", color } }));
             }
-            TEDGraphVisualization.ShowGraph(g);
+            ShowGraph(g);
         }
 
         private void VisualizeRandomFriendNetwork() => VisualizeFriendNetworkOf(
-            CharacterAttributes.ColumnValueFromRowNumber(person)((uint)Integer(0, (int)CharacterAttributes.Length)));
+            CharacterAttributes.ColumnValueFromRowNumber(person)(
+                (uint)Integer(0, (int)CharacterAttributes.Length)));
 
         private void VisualizeFriendNetworkOf(Person p) {
             // ReSharper disable InconsistentNaming
-            var FriendIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Friend.IndexFor(person, false);
-            var EnemyIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Enemy.IndexFor(person, false);
-            var RomanticInterestIndex = (GeneralIndex<((Person,Person), Person, Person,bool), Person>)Romantic.IndexFor(person, false);
+            var FriendIndex = (PersonRelationIndex)Friend.IndexFor(person, false);
+            var EnemyIndex = (PersonRelationIndex)Enemy.IndexFor(person, false);
+            var RomanticInterestIndex = (PersonRelationIndex)Romantic.IndexFor(person, false);
 
-            IEnumerable<(Person, string, string)> FriendsOf(Person person, GeneralIndex<((Person, Person), Person, Person, bool), Person> friendIndex)
+            IEnumerable<(Person, string, string)> FriendsOf(PersonRelationIndex friendIndex)
                 => friendIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "green"));
-            IEnumerable<(Person, string, string)> EnemiesOf(Person person, GeneralIndex<((Person, Person), Person, Person, bool), Person> enemyIndex)
+            IEnumerable<(Person, string, string)> EnemiesOf(PersonRelationIndex enemyIndex)
                 => enemyIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "red"));
-            IEnumerable<(Person, string, string)> RomanticInterestsOf(Person person, GeneralIndex<((Person, Person), Person, Person, bool), Person> romanticInterestIndex)
+            IEnumerable<(Person, string, string)> RomanticInterestsOf(PersonRelationIndex romanticInterestIndex)
                 => romanticInterestIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "blue"));
             IEnumerable<(Person, string, string)> ConnectionsOf(Person person) =>
-                FriendsOf(person, FriendIndex).Concat(EnemiesOf(person, EnemyIndex)).Concat(RomanticInterestsOf(person, RomanticInterestIndex));
+                FriendsOf(FriendIndex).Concat(EnemiesOf(EnemyIndex)).Concat(RomanticInterestsOf(RomanticInterestIndex));
 
-            var g = TEDGraphVisualization.TraceToDepth<object, Person>(1, p, ConnectionsOf);
+            var g = TraceToDepth<object, Person>(1, p, ConnectionsOf);
             var people = g.Nodes.Cast<Person>().ToArray();
             foreach (var p2 in people) {
                 if (!EmploymentIndex.ContainsKey(p2)) continue;
@@ -663,39 +669,37 @@ namespace TotT.Simulator {
                 var jobColor = PlaceColor(company);
                 if (!g.Nodes.Contains(company)) {
                     g.AddNode(company);
-                    g.NodeAttributes[company] = new Dictionary<string, object>() { { "rgbcolor", jobColor } };
+                    g.NodeAttributes[company] = new Dictionary<string, object> { { "rgbcolor", jobColor } };
                 }
-                g.AddEdge(new GraphViz<object>.Edge(p2, company, true,
-                                                    job.ToString(), new Dictionary<string, object>() { { "rgbcolor", jobColor } }));
+                g.AddEdge(new Edge(p2, company, true, job.ToString(), 
+                                   new Dictionary<string, object> { { "rgbcolor", jobColor } }));
             }
-            TEDGraphVisualization.ShowGraph(g);
+            ShowGraph(g);
             // ReSharper restore InconsistentNaming
         }
 
         private void VisualizeFullSocialNetwork() {
             var g = new GraphViz<object>();
             foreach (var r in Friend)
-                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3, true, null,
-                    new Dictionary<string, object>() { { "color", "green"}}));
+                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
+                    new Dictionary<string, object> { { "color", "green"}}));
             foreach (var r in Enemy)
-                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3, true, null,
+                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
                     new Dictionary<string, object> { { "color", "red"}}));
             foreach (var r in Romantic)
-                g.AddEdge(new GraphViz<object>.Edge(r.Item2, r.Item3, true, null,
+                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
                     new Dictionary<string, object> { { "color", "blue"}}));
-            TEDGraphVisualization.ShowGraph(g);
+            ShowGraph(g);
         }
 
         private void VisualizeFamilies() {
             var g = new GraphViz<Person>();
-            foreach (var p in Parent) {
-                var parent = p.Item1;
-                var child = p.Item2;
+            foreach ((var parent, var child) in Parent) {
                 if (!g.Nodes.Contains(parent)) g.AddNode(parent);
                 if (!g.Nodes.Contains(child)) g.AddNode(child);
                 g.AddEdge(new GraphViz<Person>.Edge(child, parent));
             }
-            TEDGraphVisualization.ShowGraph(g);
+            ShowGraph(g);
         }
 
         private void VisualizeInteractions() {
@@ -717,7 +721,7 @@ namespace TotT.Simulator {
                                   Snogging => "aquamarine",
                                   _ => "black"
                               } } }));
-            TEDGraphVisualization.ShowGraph(g);
+            ShowGraph(g);
         }
 
         private void VisualizeWhereTheyAt() {
@@ -727,12 +731,12 @@ namespace TotT.Simulator {
                 var color = PlaceColor(place);
                 if (!g.Nodes.Contains(place)) {
                     g.Nodes.Add(place);
-                    g.NodeAttributes[place] = new Dictionary<string, object>() { { "rgbcolor", color } };
+                    g.NodeAttributes[place] = new Dictionary<string, object> { { "rgbcolor", color } };
                 }
-                g.AddEdge(new GraphViz<object>.Edge(row.Item1, place, true, row.Item2.ToString(),
-                    new Dictionary<string, object>() {{ "rgbcolor", color }}));
+                g.AddEdge(new Edge(row.Item1, place, true, row.Item2.ToString(),
+                    new Dictionary<string, object> {{ "rgbcolor", color }}));
             }
-            TEDGraphVisualization.ShowGraph(g);
+            ShowGraph(g);
         }
 
         private string PersonDescription(Person p) {
@@ -758,12 +762,15 @@ namespace TotT.Simulator {
             if (update == null) LoopSimulator();
 #else
             Time.Tick();
-            PerformanceDate.Add((WhereTheyAt.Length, Time._clock - InitialClockTick, Simulation.RuleExecutionTime));
-            if (Time.Day == 1 && Time.Month == Month.January) {
-                using var file = File.AppendText("PerformanceData.csv");
-                foreach ((var population, var clock, var execution) in PerformanceDate)
-                    file.WriteLine($"{population}, {clock}, {execution}");
-                PerformanceDate.Clear();
+            if (RecordPerformanceData) {
+                PerformanceData.Add((WhereTheyAt.Length, Time.Clock - InitialClockTick, Simulation.RuleExecutionTime));
+                if (Time.Day == 1 && Time.Month == Month.January) {
+                    using var file = AppendText("PerformanceData.csv");
+                    foreach ((var population, var clock, var execution) in PerformanceData)
+                        file.WriteLine($"{population}, {clock}, {execution}");
+                    PerformanceData.Clear();
+                }
+
             }
             Simulation.Update();
             PopTableIfNewActivity(Simulation.Problems);

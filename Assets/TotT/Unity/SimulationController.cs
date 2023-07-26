@@ -22,6 +22,9 @@ namespace TotT.Unity {
         public TalkOfTheTown TalkOfTheTown;
         // ReSharper disable once ConvertToConstant.Global
         public bool PrettyNamesOnly = true;
+        // ReSharper disable once ConvertToConstant.Global
+        // ReSharper disable once UnassignedField.Global
+        public bool RecordPerformanceData;
         // ReSharper disable once UnassignedField.Global
         public Vector2Int TownCenter;
         // ReSharper disable once UnassignedField.Global
@@ -42,6 +45,7 @@ namespace TotT.Unity {
         internal void Start() {
             TED.Comparer<Vector2Int>.Default = new GridComparer();
             TalkOfTheTown = new TalkOfTheTown();
+            TalkOfTheTown.RecordPerformanceData = RecordPerformanceData;
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
             _simulationInfo = new SimulationInfo(TalkOfTheTown, _tileManager);
             TalkOfTheTown.InitSimulator();

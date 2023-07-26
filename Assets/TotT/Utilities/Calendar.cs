@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Linq;
 using TED.Interpreter;
+using TotT.ValueTypes;
 using static TED.Language;
 
 namespace TotT.Utilities {
     using ValueTypes; // not using System.DayOfWeek
+    using static DailyOperation;
+    using static TimeOfDay;
+    using static Enum;
     using static Randomize;
 
     /// <summary>
@@ -36,9 +40,9 @@ namespace TotT.Utilities {
             tick >= NumTicks ? 
                 throw new ArgumentException($"tick not in range 0 to {NumTicks - 1}") : tick;
 
-        public static ushort CalcCalendarTick(Month month, byte day, TimeOfDay time = TimeOfDay.AM) =>
+        public static ushort CalcCalendarTick(Month month, byte day, TimeOfDay time = AM) =>
             (ushort)((byte)month * TicksPerMonth + (CheckDayInRange(day) - 1) * TimesOfDay + (byte)time);
-        public static uint CalcClockTick(int year, Month month, byte day, TimeOfDay time = TimeOfDay.AM) => 
+        public static uint CalcClockTick(int year, Month month, byte day, TimeOfDay time = AM) => 
             (uint)(NumTicks * (year - CalcYearOffset) + CalcCalendarTick(month, day, time));
 
         private static uint YearFromClock(uint clock) => clock / NumTicks;
@@ -50,22 +54,20 @@ namespace TotT.Utilities {
         public static TimeOfDay CalcTimeOfDay(ushort calendar) => (TimeOfDay)(calendar % TimesOfDay);
 
         public static TimePoint TimePointFromDateAndAge(Date date, int age) => 
-            new(date.Month, date.Day, StartYear - age, TimeOfDay.AM);
+            new(date.Month, date.Day, StartYear - age, AM);
 
         public static int MonthNumber(Month month) => (int)month + 1;
         public static Month ToMonth(string month) => (Month)(int.Parse(month) - 1);
         public static byte ToDay(string day) => CheckDayInRange(byte.Parse(day));
         public static int ToYear(string year) => int.Parse(year);
 
-        private static Month RandomMonth() => Enum.GetValues(typeof(Month)).Cast<Month>().ToList().RandomElement();
+        private static Month RandomMonth() => GetValues(typeof(Month)).Cast<Month>().ToList().RandomElement();
         private static byte RandomDay() => Byte(1, DaysPerMonth);
         public static Date Random() => new(RandomMonth(), RandomDay());
 
         public static bool IsScheduled(Schedule schedule, DayOfWeek dayOfWeek) => schedule.IsOpen(dayOfWeek);
         public static bool IsOperating(DailyOperation operation, TimeOfDay timeOfDay) =>
-            operation is DailyOperation.AllDay ||
-            (operation is DailyOperation.Morning && timeOfDay == TimeOfDay.AM) ||
-            (operation is DailyOperation.Evening && timeOfDay == TimeOfDay.PM);
+            operation is AllDay || (operation is Morning && timeOfDay == AM) || (operation is Evening && timeOfDay == PM);
 
         public static float ChancePerDay(float chance) => chance / TimesOfDay;
         private static float ChancePerWeek(float chance) => chance / (TimesOfDay * DaysOfWeek);

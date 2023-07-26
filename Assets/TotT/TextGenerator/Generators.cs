@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using TED;
 using TotT.Utilities;
+using TotT.ValueTypes;
 using Vector2Int = UnityEngine.Vector2Int;
 
 namespace TotT.TextGenerator {
-    using LocationType = ValueTypes.LocationType;
+    using static LocationType;
     using static IntExtensions;
     using static Randomize;
 
@@ -121,11 +122,11 @@ namespace TotT.TextGenerator {
         private static readonly TextGenerator ArsGoetiaKings = Sequence("St ", 
             OneOf("Asmodeus", "Bael", "Balam", "Beleth", "Belial", "Paimon", "Purson", "Zagan"));
 
-        private static readonly TextGenerator Hospital = Sequence(OneOf("Memorial ", ""), 
+        private static readonly TextGenerator MedicalName = Sequence(OneOf("Memorial ", ""), 
             OneOf("Health Care", "Medical", "Wellness"), " ", OneOf("Center", "Clinic", "Hospital"));
 
         private static readonly TextGenerator HospitalName = Choice(ArsGoetiaKings, 
-            Sequence(Choice(TownName, ArsGoetiaKings), Hospital));
+            Sequence(Choice(TownName, ArsGoetiaKings), MedicalName));
 
         private static readonly TextGenerator CatholicLiturgicalName = Choice(
             Sequence("Saint ", OneOf(
@@ -256,50 +257,50 @@ namespace TotT.TextGenerator {
             "The Sacred Canvas", "Ink Sanctuary", "Enigma Ink", "Mystic Markings", "Bespoke Body Art");
 
         public static readonly Dictionary<LocationType, TextGenerator> LocationNames = new() {
-            { LocationType.Cemetery , CemeteryName},
-            { LocationType.CityHall , CityHallName },
-            { LocationType.PostOffice , PostOfficeName },
-            { LocationType.PoliceStation , PoliceStationName},
-            { LocationType.FireStation , FireStationName },
-            { LocationType.Bank , BankName },
-            { LocationType.CommunityCenter , CommunityCenterName },
-            { LocationType.House , AddressedStreet },
-            { LocationType.ApartmentComplex , AddressedStreet },
-            { LocationType.Farm , FarmName },
-            { LocationType.Park , ParkName },
-            { LocationType.Orchard , OrchardName },
-            { LocationType.School , HighSchoolName },
-            { LocationType.DayCare , DaycareName },
-            { LocationType.Inn , InnName },
-            { LocationType.DoctorOffice , DoctorOfficeName },
-            { LocationType.DentistOffice , DentistOfficeName },
-            { LocationType.OptometryClinic , OptometryClinicName },
-            { LocationType.Pharmacy , PharmacyName },
-            { LocationType.Hospital , HospitalName },
-            { LocationType.Brewery , BreweryName },
-            { LocationType.Distillery , DistilleryName },
-            { LocationType.Bar , BarName },
-            { LocationType.Diner , DinerName },
-            { LocationType.Restaurant , RestaurantName },
-            { LocationType.Bakery , BakeryName },
-            { LocationType.CandyShop , CandyShopName },
-            { LocationType.Dairy , DairyName },
-            { LocationType.ButcherShop , ButcherShopName },
-            { LocationType.GeneralStore , GeneralStoreName },
-            { LocationType.GroceryStore , GroceryStoreName },
-            { LocationType.DepartmentStore , DepartmentStoreName },
-            { LocationType.ClothingStore , ClothingStoreName },
-            { LocationType.ShoemakerShop , ShoemakerShopName },
-            { LocationType.TailorShop , TailorShopName },
-            { LocationType.JewelryShop , JeweleryShopName },
-            { LocationType.Barbershop , BarbershopName },
-            { LocationType.HardwareStore , HardwareStoreName },
-            { LocationType.FurnitureStore , FurnitureStoreName },
-            { LocationType.CarpentryCompany , CarpentryCompanyName },
-            { LocationType.LumberMill , LumberMillName },
-            { LocationType.Foundry , FoundryName },
-            { LocationType.Quarry , QuarryName },
-            { LocationType.TattooParlor , TattooParlorName },
+            { Cemetery , CemeteryName},
+            { CityHall , CityHallName },
+            { PostOffice , PostOfficeName },
+            { PoliceStation , PoliceStationName},
+            { FireStation , FireStationName },
+            { Bank , BankName },
+            { CommunityCenter , CommunityCenterName },
+            { House , AddressedStreet },
+            { ApartmentComplex , AddressedStreet },
+            { Farm , FarmName },
+            { Park , ParkName },
+            { Orchard , OrchardName },
+            { School , HighSchoolName },
+            { DayCare , DaycareName },
+            { Inn , InnName },
+            { DoctorOffice , DoctorOfficeName },
+            { DentistOffice , DentistOfficeName },
+            { OptometryClinic , OptometryClinicName },
+            { Pharmacy , PharmacyName },
+            { Hospital , HospitalName },
+            { Brewery , BreweryName },
+            { Distillery , DistilleryName },
+            { Bar , BarName },
+            { Diner , DinerName },
+            { Restaurant , RestaurantName },
+            { Bakery , BakeryName },
+            { CandyShop , CandyShopName },
+            { Dairy , DairyName },
+            { ButcherShop , ButcherShopName },
+            { GeneralStore , GeneralStoreName },
+            { GroceryStore , GroceryStoreName },
+            { DepartmentStore , DepartmentStoreName },
+            { ClothingStore , ClothingStoreName },
+            { ShoemakerShop , ShoemakerShopName },
+            { TailorShop , TailorShopName },
+            { JewelryShop , JeweleryShopName },
+            { Barbershop , BarbershopName },
+            { HardwareStore , HardwareStoreName },
+            { FurnitureStore , FurnitureStoreName },
+            { CarpentryCompany , CarpentryCompanyName },
+            { LumberMill , LumberMillName },
+            { Foundry , FoundryName },
+            { Quarry , QuarryName },
+            { TattooParlor , TattooParlorName },
         };
         #endregion
 

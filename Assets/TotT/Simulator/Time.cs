@@ -11,26 +11,26 @@ namespace TotT.Simulator {
     /// Internal clock, keeps time during a simulation by ticking along with Simulator.Update
     /// </summary>
     public class Time {
-        public uint _clock;
+        public uint Clock;
 
         #pragma warning disable IDE1006
         // ReSharper disable once InconsistentNaming
-        private ushort _calendar => CalendarFromClock(_clock);
+        private ushort _calendar => CalendarFromClock(Clock);
         #pragma warning restore IDE1006
 
-        public void Tick() => _clock++;
+        public void Tick() => Clock++;
         
-        public Time() => _clock = InitialClockTick;
-        public Time(ushort calendarTick) => _clock = InitialClockTick + CheckTickInCalendar(calendarTick);
+        public Time() => Clock = InitialClockTick;
+        public Time(ushort calendarTick) => Clock = InitialClockTick + CheckTickInCalendar(calendarTick);
         public Time(Month month, byte day = 1, TimeOfDay time = TimeOfDay.AM) => 
-            _clock = InitialClockTick + CalcCalendarTick(month, day, time);
+            Clock = InitialClockTick + CalcCalendarTick(month, day, time);
 
         private Function<T> Property<T>(string property) => Member<T>(this, property, "Current", false);
         private PrimitiveTest TestProperty(string property) => TestMember(this, property, false);
 
-        public int Year => CalcYear(_clock);
+        public int Year => CalcYear(Clock);
         public Function<int> CurrentYear => Property<int>(nameof(Year));
-        public TimePoint TimePoint => new(_clock);
+        public TimePoint TimePoint => new(Clock);
         public Function<TimePoint> CurrentTimePoint => Property<TimePoint>(nameof(TimePoint));
 
         public Month Month => CalcMonth(_calendar);
@@ -60,7 +60,7 @@ namespace TotT.Simulator {
         private bool NineMonthsPastDate(Date date) => DaysSince(date) >= NineMonths;
         public PrimitiveTest<Date> NineMonthsPast => TestMethod<Date>(NineMonthsPastDate, false);
 
-        private int YearsSince(TimePoint timePoint) => (int)((_clock - timePoint.Clock) / NumTicks);
+        private int YearsSince(TimePoint timePoint) => (int)((Clock - timePoint.Clock) / NumTicks);
         public Function<TimePoint, int> YearsOld => Method<TimePoint, int>(YearsSince, false);
 
         public string YearsAgo(TimePoint timePoint) {

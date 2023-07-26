@@ -586,6 +586,7 @@ namespace GraphVisualization
 
                 text ??= "";
                 ToolTip.text = text.Trim();
+                ToolTip.transform.SetSiblingIndex(nodes.Count + edges.Count);
             }
         }
 
