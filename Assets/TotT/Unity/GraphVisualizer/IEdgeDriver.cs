@@ -23,13 +23,11 @@
 // --------------------------------------------------------------------------------------------------------------------
 #endregion
 
-namespace GraphVisualization
-{
+namespace TotT.Unity.GraphVisualizer {
     /// <summary>
     /// Interface for components that fill a Graph visualization on demand.
     /// </summary>
-    public interface IEdgeDriver
-    {
+    public interface IEdgeDriver {
         /// <summary>
         /// Called by Graph.AddEdge after object creation.
         /// </summary>

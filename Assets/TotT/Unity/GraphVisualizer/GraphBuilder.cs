@@ -23,31 +23,25 @@
 // --------------------------------------------------------------------------------------------------------------------
 #endregion
 
-namespace GraphVisualization
-{
+namespace TotT.Unity.GraphVisualizer {
     /// <summary>
     /// Strongly typed wrapper for Graph.AddNode and Graph.AddEdge.
     /// </summary>
     /// <typeparam name="TNodeType"></typeparam>
-    public class GraphBuilder<TNodeType>
-    {
+    public class GraphBuilder<TNodeType> {
+        // ReSharper disable once MemberCanBePrivate.Global
         public readonly Graph Graph;
 
-        public GraphBuilder(Graph graph)
-        {
-            Graph = graph;
-        }
+        public GraphBuilder(Graph graph) => Graph = graph;
 
         /// <summary>
         /// Add a single node to the graph.
         /// </summary>
         /// <param name="node">Node to add</param>
         /// <param name="label">Label to attach to node</param>
-        /// <param name="style">Style in which to render node, and apply physics to it.  If null, the first entry in NodeStyles will be used.</param>
-        public void AddNode(TNodeType node, string label, NodeStyle style = null)
-        {
-            Graph.AddNode(node, label, style);
-        }
+        /// <param name="style">Style in which to render node, and apply physics to it.
+        /// If null, the first entry in NodeStyles will be used.</param>
+        public void AddNode(TNodeType node, string label, NodeStyle style = null) => Graph.AddNode(node, label, style);
 
         /// <summary>
         /// Add a single edge to the graph.
@@ -55,10 +49,8 @@ namespace GraphVisualization
         /// <param name="start">Node from which edge starts.</param>
         /// <param name="end">Node the edge leads to.</param>
         /// <param name="label">Label for the edge</param>
-        /// <param name="style">Style in which to render the label.  If null, this will use the style whose name is the same as the label, if any, otherwise the first entry in EdgeStyles.</param>
-        public void AddEdge(TNodeType start, TNodeType end, string label, EdgeStyle style = null)
-        {
-            Graph.AddEdge(start, end, label, style);
-        }
+        /// <param name="style">Style in which to render the label. If null, this will use the style whose
+        /// name is the same as the label, if any, otherwise the first entry in EdgeStyles.</param>
+        public void AddEdge(TNodeType start, TNodeType end, string label, EdgeStyle style = null) => Graph.AddEdge(start, end, label, style);
     }
 }

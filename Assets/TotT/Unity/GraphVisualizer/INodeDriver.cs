@@ -25,13 +25,11 @@
 
 using UnityEngine;
 
-namespace GraphVisualization
-{
+namespace TotT.Unity.GraphVisualizer {
     /// <summary>
     /// Interface for components that fill a Graph visualization on demand.
     /// </summary>
-    public interface INodeDriver
-    {
+    public interface INodeDriver {
         /// <summary>
         /// Called from Graph.AddNode after instantiation of the prefab for this node.
         /// </summary>
@@ -40,6 +38,7 @@ namespace GraphVisualization
         /// <param name="label">The label attached to this node</param>
         /// <param name="style">The style in which to render this node</param>
         /// <param name="position">The position in which to render this node</param>
+        /// <param name="index">The index of this node</param>
         void Initialize(Graph g, object nodeKey, string label, NodeStyle style, Vector2 position, int index);
 
         /// <summary>

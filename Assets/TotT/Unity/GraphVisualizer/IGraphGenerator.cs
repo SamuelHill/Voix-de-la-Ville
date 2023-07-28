@@ -23,13 +23,11 @@
 // --------------------------------------------------------------------------------------------------------------------
 #endregion
 
-namespace GraphVisualization
-{
+namespace TotT.Unity.GraphVisualizer {
     /// <summary>
     /// Interface for components that fill a Graph visualization on demand.
     /// </summary>
-    public interface IGraphGenerator
-    {
+    public interface IGraphGenerator {
         /// <summary>
         /// Called upon graph creation.  This should populate the graph with nodes and edges.
         /// </summary>

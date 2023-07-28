@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using GraphVisualization;
 using TED;
 using TED.Interpreter;
 using TED.Tables;
@@ -11,6 +10,7 @@ using TotT.Simulog;
 using TotT.TextGenerator;
 using TotT.Time;
 using TotT.Unity;
+using TotT.Unity.GraphVisualizer;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -42,55 +42,58 @@ namespace TotT.Simulator {
     using static GraphViz<object>;
     using static TEDGraphVisualization;
     // The following offload static components of a TED program...
-    using static Functions;    // C# function hookups to TED predicates
+    using static Functions.Functions;    // C# function hookups to TED predicates
     using static StaticTables; // non dynamic tables - classic datalog EDB
     using static Variables;    // named variables
     // TED Meta language hookup
     using static SimuLang;
 
-    public class TalkOfTheTown {
+    public static class TalkOfTheTown {
         private const int Seed = 349571286;
         public static Simulation Simulation = null!;
         public static bool RecordPerformanceData;
         private static readonly List<(uint, uint, float)> PerformanceData = new();
 
-        public TalkOfTheTown() {
+        static TalkOfTheTown() {
             DeclareParsers();
             Seed(Seed, Seed);
             BindGlobal(TownName, PossibleTownName.Random);
             BindGlobal(RandomNumber, "");
             SetTableDescription();
+            DefaultColorizers();
             Graph.SetDescriptionMethod<Person>(PersonDescription);
-            using var file = CreateText("PerformanceData.csv");
+            if (RecordPerformanceData) {
+                using var file = CreateText("PerformanceData.csv");
+            }
         }
 
         // ReSharper disable InconsistentNaming
         // Tables, despite being local or private variables, will be capitalized for style/identification purposes.
 
         #region Tables and Indexers for GUI and Graph visuals
-        private TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterAttributes;
-        private TablePredicate<Person, Person, InteractionType> Interaction;
+        private static TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterAttributes;
+        private static TablePredicate<Person, Person, InteractionType> Interaction;
         private static TablePredicate<Person, ActionType, Location> WhereTheyAt;
-        private TablePredicate<Person, Location> Home;
-        private TablePredicate<Person, Person> Parent;
-        private AffinityRelationship<Person, Person> Friend;
-        private AffinityRelationship<Person, Person> Enemy;
-        private AffinityRelationship<Person, Person> Romantic;
-        private TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
-        private KeyIndex<(Vocation, Person, Location, TimeOfDay), Person> EmploymentIndex;
-        public TablePredicate<Vector2Int, Location, LocationType> CreatedLocation;
-        public TablePredicate<Vector2Int> VacatedLocation;
-        public TablePredicate<Person> Buried;
+        private static TablePredicate<Person, Location> Home;
+        private static TablePredicate<Person, Person> Parent;
+        private static AffinityRelationship<Person, Person> Friend;
+        private static AffinityRelationship<Person, Person> Enemy;
+        private static AffinityRelationship<Person, Person> Romantic;
+        private static TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
+        private static KeyIndex<(Vocation, Person, Location, TimeOfDay), Person> EmploymentIndex;
+        public static TablePredicate<Vector2Int, Location, LocationType> CreatedLocation;
+        public static TablePredicate<Vector2Int> VacatedLocation;
+        public static TablePredicate<Person> Buried;
         public static KeyIndex<(bool, int), bool> PopulationCountIndex;
-        public WhereTheyAtIndex WhereTheyAtLocationIndex;
-        public KeyIndex<(Vector2Int, Location, LocationType, TimePoint), Vector2Int> LocationsPositionIndex;
-        private ColumnAccessor<LocationType, Location> LocationToType;
+        public static WhereTheyAtIndex WhereTheyAtLocationIndex;
+        public static KeyIndex<(Vector2Int, Location, LocationType, TimePoint), Vector2Int> LocationsPositionIndex;
+        private static ColumnAccessor<LocationType, Location> LocationToType;
         #endregion
 
         #region Functions for GUI and Graph visuals
-        private Color PlaceColor(Location place) => LocationColorsIndex[LocationToType[place]].Item2;
+        private static Color PlaceColor(Location place) => LocationColorsIndex[LocationToType[place]].Item2;
 
-        private void DefaultColorizers() {
+        private static void DefaultColorizers() {
             SetDefaultColorizer<Location>(PlaceColor);
             SetDefaultColorizer<bool>(s => s ? white : gray);
             SetDefaultColorizer<VitalStatus>(s => s == Alive ? white : gray);
@@ -98,11 +101,10 @@ namespace TotT.Simulator {
         }
         #endregion
 
-        public void InitSimulator() {
+        public static void InitSimulator() {
             Simulation = new Simulation("Talk of the Town");
             Simulation.Exceptions.Colorize(_ => red);
             Simulation.Problems.Colorize(_ => red);
-            DefaultColorizers();
             Simulation.BeginPredicates();
             InitStaticTables();
 
@@ -611,7 +613,7 @@ namespace TotT.Simulator {
         }
 
         #region Graph visualizations
-        private void VisualizeHomes() {
+        private static void VisualizeHomes() {
             var g = new GraphViz<object>();
             foreach ((var person, var place) in Home) {
                 var color = PlaceColor(place);
@@ -625,7 +627,7 @@ namespace TotT.Simulator {
             ShowGraph(g);
         }
 
-        private void VisualizeJobs() {
+        private static void VisualizeJobs() {
             var g = new GraphViz<object>();
             foreach (var job in Employment) {
                 var place = job.Item3;
@@ -640,11 +642,11 @@ namespace TotT.Simulator {
             ShowGraph(g);
         }
 
-        private void VisualizeRandomFriendNetwork() => VisualizeFriendNetworkOf(
+        private static void VisualizeRandomFriendNetwork() => VisualizeFriendNetworkOf(
             CharacterAttributes.ColumnValueFromRowNumber(person)(
                 (uint)Integer(0, (int)CharacterAttributes.Length)));
 
-        private void VisualizeFriendNetworkOf(Person p) {
+        private static void VisualizeFriendNetworkOf(Person p) {
             // ReSharper disable InconsistentNaming
             var FriendIndex = (PersonRelationIndex)Friend.IndexFor(person, false);
             var EnemyIndex = (PersonRelationIndex)Enemy.IndexFor(person, false);
@@ -676,7 +678,7 @@ namespace TotT.Simulator {
             // ReSharper restore InconsistentNaming
         }
 
-        private void VisualizeFullSocialNetwork() {
+        private static void VisualizeFullSocialNetwork() {
             var g = new GraphViz<object>();
             foreach (var r in Friend)
                 g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
@@ -690,7 +692,7 @@ namespace TotT.Simulator {
             ShowGraph(g);
         }
 
-        private void VisualizeFamilies() {
+        private static void VisualizeFamilies() {
             var g = new GraphViz<Person>();
             foreach ((var parent, var child) in Parent) {
                 if (!g.Nodes.Contains(parent)) g.AddNode(parent);
@@ -700,7 +702,7 @@ namespace TotT.Simulator {
             ShowGraph(g);
         }
 
-        private void VisualizeInteractions() {
+        private static void VisualizeInteractions() {
             var g = new GraphViz<Person>();
             foreach (var row in Interaction)
                 g.AddEdge(new GraphViz<Person>.Edge(
@@ -722,7 +724,7 @@ namespace TotT.Simulator {
             ShowGraph(g);
         }
 
-        private void VisualizeWhereTheyAt() {
+        private static void VisualizeWhereTheyAt() {
             var g = new GraphViz<object>();
             foreach (var row in WhereTheyAt) {
                 var place = row.Item3;
@@ -737,7 +739,7 @@ namespace TotT.Simulator {
             ShowGraph(g);
         }
 
-        private string PersonDescription(Person p) {
+        private static string PersonDescription(Person p) {
             var b = new StringBuilder();
             var info = CharacterAttributes.KeyIndex(person)[p];
             var dead = info.Item6 == Dead;

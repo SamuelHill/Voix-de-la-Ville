@@ -2,7 +2,6 @@
 using TED.Utilities;
 using TotT.Simulator;
 using TotT.Utilities;
-using GraphVisualization;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -18,8 +17,6 @@ namespace TotT.Unity {
     /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>
     public class SimulationController : MonoBehaviour {
         // ReSharper disable MemberCanBePrivate.Global
-        // ReSharper disable FieldCanBeMadeReadOnly.Global
-        public TalkOfTheTown TalkOfTheTown;
         // ReSharper disable once ConvertToConstant.Global
         public bool PrettyNamesOnly = true;
         // ReSharper disable once ConvertToConstant.Global
@@ -44,11 +41,10 @@ namespace TotT.Unity {
         // ReSharper disable once UnusedMember.Global
         internal void Start() {
             TED.Comparer<Vector2Int>.Default = new GridComparer();
-            TalkOfTheTown = new TalkOfTheTown();
             TalkOfTheTown.RecordPerformanceData = RecordPerformanceData;
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
-            _simulationInfo = new SimulationInfo(TalkOfTheTown, _tileManager);
-            TalkOfTheTown.InitSimulator();
+            _simulationInfo = new SimulationInfo(_tileManager);
+            InitSimulator();
             _simulationInfo.ProcessInitialLocations();
             var simulationTables = PrettyNamesOnly
                 ? Simulation.Tables.Where(t => !t.Name.Contains("_"))

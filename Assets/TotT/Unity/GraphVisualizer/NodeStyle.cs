@@ -26,30 +26,28 @@
 using System;
 using UnityEngine;
 
-namespace GraphVisualization
-{
+namespace TotT.Unity.GraphVisualizer {
+    using static TEDGraphVisualization;
+
     /// <summary>
     /// Parameters for how to draw a graph node.
     /// </summary>
     [Serializable]
-    public class NodeStyle
-    {
-        public NodeStyle Clone() => (NodeStyle)MemberwiseClone();
-        
+    public class NodeStyle {
         /// <summary>
         /// Name of the style
         /// </summary>
-        [Tooltip("Name of the style.")]
-        public string Name = "default";
+        [Tooltip("Name of the style.")] public string Name = "default";
         /// <summary>
         /// Color in which to draw the node.
         /// </summary>
         [Tooltip("Color in which to render the node")]
-        public Color Color = new Color(1,1,1);
+        public Color Color = new(1, 1, 1);
         /// <summary>
         /// Font in which to draw label.
         /// </summary>
-        [Tooltip("Font in which to render the node")]
+        [Tooltip("Font in which to render the node")] 
+        // ReSharper disable once UnassignedField.Global
         public TMPro.TMP_FontAsset Font;
         /// <summary>
         /// Point size in which to draw label.
@@ -65,12 +63,17 @@ namespace GraphVisualization
         /// <summary>
         /// Prefab to use for making nodes
         /// </summary>
-        [Tooltip("Prefab to instantiate to make a new node for this graph.  If None, use the default listed in the Graph.")]
+        [Tooltip("Prefab to instantiate to make a new node for this graph. If None, use the default listed in the Graph.")]
+        // ReSharper disable once UnassignedField.Global
         public GameObject Prefab;
 
-        public static implicit operator NodeStyle(Color c)
-        {
-            var s = TEDGraphVisualization.Current.NodeStyles[0].Clone();
+        /// <summary>
+        /// Copy the style
+        /// </summary>
+        public NodeStyle Clone() => (NodeStyle)MemberwiseClone();
+
+        public static implicit operator NodeStyle(Color c) {
+            var s = Current.NodeStyles[0].Clone();
             s.Color = c;
             return s;
         }

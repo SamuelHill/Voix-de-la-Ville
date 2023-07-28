@@ -26,14 +26,14 @@
 using System;
 using UnityEngine;
 
-namespace GraphVisualization
-{
+namespace TotT.Unity.GraphVisualizer {
+    using static TEDGraphVisualization;
+
     /// <summary>
     /// Parameters for how to draw a graph edge.
     /// </summary>
     [Serializable]
-    public class EdgeStyle
-    {
+    public class EdgeStyle {
         /// <summary>
         /// Name of the style
         /// </summary>
@@ -43,7 +43,7 @@ namespace GraphVisualization
         /// Color in which to draw the edge.
         /// </summary>
         [Tooltip("Color in which to render the edge")]
-        public Color Color = new Color(1, 1, 1);
+        public Color Color = new(1, 1, 1);
         /// <summary>
         /// Width of the line to draw, in pixels.
         /// </summary>
@@ -75,13 +75,12 @@ namespace GraphVisualization
         /// <summary>
         /// Font in which to draw label.
         /// </summary>
-        [Tooltip("Font for label")]
-        public TMPro.TMP_FontAsset Font;
+        // ReSharper disable once UnassignedField.Global
+        [Tooltip("Font for label")] public TMPro.TMP_FontAsset Font;
         /// <summary>
         /// Point size in which to draw label.
         /// </summary>
-        [Tooltip("Side for label, in pixels")]
-        public int FontSize = 12;
+        [Tooltip("Side for label, in pixels")] public int FontSize = 12;
         /// <summary>
         /// Color in which to draw Label, if different from Color.
         /// </summary>
@@ -97,20 +96,16 @@ namespace GraphVisualization
         /// Prefab to use for making edges
         /// </summary>
         [Tooltip("Prefab to instantiate to make a new edge in this style, if different from the default in Graph.")]
+        // ReSharper disable once UnassignedField.Global
         public GameObject Prefab;
-
 
         /// <summary>
         /// Copy the style
         /// </summary>
-        public EdgeStyle Clone()
-        {
-            return (EdgeStyle)MemberwiseClone();
-        }
+        public EdgeStyle Clone() => (EdgeStyle)MemberwiseClone();
 
-        public static implicit operator EdgeStyle(Color c)
-        {
-            var s = TEDGraphVisualization.Current.EdgeStyles[0].Clone();
+        public static implicit operator EdgeStyle(Color c) {
+            var s = Current.EdgeStyles[0].Clone();
             s.Color = c;
             return s;
         }

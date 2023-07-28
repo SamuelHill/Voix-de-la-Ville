@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TED;
-using TotT.Simulator;
 using TotT.Time;
 using TotT.Utilities;
-using TotT.ValueTypes;
 using UnityEngine;
 
 namespace TotT.Unity {

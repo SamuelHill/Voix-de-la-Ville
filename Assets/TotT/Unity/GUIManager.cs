@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GraphVisualization;
 using TED;
 using TotT.Simulator;
 using TotT.Time;

@@ -5,7 +5,7 @@ using TotT.ValueTypes;
 using UnityEngine;
 using static TED.Language;
 
-namespace TotT.Simulator {
+namespace TotT.Simulator.Functions {
     using static Sexuality;
     using static Randomize;
 

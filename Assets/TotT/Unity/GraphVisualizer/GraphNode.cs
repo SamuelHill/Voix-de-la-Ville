@@ -27,24 +27,25 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace GraphVisualization
-{
+namespace TotT.Unity.GraphVisualizer {
     /// <summary>
     /// Component that drives individual nodes in a Graph visualization.
     /// These are created by Graph.AddNode().  Do not instantiate one yourself.
     /// </summary>
-    public class GraphNode : UIBehaviour, IPointerEnterHandler, IPointerExitHandler, IDragHandler, IBeginDragHandler, IEndDragHandler, INodeDriver
-    {
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public class GraphNode : UIBehaviour, IPointerEnterHandler, IPointerExitHandler, IDragHandler, 
+                             IBeginDragHandler, IEndDragHandler, INodeDriver {
         /// <summary>
         /// The client-side object associated with this node.
         /// </summary>
         public object Key;
+        // ReSharper disable once NotAccessedField.Global
         public string Label;
-        public NodeStyle Style;
-        private RectTransform rectTransform;
-        private Graph graph;
-        private TMPro.TextMeshProUGUI labelMesh;
-        private Image image;
+        private NodeStyle _style;
+        private RectTransform _rectTransform;
+        private Graph _graph;
+        private TMPro.TextMeshProUGUI _labelMesh;
+        private Image _image;
 
         /// <summary>
         /// The current position as computed by the spring physics system in Graph.cs
@@ -69,101 +70,76 @@ namespace GraphVisualization
         /// <summary>
         /// Called from Graph.AddNode after instantiation of the prefab for this node.
         /// </summary>
-        public void Initialize(Graph g, object key, string label, NodeStyle style, Vector2 position, int index)
-        {
-            graph = g;
+        public void Initialize(Graph g, object key, string label, NodeStyle style, Vector2 position, int index) {
+            _graph = g;
             Key = key;
             Label = label;
-            Style = style;
+            _style = style;
             Index = index;
-            labelMesh = GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            if (labelMesh != null)
-            {
-                labelMesh.text = label;
-                labelMesh.color = style.Color;
-                labelMesh.fontSize = style.FontSize;
-                if (style.Font != null)
-                    labelMesh.font = style.Font;
-                labelMesh.fontStyle = style.FontStyle;
+            _labelMesh = GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (_labelMesh != null) {
+                _labelMesh.text = label;
+                _labelMesh.color = style.Color;
+                _labelMesh.fontSize = style.FontSize;
+                if (style.Font != null) _labelMesh.font = style.Font;
+                _labelMesh.fontStyle = style.FontStyle;
             }
-
-            image = GetComponentInChildren<Image>();
-            SetImageColor(Style.Color);
-
-            rectTransform = GetComponent<RectTransform>();
-            rectTransform.localPosition = PreviousPosition = position;
+            _image = GetComponentInChildren<Image>();
+            SetImageColor(_style.Color);
+            _rectTransform = GetComponent<RectTransform>();
+            _rectTransform.localPosition = PreviousPosition = position;
         }
 
-        private void SetImageColor(Color color)
-        {
-            if (image != null)
-            {
-                color.a = 0.3f;
-                image.color = color;
-            }
+        private void SetImageColor(Color color) {
+            if (_image == null) return;
+            color.a = 0.3f;
+            _image.color = color;
         }
 
-        public void Update()
-        {
+        public void Update() {
             // Set gameObject's position to that computed by spring physics
             Vector3 p = Position;
             p.z = Foreground ? -1 : 1;
-            rectTransform.localPosition = p;
+            _rectTransform.localPosition = p;
         }
 
         /// <summary>
         /// Update color of node text, based on whether it has been selected by the user.
         /// Called when node selected by mouse changes
         /// </summary>
-        public void SelectionChanged(Graph g, GraphNode selected)
-        {
-            if (labelMesh != null)
-            {
-                var brightness = 1f;
-                if (graph.SelectedNode != null)
-                    brightness = Foreground ? 2 : graph.GreyOutFactor;
-                var newColor = brightness * Style.Color;
-                labelMesh.color = newColor;
-                SetImageColor(newColor);
-            }
+        public void SelectionChanged(Graph g, GraphNode selected) {
+            if (_labelMesh == null) return;
+            var brightness = 1f;
+            if (_graph.SelectedNode != null) brightness = Foreground ? 2 : _graph.GreyOutFactor;
+            var newColor = brightness * _style.Color;
+            _labelMesh.color = newColor;
+            SetImageColor(newColor);
         }
 
         /// <summary>
         /// True if this node is in the foreground.
         /// Nodes are in the foreground unless some node they aren't adjacent to has been selected.
         /// </summary>
-        private bool Foreground =>
-            graph.SelectedNode == this || graph.SelectedNode == null ||
-            graph.Adjacent(this, graph.SelectedNode);
+        private bool Foreground => _graph.SelectedNode == this ||
+                                   _graph.SelectedNode == null ||
+                                   _graph.Adjacent(this, _graph.SelectedNode);
 
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            graph.SelectedNode = this;
+        public void OnPointerEnter(PointerEventData eventData) => _graph.SelectedNode = this;
+
+        public void OnPointerExit(PointerEventData eventData) {
+            if (_graph.SelectedNode == this) _graph.SelectedNode = null;
         }
 
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            if (graph.SelectedNode == this)
-                graph.SelectedNode = null;
-        }
-
-        public void OnDrag(PointerEventData data)
-        {
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform.parent as RectTransform,
-                    Input.mousePosition, data.pressEventCamera, out var p))
-            {
+        public void OnDrag(PointerEventData data) {
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    _rectTransform.parent as RectTransform, 
+                    Input.mousePosition, data.pressEventCamera, 
+                    out var p))
                 PreviousPosition = Position = p;
-            }
         }
 
-        public void OnBeginDrag(PointerEventData eventData)
-        {
-            IsBeingDragged = true;
-        }
+        public void OnBeginDrag(PointerEventData eventData) => IsBeingDragged = true;
 
-        public void OnEndDrag(PointerEventData eventData)
-        {
-            IsBeingDragged = false;
-        }
+        public void OnEndDrag(PointerEventData eventData) => IsBeingDragged = false;
     }
 }
