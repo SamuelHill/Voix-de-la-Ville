@@ -1,7 +1,7 @@
 ﻿using System;
-using TotT.Utilities;
+using TotT.ValueTypes;
 
-namespace TotT.ValueTypes {
+namespace TotT.Time {
     using static Calendar;
 
     /// <summary>

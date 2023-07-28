@@ -1,7 +1,6 @@
 ﻿using System;
-using TotT.Utilities;
 
-namespace TotT.ValueTypes {
+namespace TotT.Time {
     using static Calendar;
 
     /// <summary>
@@ -18,7 +17,7 @@ namespace TotT.ValueTypes {
         private bool IsEschaton => Clock == uint.MaxValue;
 
         /// <summary>Constructor from component parts</summary>
-        /// <remarks>Only used for FromString, default constructor hooks up to Time more easily</remarks>
+        /// <remarks>Only used for FromString, default constructor hooks up to Clock more easily</remarks>
         public TimePoint(Month month, byte day, int year, TimeOfDay time) :
             this(CalcClockTick(year, month, day, time)) {}
 

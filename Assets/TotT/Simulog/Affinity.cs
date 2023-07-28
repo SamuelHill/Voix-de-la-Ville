@@ -1,10 +1,11 @@
 ﻿using System;
 using TED;
 using TED.Interpreter;
+using TotT.Time;
 using static TED.Language;
 
 namespace TotT.Simulog {
-    using static Utilities.Calendar; // Only using for PerDay in Decay
+    using static Calendar; // Only using for PerDay in Decay
     using static SimuLang; // Need to use generic events to eliminate this using
 
     public class Affinity<T1, T2> : TablePredicate<(T1, T2), T1, T2, int> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {

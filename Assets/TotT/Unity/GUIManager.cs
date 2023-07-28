@@ -4,6 +4,7 @@ using System.Linq;
 using GraphVisualization;
 using TED;
 using TotT.Simulator;
+using TotT.Time;
 using TotT.Utilities;
 using UnityEngine;
 
@@ -78,7 +79,7 @@ namespace TotT.Unity {
         // like pause need to be addressed with external logic so its easiest to keep separate
         private static readonly GUIString Paused = new("Simulation is paused", CenteredRect);
         private static readonly List<GUIString> GuiStrings = new() {
-            new GUIString(TalkOfTheTown.Time.ToString, TopRightRect)
+            new GUIString(Clock.ToString, TopRightRect)
         };
 
         public static void AddSelectedTileInfo(Func<string> tileString) =>

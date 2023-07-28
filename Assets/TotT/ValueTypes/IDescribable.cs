@@ -1,7 +1,5 @@
-﻿namespace TotT.ValueTypes
-{
-    internal interface IDescribable
-    {
+﻿namespace TotT.ValueTypes {
+    internal interface IDescribable {
         string Description { get; }
     }
 }

@@ -9,6 +9,7 @@ using TED.Tables;
 using TED.Utilities;
 using TotT.Simulog;
 using TotT.TextGenerator;
+using TotT.Time;
 using TotT.Unity;
 using TotT.Utilities;
 using TotT.ValueTypes;
@@ -48,23 +49,18 @@ namespace TotT.Simulator {
     public class TalkOfTheTown {
         private const int Seed = 349571286;
         public static Simulation Simulation = null!;
-        public static Time Time;
         public static bool RecordPerformanceData;
         private static readonly List<(uint, uint, float)> PerformanceData = new();
 
-        private TalkOfTheTown() {
+        public TalkOfTheTown() {
             DeclareParsers();
             Seed(Seed, Seed);
-            Time = new Time();
             BindGlobal(TownName, PossibleTownName.Random);
             BindGlobal(RandomNumber, "");
             SetTableDescription();
             Graph.SetDescriptionMethod<Person>(PersonDescription);
             using var file = CreateText("PerformanceData.csv");
         }
-        public TalkOfTheTown(ushort tick = 1) : this() => Time = new Time(tick);
-        public TalkOfTheTown(Month month, byte day = 1, TimeOfDay time = AM) :
-            this() => Time = new Time(month, day, time);
 
         // ReSharper disable InconsistentNaming
         // Tables, despite being local or private variables, will be capitalized for style/identification purposes.
@@ -155,7 +151,7 @@ namespace TotT.Simulator {
             var Drifter = Predicate("Drifter", person, sex, sexuality);
             Drifter[person, RandomSex, sexuality].If(PerYear(0.05f), RandomPerson, RandomSexuality[sex, sexuality]);
             Character.StartWithTime(Drifter, DateAgeToTimePoint[RandomDate, RandomAdultAge, birthday])
-                     .StartWithCauses(Add(Character.Attributes[person, Time.YearsOld[birthday], 
+                     .StartWithCauses(Add(Character.Attributes[person, Clock.YearsOld[birthday], 
                                                                TimePointToDate[birthday], sex, sexuality, Alive]).If(Drifter));
 
             // *********************************** Relationships **********************************
@@ -202,18 +198,18 @@ namespace TotT.Simulator {
                .OccursWhen(PotentialProcreation[woman, man], RandomSex[sex], RandomFirstName, NewPerson[firstName, Surname[man], child]);
 
             Embryo.StartWhen(Procreation)
-                  .StartCauses(Add(Embryo.Attributes[child, woman, man, sex, Time.CurrentDate]).If(Procreation))
-                  .EndWhen(Embryo[child], Embryo.Attributes, Time.NineMonthsPast[conception], Prob[0.8f])
+                  .StartCauses(Add(Embryo.Attributes[child, woman, man, sex, Clock.CurrentDate]).If(Procreation))
+                  .EndWhen(Embryo[child], Embryo.Attributes, Clock.NineMonthsPast[conception], Prob[0.8f])
                   .EndCauses(Add(Parent[parent, child]).If(Embryo.Attributes[child, parent, __, __, __]),
                              Add(Parent[parent, child]).If(Embryo.Attributes[child, __, parent, __, __]));
 
             Character.StartWhen(Embryo.End[person]);
-            Character.StartCauses(Add(CharacterAttributes[person, 0, Time.CurrentDate, sex, sexuality, Alive])
+            Character.StartCauses(Add(CharacterAttributes[person, 0, Clock.CurrentDate, sex, sexuality, Alive])
                                      .If(Embryo.End[person], Embryo.Attributes[person, __, __, sex, __], RandomSexuality[sex, sexuality]));
             // Increment age once per birthday (in the AM, if you weren't just born)
             CharacterAttributes.Set(person, age, num)
                  .If(CharacterAttributes[person, age, dateOfBirth, __, __, Alive],
-                     Time.CurrentlyMorning, Time.IsToday[dateOfBirth], !Embryo.End[person], Incr[age, num]);
+                     Clock.CurrentlyMorning, Clock.IsToday[dateOfBirth], !Embryo.End[person], Incr[age, num]);
 
             // ************************************ Locations *************************************
 
@@ -261,7 +257,7 @@ namespace TotT.Simulator {
                  .StartCauses(Add(Place.Attributes[location, locationType, locationCategory, position, InBusiness])
                                  .If(CreatedLocation, LocationInformation))
                  .EndWhen(Place.Attributes, !In(locationType, permanentLocationTypes),
-                          Place, Time.YearsOld[founding, age], age > 40, PerYear(0.1f))
+                          Place, Clock.YearsOld[founding, age], age > 40, PerYear(0.1f))
                  .EndCauses(Set(Place.Attributes, location, businessStatus, OutOfBusiness));
 
             var NumLocations = CountsBy("NumLocations", Place.Attributes, locationType, count);
@@ -353,7 +349,7 @@ namespace TotT.Simulator {
             var StillEmployed = Definition("StillEmployed", person).Is(EmploymentStatus[person, true]);
 
             var JobToFill = Predicate("JobToFill", location, job)
-                .If(Time.CurrentTimeOfDay[timeOfDay], PlaceInBusiness, Place.Attributes, VocationShift,
+                .If(Clock.CurrentTimeOfDay[timeOfDay], PlaceInBusiness, Place.Attributes, VocationShift,
                     PositionsPerJob, Count(Employment & EmploymentStatus[employee, true]) < positions);
 
             Drifter[person, RandomSex, sexuality].If(JobToFill, PerMonth(0.5f), RandomPerson, RandomSexuality[sex, sexuality]);
@@ -363,7 +359,7 @@ namespace TotT.Simulator {
             var CandidateForJob = Assign("CandidateForJob", person, job).When(BestCandidate);
             var CandidatePerJob = Assign("CandidatePerJob", person, location).When(CandidateForJob.Assignments, BestCandidate);
 
-            Employment.Add[job, person, location, Time.CurrentTimeOfDay].If(CandidatePerJob.Assignments, CandidateForJob.Assignments);
+            Employment.Add[job, person, location, Clock.CurrentTimeOfDay].If(CandidatePerJob.Assignments, CandidateForJob.Assignments);
 
             // ********************************** New Locations ***********************************
 
@@ -438,7 +434,7 @@ namespace TotT.Simulator {
             // TODO : Couple movements - i.e. GoingOutForDateNight
 
             var OpenLocationType = Predicate("OpenLocationType", locationType)
-                .If(LocationInformation, Time.CurrentlyOperating[operation], Time.CurrentlyOpen[schedule]);
+                .If(LocationInformation, Clock.CurrentlyOperating[operation], Clock.CurrentlyOpen[schedule]);
             var OpenForBusiness = Predicate("OpenForBusiness", actionType.Indexed, location)
                .If(ActionToCategory, AvailableCategory, OpenLocationType, PlaceInBusiness, Place.Attributes);
             var ActionCount = CountsBy("ActionCount", OpenForBusiness, actionType, count);
@@ -458,7 +454,7 @@ namespace TotT.Simulator {
 
             var Working = Predicate("Working", person, location)
                 .If(OpenLocationType, PlaceInBusiness, Place.Attributes, StillEmployed,
-                    Employment[__, person, location, Time.CurrentTimeOfDay]);
+                    Employment[__, person, location, Clock.CurrentTimeOfDay]);
 
             var AvailableIndividual = Predicate("AvailableIndividual", person)
                .If(Character[person], !Working[person, __], !AtSchool[person, __]);
@@ -761,10 +757,10 @@ namespace TotT.Simulator {
 #if ParallelUpdate
             if (update == null) LoopSimulator();
 #else
-            Time.Tick();
+            Clock.Tick();
             if (RecordPerformanceData) {
-                PerformanceData.Add((WhereTheyAt.Length, Time.Clock - InitialClockTick, Simulation.RuleExecutionTime));
-                if (Time.Day == 1 && Time.Month == Month.January) {
+                PerformanceData.Add((WhereTheyAt.Length, Clock.ClockTick - InitialClockTick, Simulation.RuleExecutionTime));
+                if (Clock.Day == 1 && Clock.Month == Month.January) {
                     using var file = AppendText("PerformanceData.csv");
                     foreach ((var population, var clock, var execution) in PerformanceData)
                         file.WriteLine($"{population}, {clock}, {execution}");
@@ -782,7 +778,7 @@ namespace TotT.Simulator {
         private static Task update;
 
         static void LoopSimulator(){
-            Time.Tick();
+            Clock.Tick();
             Simulation.Update();
             update = Simulation.UpdateAsync().ContinueWith((_) => LoopSimulator());
         }

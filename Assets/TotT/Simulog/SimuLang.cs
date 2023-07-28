@@ -3,6 +3,7 @@ using TED;
 using TED.Interpreter;
 using TotT.ValueTypes;
 using TotT.Simulator;
+using TotT.Time;
 
 namespace TotT.Simulog {
     using static Variables;

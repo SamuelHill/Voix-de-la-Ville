@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using TotT.Utilities;
+using DayOfWeek = TotT.Time.DayOfWeek;
 
-namespace TotT.ValueTypes {
+namespace TotT.Time {
     using static Calendar;
 
     /// <summary>

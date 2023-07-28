@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TotT.ValueTypes {
+﻿namespace TotT.Time {
     /// <summary>
     /// The periods within a year (using the normal gregorian 12 months - order and english names).
     /// </summary>

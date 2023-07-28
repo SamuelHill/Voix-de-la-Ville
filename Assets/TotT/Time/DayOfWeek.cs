@@ -1,4 +1,4 @@
-﻿namespace TotT.ValueTypes {
+﻿namespace TotT.Time {
     /// <summary>
     /// The periods within a week (using the normal english names for the 7 days).
     /// </summary>

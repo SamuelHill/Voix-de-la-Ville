@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TotT.Simulator;
+using TotT.Time;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -58,7 +59,7 @@ namespace TotT.Unity {
             _talkOfTheTown.LocationsPositionIndex[selectedLot];
         private static string LocationInfo(LocationRow row) =>
             $"{row.Item2} ({row.Item3}) located at x: {row.Item1.x}, y: {row.Item1.y}\n" +
-            $"Founded on {row.Item4} ({TalkOfTheTown.Time.YearsAgo(row.Item4)})\n";
+            $"Founded on {row.Item4} ({Clock.YearsAgo(row.Item4)})\n";
 
         private string EveryoneAtLocation(LocationRow row) =>
             PeopleAtLocation(row.Item2) + BuriedAtCemetery(row.Item3);

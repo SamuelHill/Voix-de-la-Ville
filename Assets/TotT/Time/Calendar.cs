@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
 using TED.Interpreter;
+using TotT.Utilities;
 using TotT.ValueTypes;
 using static TED.Language;
+using DayOfWeek = TotT.Time.DayOfWeek;
 
-namespace TotT.Utilities {
-    using ValueTypes; // not using System.DayOfWeek
+namespace TotT.Time {
+    // not using System.DayOfWeek
     using static DailyOperation;
     using static TimeOfDay;
     using static Enum;

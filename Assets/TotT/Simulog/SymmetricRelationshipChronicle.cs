@@ -2,6 +2,7 @@
 using TED;
 using TED.Interpreter;
 using TotT.Simulator;
+using TotT.Time;
 using TotT.Unity;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -28,9 +29,9 @@ namespace TotT.Simulog {
             Start = new TablePredicate<T, T>($"{name}Start", main, other);
             End = new TablePredicate<T, T>($"{name}End", main, other);
             Add[pairVar, main, other, true, time, TimePoint.Eschaton]
-               .If(Start, SymmetricRelationshipInstance<T>.NewRelationshipInstance[main, other, pairVar], TalkOfTheTown.Time.CurrentTimePoint[time]);
+               .If(Start, SymmetricRelationshipInstance<T>.NewRelationshipInstance[main, other, pairVar], Clock.CurrentTimePoint[time]);
             Set(pairVar, _end, time)
-               .If(End, this[pairVar, __, __, true, __, TimePoint.Eschaton], TalkOfTheTown.Time.CurrentTimePoint[time]);
+               .If(End, this[pairVar, __, __, true, __, TimePoint.Eschaton], Clock.CurrentTimePoint[time]);
             Set(pairVar, _exists, false)
                .If(End, this[pairVar, __, __, true, __, TimePoint.Eschaton]);
             this.Colorize(_exists, s => s ? Color.white : Color.gray);

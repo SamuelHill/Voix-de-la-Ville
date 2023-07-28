@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TED;
 using TotT.Simulator;
+using TotT.Time;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -137,8 +138,8 @@ namespace TotT.Unity {
 
         // *********************************** Update Functions ***********************************
         private bool MonthChanged() {
-            if (_lastMonth == TalkOfTheTown.Time.Month) return false;
-            _lastMonth = TalkOfTheTown.Time.Month;
+            if (_lastMonth == Clock.Month) return false;
+            _lastMonth = Clock.Month;
             return true;
         }
         private bool CheckForUpdate() => UpdateEveryTick || (UpdateMonthly && MonthChanged()) || _newlySorted;
@@ -188,8 +189,8 @@ namespace TotT.Unity {
                 _noEntriesWidth = (int)skin.label.CalcSize(NoEntries).x;
                 _noEntriesWidth = Max(_noEntriesWidth, LongestRow);
             }
-            // GUITables must be initialized after Time (inside TalkOfTheTown):
-            if (UpdateMonthly) _lastMonth = TalkOfTheTown.Time.Month;
+            // GUITables must be initialized after Clock (inside TalkOfTheTown):
+            if (UpdateMonthly) _lastMonth = Clock.Month;
             // Normal update, try to get row strings for the buffer:
             Update();
         }
