@@ -1,6 +1,5 @@
 ﻿using TED;
 using TED.Primitives;
-using TotT.Time;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -8,7 +7,6 @@ using static TED.Language;
 
 namespace TotT.Simulator {
     using static Sexuality;
-    using static Calendar;
     using static Randomize;
 
     /// <summary>TED.Functions and TED.PrimitiveTests wrappers for Utility and ValueType functionality.</summary>
@@ -35,10 +33,6 @@ namespace TotT.Simulator {
         public static readonly Function<Vector2Int, Vector2Int, int> Distance = Method<Vector2Int, Vector2Int, int>(Town.Distance);
         public static readonly Function<string, Location> NewLocation = Method<string, Location>(Town.NewLocation, false);
         public static readonly Function<int, Vector2Int> RandomLot = Method<int, Vector2Int>(Town.RandomLot, false);
-
-        public static readonly Function<Date> RandomDate = new(nameof(RandomDate), Random, false);
-        public static readonly Function<TimePoint, Date> TimePointToDate = new(nameof(TimePointToDate), t => t);
-        public static readonly Function<Date, int, TimePoint> DateAgeToTimePoint = new(nameof(DateAgeToTimePoint), TimePointFromDateAndAge);
 
         public static readonly Function<int> RandomNormal = Method(BellCurve, false);
         public static readonly Function<sbyte> RandomNormalSByte = Method(SByteBellCurve, false);

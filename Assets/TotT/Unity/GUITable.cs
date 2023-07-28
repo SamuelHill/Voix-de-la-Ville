@@ -138,8 +138,8 @@ namespace TotT.Unity {
 
         // *********************************** Update Functions ***********************************
         private bool MonthChanged() {
-            if (_lastMonth == Clock.Month) return false;
-            _lastMonth = Clock.Month;
+            if (_lastMonth == Clock.Month()) return false;
+            _lastMonth = Clock.Month();
             return true;
         }
         private bool CheckForUpdate() => UpdateEveryTick || (UpdateMonthly && MonthChanged()) || _newlySorted;
@@ -190,7 +190,7 @@ namespace TotT.Unity {
                 _noEntriesWidth = Max(_noEntriesWidth, LongestRow);
             }
             // GUITables must be initialized after Clock (inside TalkOfTheTown):
-            if (UpdateMonthly) _lastMonth = Clock.Month;
+            if (UpdateMonthly) _lastMonth = Clock.Month();
             // Normal update, try to get row strings for the buffer:
             Update();
         }

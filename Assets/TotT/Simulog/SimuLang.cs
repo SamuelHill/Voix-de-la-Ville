@@ -1,7 +1,6 @@
 ﻿using System;
 using TED;
 using TED.Interpreter;
-using TotT.ValueTypes;
 using TotT.Simulator;
 using TotT.Time;
 

@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Linq;
-using DayOfWeek = TotT.Time.DayOfWeek;
+using System.Collections.Generic;
 
 namespace TotT.Time {
+    using static Array;
+    using static Enum;
     using static Calendar;
 
     /// <summary>
@@ -45,9 +46,22 @@ namespace TotT.Time {
             new[] { false, false, false, true, true, true, true }, // ThursdayToSunday,
         };
 
+        private static int ScheduleName(Schedule schedule) => IndexOf(ScheduleByName, schedule._openOn);
+
         // *************************** Compare and Equality interfacing ***************************
-        public int CompareTo(Schedule other) =>
-            _openOn.Where((t, i) => t != other._openOn[i]).Select(t => t ? 1 : -1).FirstOrDefault();
+
+        public int CompareTo(Schedule other) {
+            if (Equals(this, other))
+                return 0;
+            var thisSchedule = ScheduleName(this);
+            var otherSchedule = ScheduleName(other);
+            if (thisSchedule != -1 && otherSchedule != -1)
+                return thisSchedule > otherSchedule ? 1 : -1;
+            for (var i = 0; i < _openOn.Length; i++)
+                if (_openOn[i] != other._openOn[i])
+                    return _openOn[i] ? 1 : -1;
+            return -1; // should never get here
+        }
         public bool Equals(Schedule other) => Equals(_openOn, other._openOn);
         public override bool Equals(object obj) => obj is Schedule other && Equals(other);
         public override int GetHashCode() => _openOn.GetHashCode();
@@ -55,28 +69,29 @@ namespace TotT.Time {
         // ****************************************************************************************
 
         /// <summary>
-        /// Fallback ToString option for Schedules whose _openOn does not have a corresponding ScheduleName.
+        /// Generates an IEnumerable of the DayOfWeek(s) - as strings - that this Schedule is open on.
         /// </summary>
-        /// <returns>List of the days of the week that this Schedule is open on</returns>
-        private string DayOfWeekList() => 
-            string.Join(", ", _openOn.Select((open, i) => (open, i))
-                                     .Where(x => x.open)
-                                     .Select(x => ((DayOfWeek)x.i).ToString()));
+        private IEnumerable<string> DaysOpen() {
+            for (var i = 0; i < _openOn.Length; i++)
+                if (_openOn[i]) 
+                    yield return ((DayOfWeek)i).ToString();
+        }
 
         /// <returns>
         /// Commonly used schedules that map to a ScheduleName use that name for a string, all other schedules
         /// fall back on creating a list of the days of the week that this Schedule is open on.
         /// </returns>
         public override string ToString() {
-            var schedule = Array.IndexOf(ScheduleByName, _openOn);
-            return schedule != -1 ? ((ScheduleName)schedule).ToString() : DayOfWeekList();
+            var schedule = ScheduleName(this);
+            return schedule != -1 ? ((ScheduleName)schedule).ToString() : string.Join(", ", DaysOpen());
         }
+
         /// <summary>
         /// For use by CsvReader. Takes a string, try's parsing as a ScheduleName, returns the associated Schedule.
         /// </summary>
         /// <remarks>No options currently for FromString to parse custom openOn arrays.</remarks>
         public static Schedule FromString(string scheduleString) {
-            Enum.TryParse(scheduleString, out ScheduleName schedule);
+            TryParse(scheduleString, out ScheduleName schedule);
             return new Schedule(schedule);
         }
     }

@@ -1,12 +1,11 @@
 ﻿using System;
-using TotT.ValueTypes;
 
 namespace TotT.Time {
     using static Calendar;
 
     /// <summary>
     /// Month and Day pairing - no TimeOfDay specificity or indication of Year.
-    /// Indicates a recurring time span (two TimesOfDay - AM/PM) within each year.
+    /// Represents a recurring time span (One full day with two TimesOfDay - AM/PM) within each year.
     /// </summary>
     public readonly struct Date : IComparable<Date>, IEquatable<Date> {
         /// <summary>Month (from Month Enum)</summary>
@@ -37,9 +36,10 @@ namespace TotT.Time {
 
         /// <returns>Date in "mm/dd" format.</returns>
         public override string ToString() => $"{MonthNumber(Month)}/{Day}";
+
         /// <summary>
-        /// For use by CsvReader. Takes a string (expecting "mm/dd" format), try's parsing as a Month and Day,
-        /// returns the Date made from this Month/Day pair.
+        /// For use by CsvReader. Takes a string (expecting "mm/dd" format), try's parsing as a
+        /// Month and Day, and returns the Date made from this Month/Day pair.
         /// </summary>
         public static Date FromString(string dateString) {
             var date = dateString.Split('/');
