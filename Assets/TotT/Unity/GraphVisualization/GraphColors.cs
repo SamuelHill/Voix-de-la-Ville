@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace TotT.Unity.GraphVisualizer {
+namespace TotT.Unity.GraphVisualization {
     public static class GraphColors {
         // ReSharper disable once InconsistentNaming
         public static readonly NamedColor[] NamedColors = {

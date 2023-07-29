@@ -11,7 +11,7 @@ namespace TotT.Unity {
     using static Input;
     using static SimulationInfo;
     using static TalkOfTheTown;
-    using static TEDGraphVisualization;
+    using static GraphVisualizer;
 
     // ReSharper disable once UnusedMember.Global
     /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>

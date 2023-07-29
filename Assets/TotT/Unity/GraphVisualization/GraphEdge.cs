@@ -26,7 +26,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace TotT.Unity.GraphVisualizer {
+namespace TotT.Unity.GraphVisualization {
     /// <summary>
     /// Component that drives individual edges in a Graph.
     /// These are created by Graph.AddEdge().  Do not instantiate one yourself.

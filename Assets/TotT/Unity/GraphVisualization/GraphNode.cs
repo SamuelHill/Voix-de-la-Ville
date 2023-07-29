@@ -27,7 +27,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace TotT.Unity.GraphVisualizer {
+namespace TotT.Unity.GraphVisualization {
     /// <summary>
     /// Component that drives individual nodes in a Graph visualization.
     /// These are created by Graph.AddNode().  Do not instantiate one yourself.

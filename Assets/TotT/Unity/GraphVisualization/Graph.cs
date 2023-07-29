@@ -30,7 +30,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-namespace TotT.Unity.GraphVisualizer {
+namespace TotT.Unity.GraphVisualization {
     /// <summary>
     /// An interactive graph visualization packaged as a Unity UI element
     /// </summary>

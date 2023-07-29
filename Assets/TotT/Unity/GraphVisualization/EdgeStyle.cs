@@ -26,8 +26,8 @@
 using System;
 using UnityEngine;
 
-namespace TotT.Unity.GraphVisualizer {
-    using static TEDGraphVisualization;
+namespace TotT.Unity.GraphVisualization {
+    using static GraphVisualizer;
 
     /// <summary>
     /// Parameters for how to draw a graph edge.

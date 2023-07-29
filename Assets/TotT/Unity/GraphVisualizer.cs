@@ -6,26 +6,27 @@ using System.Text;
 using TED;
 using TED.Interpreter;
 using TED.Utilities;
-using TotT.Unity.GraphVisualizer;
+using TotT.Unity.GraphVisualization;
 using TotT.Utilities;
 using UnityEngine;
-using static TotT.Unity.GraphVisualizer.GraphColors;
+using static TotT.Unity.GraphVisualization.GraphColors;
 
 namespace TotT.Unity {
     // ReSharper disable once InconsistentNaming
-    public class TEDGraphVisualization : Graph {
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public class GraphVisualizer : Graph {
         private static readonly Dictionary<string, Color> NonStandardColorNames;
 
-        public static TEDGraphVisualization Current;
+        public static GraphVisualizer Current;
 
         public static bool GraphVisible => Current.nodes.Count == 0;
 
         private readonly DictionaryWithDefault<string, EdgeStyle> _edgeStyles;
         private readonly DictionaryWithDefault<string, NodeStyle> _nodeStyles;
 
-        static TEDGraphVisualization() => NonStandardColorNames = new Dictionary<string, Color>(
+        static GraphVisualizer() => NonStandardColorNames = new Dictionary<string, Color>(
                                               NamedColors.Select(c => new KeyValuePair<string, Color>(c.Name, c.Color)));
-        public TEDGraphVisualization() {
+        public GraphVisualizer() {
             _nodeStyles = new DictionaryWithDefault<string, NodeStyle>(MakeNodeStyle);
             _edgeStyles = new DictionaryWithDefault<string, EdgeStyle>(MakeEdgeStyle);
             Current = this;
@@ -85,7 +86,7 @@ namespace TotT.Unity {
             }
         }
 
-        public static void ShowGraph<T>(GraphViz<T> g) => FindObjectOfType<TEDGraphVisualization>().SetGraph(g);
+        public static void ShowGraph<T>(GraphViz<T> g) => FindObjectOfType<GraphVisualizer>().SetGraph(g);
 
         public static void SetTableDescription() => SetDescriptionMethod<TablePredicate>(TableDescription);
         private static string TableDescription(TablePredicate p) {

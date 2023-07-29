@@ -14,7 +14,7 @@ namespace TotT.Unity {
     using static Input;
     using static Mathf;
     using static StringProcessing;
-    using static TEDGraphVisualization;
+    using static GraphVisualizer;
     using static Texture2D;
 
     // ReSharper disable once InconsistentNaming

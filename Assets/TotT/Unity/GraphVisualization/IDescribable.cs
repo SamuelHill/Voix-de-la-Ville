@@ -1,4 +1,4 @@
-﻿namespace TotT.Unity.GraphVisualizer {
+﻿namespace TotT.Unity.GraphVisualization {
     public interface IDescribable {
         string Description { get; }
     }

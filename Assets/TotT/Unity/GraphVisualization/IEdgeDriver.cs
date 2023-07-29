@@ -23,7 +23,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 #endregion
 
-namespace TotT.Unity.GraphVisualizer {
+namespace TotT.Unity.GraphVisualization {
     /// <summary>
     /// Interface for components that fill a Graph visualization on demand.
     /// </summary>

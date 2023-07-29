@@ -10,7 +10,7 @@ using TotT.Simulog;
 using TotT.TextGenerator;
 using TotT.Time;
 using TotT.Unity;
-using TotT.Unity.GraphVisualizer;
+using TotT.Unity.GraphVisualization;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -40,7 +40,7 @@ namespace TotT.Simulator {
     using static Color;
     using static GUIManager; // Colorize Extension and Buttons
     using static GraphViz<object>;
-    using static TEDGraphVisualization;
+    using static GraphVisualizer;
     // The following offload static components of the TED code...
     using static Sims; // C# function hookups to TED predicates
     using static Town; // C# function hookups to TED predicates
