@@ -4,6 +4,8 @@ using TotT.Utilities;
 
 namespace TotT.ValueTypes {
     using static Randomize;
+    using static Sex;
+    using static SexualityName;
 
     /// <summary>
     /// Sexuality of a Person. Preference is binary and applied to each sex independently.
@@ -32,10 +34,9 @@ namespace TotT.ValueTypes {
         private bool MaleAttraction { get; }
 
         /// <summary>SexualityName equivalent to internal attractions</summary>
-        private SexualityName Name => MaleAttraction && FemaleAttraction ? SexualityName.Bisexual :
-                                      FemaleAttraction ? SexualityName.FemalePreference :
-                                      MaleAttraction ? SexualityName.MalePreference :
-                                      SexualityName.Asexual;
+        private SexualityName Name => MaleAttraction && FemaleAttraction ? Bisexual :
+                                      FemaleAttraction ? FemalePreference :
+                                      MaleAttraction ? MalePreference : Asexual;
 
         /// <param name="femaleAttraction">Attraction to Sex.Female</param>
         /// <param name="maleAttraction">Attraction to Sex.Male</param>
@@ -46,11 +47,11 @@ namespace TotT.ValueTypes {
 
         /// <summary>Is this Sexuality attracted to the Sex of potentialPartner?</summary>
         /// <returns>whether or not person is attracted to a potential partner</returns>
-        public bool IsAttracted(Sex potentialPartner) => (potentialPartner == Sex.Male && MaleAttraction) ||
-                                                         (potentialPartner == Sex.Female && FemaleAttraction);
+        public bool IsAttracted(Sex potentialPartner) => (potentialPartner == Male && MaleAttraction) ||
+                                                         (potentialPartner == Female && FemaleAttraction);
 
         /// <returns>Sexuality(false, false)</returns>
-        private static Sexuality Asexual() => new(false, false);
+        private static Sexuality Ace() => new(false, false);
 
         /// <returns>Sexuality(true, false)</returns>
         private static Sexuality FemalePref() => new(true, false);
@@ -59,19 +60,19 @@ namespace TotT.ValueTypes {
         private static Sexuality MalePref() => new(false, true);
 
         /// <returns>Sexuality(true, true)</returns>
-        private static Sexuality Bisexual() => new(true, true);
+        private static Sexuality Bi() => new(true, true);
 
         /// <summary>List (indexed by SexualityName Enum) of the 4 possible constructors</summary>
         private static readonly List<Func<Sexuality>> SexualityFromName =
-            new() { Asexual, FemalePref, MalePref, Bisexual };
+            new() { Ace, FemalePref, MalePref, Bi };
 
         /// <param name="sex">Sex of the individual being assigned this Sexuality</param>
         /// <returns>Sexuality with attraction to opposite of Sex</returns>
-        private static Sexuality Heterosexual(Sex sex) => sex == Sex.Female ? MalePref() : FemalePref();
+        private static Sexuality Heterosexual(Sex sex) => sex == Female ? MalePref() : FemalePref();
 
         /// <param name="sex">Sex of the individual being assigned this Sexuality</param>
         /// <returns>Sexuality with attraction to same as Sex</returns>
-        private static Sexuality Homosexual(Sex sex) => sex == Sex.Male ? MalePref() : FemalePref();
+        private static Sexuality Homosexual(Sex sex) => sex == Male ? MalePref() : FemalePref();
 
         /// <summary>
         /// Randomly assign a Sexuality given a Probability (1.0f), the OccurrenceRates of possible Sexualities,
@@ -83,8 +84,8 @@ namespace TotT.ValueTypes {
             return Probability() switch {
                 >= NonHeteroOccurrenceRate => Heterosexual(sex),
                 >= BisexualOccurrenceRate + AsexualOccurrenceRate => Homosexual(sex),
-                >= AsexualOccurrenceRate => Bisexual(),
-                _ => Asexual()
+                >= AsexualOccurrenceRate => Bi(),
+                _ => Ace()
             };
         }
 
@@ -101,7 +102,8 @@ namespace TotT.ValueTypes {
         // Compare and Equality interfacing:
         public int CompareTo(Sexuality other) {
             var femaleAttractionComparison = FemaleAttraction.CompareTo(other.FemaleAttraction);
-            return femaleAttractionComparison != 0 ? femaleAttractionComparison : MaleAttraction.CompareTo(other.MaleAttraction);
+            return femaleAttractionComparison != 0 ? femaleAttractionComparison : 
+                       MaleAttraction.CompareTo(other.MaleAttraction);
         }
         public bool Equals(Sexuality other) =>
             other.FemaleAttraction == FemaleAttraction && other.MaleAttraction == MaleAttraction;

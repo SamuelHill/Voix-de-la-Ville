@@ -41,8 +41,9 @@ namespace TotT.Simulator {
     using static GUIManager; // Colorize Extension and Buttons
     using static GraphViz<object>;
     using static TEDGraphVisualization;
-    // The following offload static components of a TED program...
-    using static Functions.Functions;    // C# function hookups to TED predicates
+    // The following offload static components of the TED code...
+    using static Sims; // C# function hookups to TED predicates
+    using static Town; // C# function hookups to TED predicates
     using static StaticTables; // non dynamic tables - classic datalog EDB
     using static Variables;    // named variables
     // TED Meta language hookup

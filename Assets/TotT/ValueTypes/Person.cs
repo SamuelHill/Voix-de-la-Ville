@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text;
-using TotT.Simulator;
 using TotT.Utilities;
 
 namespace TotT.ValueTypes {
@@ -11,11 +9,11 @@ namespace TotT.ValueTypes {
     /// </summary>
     public class Person : IComparable<Person>, IEquatable<Person> {
         /// <summary>First name of this person.</summary>
-        public string FirstName;
+        private readonly string _firstName;
+        /// <summary>Maiden name of this person.</summary>
+        private readonly string _maidenName;
         /// <summary>Last name of this person.</summary>
         public string LastName;
-        /// <summary>Maiden name of this person.</summary>
-        public string MaidenName;
         /// <summary>First and last name of this person.</summary>
         public string FullName;
 
@@ -24,16 +22,16 @@ namespace TotT.ValueTypes {
         /// <param name="firstName">First name of this person - will be transformed to title case.</param>
         /// <param name="lastName">Last name of this person - will be transformed to title case.</param>
         public Person(string firstName, string lastName) {
-            FirstName = Title(firstName);
+            _firstName = Title(firstName);
             LastName = Title(lastName);
-            MaidenName = LastName;
-            FullName = FirstName + " " + LastName;
+            _maidenName = LastName;
+            FullName = _firstName + " " + LastName;
             _personality = new Personality();
         }
 
-        public void NewLastName(string lastName) {
+        private void NewLastName(string lastName) {
             LastName = Title(lastName);
-            FullName = FirstName + " " + LastName;
+            FullName = _firstName + " " + LastName;
         }
         public bool TakeLastName(Person other) {
             NewLastName(other.LastName);
@@ -45,13 +43,13 @@ namespace TotT.ValueTypes {
         public sbyte Facet(Facet facet) => _personality.Facet(facet);
 
         // *************************** Compare and Equality interfacing ***************************
+
         public int CompareTo(Person other) => ReferenceEquals(this, other) ? 0 : other is null ? 1 : 
-                                              string.Compare(FullName, other.FullName, StringComparison.Ordinal);
+            string.Compare(FullName, other.FullName, StringComparison.Ordinal);
         public bool Equals(Person other) => other is not null && ReferenceEquals(this, other);
         public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
-        public override int GetHashCode() => HashCode.Combine(FirstName, LastName, MaidenName, FullName, _personality);
+        public override int GetHashCode() => HashCode.Combine(_firstName, _maidenName, _personality);
 
-        // For TED.Function interfacing:
         public static bool operator ==(Person p1, Person p2) => p1 is not null && p1.Equals(p2);
         public static bool operator !=(Person p1, Person p2) => !(p1 == p2);
         public static bool operator >(Person p1, Person p2) => p1.CompareTo(p2) > 0;

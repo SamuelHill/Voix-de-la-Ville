@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TED;
 using Random = TED.Utilities.Random;
 
 namespace TotT.Utilities {
+    using static Enumerable;
+    using static Math;
+
     /// <summary>
     /// Maps over System.Random.Next for basic types and provides pseudo-normal bell curve
     /// random scoring and various random element/shuffle functions.
@@ -52,20 +56,26 @@ namespace TotT.Utilities {
         // ReSharper disable once MemberCanBePrivate.Global
         public static float Float(float max) => Float(0.0F, max);
         public static float Probability() => Float(1.0F);
-
         public static double Double(double max) => RNG.NextDouble() * max;
+
+        private static int NormalDistribution(int low, int high, int numAggregate = 10) => // "Normal"
+            Range(0, numAggregate + 1).Aggregate((value, _) => 
+                value + Integer((high + Abs(low)) / numAggregate)) + low;
+
+        private static float NormalDistribution(float low, float high, int numAggregate = 10) =>
+            Range(0, numAggregate + 1).Select(i => (float)i).Aggregate((value, _) =>
+                value + Float((high + Abs(low)) / numAggregate)) + low;
 
         public static int BellCurve() => NormalDistribution(-50, 50);
         public static sbyte SByteBellCurve() => (sbyte)BellCurve();
+        // ReSharper disable once MemberCanBePrivate.Global
         public static float FloatBellCurve() => NormalDistribution(-50f, 50f);
 
-        private static int NormalDistribution(int low, int high, int numAggregate = 10) => // "Normal"
-            Enumerable.Range(0, numAggregate + 1).Aggregate((value, _) => 
-                value + Integer((high + Math.Abs(low)) / numAggregate)) + low;
-
-        private static float NormalDistribution(float low, float high, int numAggregate = 10) =>
-            Enumerable.Range(0, numAggregate + 1).Select(i => (float)i).Aggregate((value, _) =>
-                value + Float((high + Math.Abs(low)) / numAggregate)) + low;
+        // ReSharper disable InconsistentNaming
+        public static readonly Function<int> RandomNormal = new(nameof(RandomNormal), BellCurve, false);
+        public static readonly Function<sbyte> RandomNormalSByte = new(nameof(RandomNormalSByte), SByteBellCurve, false);
+        public static readonly Function<float> RandomNormalFloat = new(nameof(RandomNormalFloat), FloatBellCurve, false);
+        // ReSharper restore InconsistentNaming
 
         // like Probability() but allows for more or less than 1.0f total options... (non-scaled probabilities)
         // with 1.0f float sum, this function will act much like a switch statement called on Probability()
