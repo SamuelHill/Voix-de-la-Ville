@@ -12,7 +12,8 @@ namespace TotT.Simulator {
 
     /// <summary>
     /// Functions for creating new people (Person constructor, random adult age and sex)
-    /// as well as the math behind fertility rates.
+    /// as well as the math behind fertility rates. Also holds miscellaneous TED wrappers
+    /// for several Person and Sexuality based C# functions.
     /// </summary>
     // ReSharper disable InconsistentNaming
     #pragma warning disable IDE1006

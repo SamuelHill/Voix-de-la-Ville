@@ -5,16 +5,22 @@ using TED;
 using TotT.Simulator;
 using TotT.Time;
 using TotT.Utilities;
+using TotT.ValueTypes;
 using UnityEngine;
 
 namespace TotT.Unity {
+    using static BusinessStatus;
+    using static VitalStatus;
     using static Array;
+    using static Color;
+    using static GraphVisualizer; // hide graphs on table change
     using static GUI;
     using static GUILayout;
     using static Input;
     using static Mathf;
+    using static StaticTables; // used in PlaceColor
     using static StringProcessing;
-    using static GraphVisualizer;
+    using static TalkOfTheTown; // used for RuleExecutionTime and PlaceColor
     using static Texture2D;
 
     // ReSharper disable once InconsistentNaming
@@ -52,7 +58,10 @@ namespace TotT.Unity {
         private static readonly Rect ChangeTablesRect = new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
         private static readonly Rect ShowTablesRect = new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
 
+        // ********************************** GUITable extensions *********************************
+
         public static void Button(this TablePredicate p, string buttonLabel, Action action) => tableButtons[p][buttonLabel] = action;
+
         public static void Colorize(this TablePredicate p, Func<uint, Color> colorizer) => p.Property["Colorizer"] = colorizer;
         public static void Colorize<TColumn>(this TablePredicate p, Var<TColumn> column, Func<TColumn, Color> colorizer) => 
             Colorize(p, rowNumber => { 
@@ -61,8 +70,19 @@ namespace TotT.Unity {
             });
         public static void Colorize<TColumn>(this TablePredicate p, Var<TColumn> column) =>
             Colorize(p, column, DefaultColorizer<TColumn>());
-        public static void SetDefaultColorizer<T>(Func<T, Color> colorizer) => DefaultColorizerTable[typeof(T)] = colorizer;
-        private static Func<T, Color> DefaultColorizer<T>() => (Func<T, Color>)DefaultColorizerTable[typeof(T)];
+        private static Func<T, Color> DefaultColorizer<T>() =>
+            (Func<T, Color>)DefaultColorizerTable[typeof(T)];
+
+        private static void SetDefaultColorizer<T>(Func<T, Color> colorizer) => 
+            DefaultColorizerTable[typeof(T)] = colorizer;
+        public static void SetDefaultColorizers() {
+            SetDefaultColorizer<Location>(PlaceColor);
+            SetDefaultColorizer<bool>(s => s ? white : gray);
+            SetDefaultColorizer<VitalStatus>(s => s == Alive ? white : gray);
+            SetDefaultColorizer<BusinessStatus>(s => s == InBusiness ? white : gray);
+        }
+
+        public static Color PlaceColor(Location place) => LocationColorsIndex[LocationToType[place]].Item2;
 
         // *************************************** GUI setup **************************************
 
@@ -96,8 +116,7 @@ namespace TotT.Unity {
         public static void InitAllTables() { foreach (var table in Tables.Values) table.Initialize(); }
 
         // ************************************** GUI control *************************************
-
-        public static void ShowTiles(bool show) => ShowTilemap = show;
+        
         public static void ToggleShowTables() => _showTables = !_showTables;
         public static void ShowPaused() => Paused.OnGUI();
         public static void ShowStrings() { foreach (var guiString in GuiStrings) guiString.OnGUI(); }
@@ -135,7 +154,7 @@ namespace TotT.Unity {
         public static void PopTableIfNewActivity(TablePredicate p) => PopTableIfNewActivity(p.Name);
 
         public static void RuleExecutionTimes() => Label(CenteredRect(480, 350), 
-            string.Concat((from table in TalkOfTheTown.Simulation.Tables 
+            string.Concat((from table in Simulation.Tables 
                            where table.RuleExecutionTime > 0 && !table.Name.Contains("initially")
                            orderby -table.RuleExecutionTime 
                            select $"{table.Name} {table.RuleExecutionTime}\n").Take(20)));

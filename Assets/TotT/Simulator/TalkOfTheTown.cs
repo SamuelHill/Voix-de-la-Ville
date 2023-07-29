@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using TED;
 using TED.Interpreter;
 using TED.Tables;
@@ -10,7 +8,6 @@ using TotT.Simulog;
 using TotT.TextGenerator;
 using TotT.Time;
 using TotT.Unity;
-using TotT.Unity.GraphVisualization;
 using TotT.Utilities;
 using TotT.ValueTypes;
 using UnityEngine;
@@ -18,7 +15,6 @@ using static TED.Language;
 
 namespace TotT.Simulator {
     using WhereTheyAtIndex = GeneralIndex<(Person, ActionType, Location), Location>;
-    using PersonRelationIndex = GeneralIndex<((Person, Person), Person, Person, bool), Person>;
     using static ActionType;
     using static BusinessStatus;
     using static Favorability;
@@ -38,9 +34,8 @@ namespace TotT.Simulator {
     using TimePoint = TimePoint; // (clock hides TimePoint with a method, this fixes that)
     // GUI/graphics
     using static Color;
-    using static GUIManager; // Colorize Extension and Buttons
-    using static GraphViz<object>;
-    using static GraphVisualizer;
+    using static GUIManager;       // Colorizers and Pop tables
+    using static SimulationGraphs; // Visualize___ functions
     // The following offload static components of the TED code...
     using static Sims; // C# function hookups to TED predicates
     using static Town; // C# function hookups to TED predicates
@@ -52,7 +47,7 @@ namespace TotT.Simulator {
     public static class TalkOfTheTown {
         private const int Seed = 349571286;
         public static Simulation Simulation = null!;
-        public static bool RecordPerformanceData;
+        public static bool RecordingPerformance;
         private static readonly List<(uint, uint, float)> PerformanceData = new();
 
         static TalkOfTheTown() {
@@ -60,10 +55,9 @@ namespace TotT.Simulator {
             Seed(Seed, Seed);
             BindGlobal(TownName, PossibleTownName.Random);
             BindGlobal(RandomNumber, "");
-            SetTableDescription();
-            DefaultColorizers();
-            Graph.SetDescriptionMethod<Person>(PersonDescription);
-            if (RecordPerformanceData) {
+            SetDefaultColorizers();
+            SetDescriptionMethods();
+            if (RecordingPerformance) {
                 using var file = CreateText("PerformanceData.csv");
             }
         }
@@ -72,34 +66,23 @@ namespace TotT.Simulator {
         // Tables, despite being local or private variables, will be capitalized for style/identification purposes.
 
         #region Tables and Indexers for GUI and Graph visuals
-        private static TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterAttributes;
-        private static TablePredicate<Person, Person, InteractionType> Interaction;
-        private static TablePredicate<Person, ActionType, Location> WhereTheyAt;
-        private static TablePredicate<Person, Location> Home;
-        private static TablePredicate<Person, Person> Parent;
-        private static AffinityRelationship<Person, Person> Friend;
-        private static AffinityRelationship<Person, Person> Enemy;
-        private static AffinityRelationship<Person, Person> Romantic;
-        private static TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
-        private static KeyIndex<(Vocation, Person, Location, TimeOfDay), Person> EmploymentIndex;
+        public static TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterAttributes;
+        public static TablePredicate<Person, Person, InteractionType> Interaction;
+        public static TablePredicate<Person, ActionType, Location> WhereTheyAt;
+        public static TablePredicate<Person, Location> Home;
+        public static TablePredicate<Person, Person> Parent;
+        public static AffinityRelationship<Person, Person> Friend;
+        public static AffinityRelationship<Person, Person> Enemy;
+        public static AffinityRelationship<Person, Person> Romantic;
+        public static TablePredicate<Vocation, Person, Location, TimeOfDay> Employment;
+        public static KeyIndex<(Vocation, Person, Location, TimeOfDay), Person> EmploymentIndex;
         public static TablePredicate<Vector2Int, Location, LocationType> CreatedLocation;
         public static TablePredicate<Vector2Int> VacatedLocation;
         public static TablePredicate<Person> Buried;
         public static KeyIndex<(bool, int), bool> PopulationCountIndex;
         public static WhereTheyAtIndex WhereTheyAtLocationIndex;
         public static KeyIndex<(Vector2Int, Location, LocationType, TimePoint), Vector2Int> LocationsPositionIndex;
-        private static ColumnAccessor<LocationType, Location> LocationToType;
-        #endregion
-
-        #region Functions for GUI and Graph visuals
-        private static Color PlaceColor(Location place) => LocationColorsIndex[LocationToType[place]].Item2;
-
-        private static void DefaultColorizers() {
-            SetDefaultColorizer<Location>(PlaceColor);
-            SetDefaultColorizer<bool>(s => s ? white : gray);
-            SetDefaultColorizer<VitalStatus>(s => s == Alive ? white : gray);
-            SetDefaultColorizer<BusinessStatus>(s => s == InBusiness ? white : gray);
-        }
+        public static ColumnAccessor<LocationType, Location> LocationToType;
         #endregion
 
         public static void InitSimulator() {
@@ -613,157 +596,12 @@ namespace TotT.Simulator {
             Simulation.CheckForProblems = true;
         }
 
-        #region Graph visualizations
-        private static void VisualizeHomes() {
-            var g = new GraphViz<object>();
-            foreach ((var person, var place) in Home) {
-                var color = PlaceColor(place);
-                if (!g.Nodes.Contains(place)) {
-                    g.Nodes.Add(place);
-                    g.NodeAttributes[place] = new Dictionary<string, object> { { "rgbcolor", color } };
-                }
-                g.AddEdge(new Edge(person, place, true, null,
-                                   new Dictionary<string, object> { { "rgbcolor", color } }));
-            }
-            ShowGraph(g);
-        }
-
-        private static void VisualizeJobs() {
-            var g = new GraphViz<object>();
-            foreach (var job in Employment) {
-                var place = job.Item3;
-                var color = PlaceColor(place);
-                if (!g.Nodes.Contains(place)) {
-                    g.Nodes.Add(place);
-                    g.NodeAttributes[place] = new Dictionary<string, object> { { "rgbcolor", color } };
-                }
-                g.AddEdge(new Edge(job.Item2, place, true, job.Item1.ToString(),
-                                   new Dictionary<string, object> { { "rgbcolor", color } }));
-            }
-            ShowGraph(g);
-        }
-
-        private static void VisualizeRandomFriendNetwork() => VisualizeFriendNetworkOf(
-            CharacterAttributes.ColumnValueFromRowNumber(person)(
-                (uint)Integer(0, (int)CharacterAttributes.Length)));
-
-        private static void VisualizeFriendNetworkOf(Person p) {
-            // ReSharper disable InconsistentNaming
-            var FriendIndex = (PersonRelationIndex)Friend.IndexFor(person, false);
-            var EnemyIndex = (PersonRelationIndex)Enemy.IndexFor(person, false);
-            var RomanticInterestIndex = (PersonRelationIndex)Romantic.IndexFor(person, false);
-
-            IEnumerable<(Person, string, string)> FriendsOf(PersonRelationIndex friendIndex)
-                => friendIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "green"));
-            IEnumerable<(Person, string, string)> EnemiesOf(PersonRelationIndex enemyIndex)
-                => enemyIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "red"));
-            IEnumerable<(Person, string, string)> RomanticInterestsOf(PersonRelationIndex romanticInterestIndex)
-                => romanticInterestIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "blue"));
-            IEnumerable<(Person, string, string)> ConnectionsOf(Person person) =>
-                FriendsOf(FriendIndex).Concat(EnemiesOf(EnemyIndex)).Concat(RomanticInterestsOf(RomanticInterestIndex));
-
-            var g = TraceToDepth<object, Person>(1, p, ConnectionsOf);
-            var people = g.Nodes.Cast<Person>().ToArray();
-            foreach (var p2 in people) {
-                if (!EmploymentIndex.ContainsKey(p2)) continue;
-                (var job, _, var company, _) = EmploymentIndex[p2];
-                var jobColor = PlaceColor(company);
-                if (!g.Nodes.Contains(company)) {
-                    g.AddNode(company);
-                    g.NodeAttributes[company] = new Dictionary<string, object> { { "rgbcolor", jobColor } };
-                }
-                g.AddEdge(new Edge(p2, company, true, job.ToString(), 
-                                   new Dictionary<string, object> { { "rgbcolor", jobColor } }));
-            }
-            ShowGraph(g);
-            // ReSharper restore InconsistentNaming
-        }
-
-        private static void VisualizeFullSocialNetwork() {
-            var g = new GraphViz<object>();
-            foreach (var r in Friend)
-                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
-                    new Dictionary<string, object> { { "color", "green"}}));
-            foreach (var r in Enemy)
-                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
-                    new Dictionary<string, object> { { "color", "red"}}));
-            foreach (var r in Romantic)
-                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
-                    new Dictionary<string, object> { { "color", "blue"}}));
-            ShowGraph(g);
-        }
-
-        private static void VisualizeFamilies() {
-            var g = new GraphViz<Person>();
-            foreach ((var parent, var child) in Parent) {
-                if (!g.Nodes.Contains(parent)) g.AddNode(parent);
-                if (!g.Nodes.Contains(child)) g.AddNode(child);
-                g.AddEdge(new GraphViz<Person>.Edge(child, parent));
-            }
-            ShowGraph(g);
-        }
-
-        private static void VisualizeInteractions() {
-            var g = new GraphViz<Person>();
-            foreach (var row in Interaction)
-                g.AddEdge(new GraphViz<Person>.Edge(
-                              row.Item1, row.Item2, true, row.Item3.ToString(), 
-                              new Dictionary<string, object> { { "color", row.Item3 switch {
-                                  Empathizing => "purple",
-                                  Assisting => "green",
-                                  Complimenting => "green4",
-                                  Chatting => "white",
-                                  Insulting => "yellow",
-                                  Arguing => "orange",
-                                  Fighting => "red",
-                                  Dueling => "violet",
-                                  Flirting => "blue",
-                                  Negging => "cornflowerblue",
-                                  Snogging => "aquamarine",
-                                  _ => "black"
-                              } } }));
-            ShowGraph(g);
-        }
-
-        private static void VisualizeWhereTheyAt() {
-            var g = new GraphViz<object>();
-            foreach (var row in WhereTheyAt) {
-                var place = row.Item3;
-                var color = PlaceColor(place);
-                if (!g.Nodes.Contains(place)) {
-                    g.Nodes.Add(place);
-                    g.NodeAttributes[place] = new Dictionary<string, object> { { "rgbcolor", color } };
-                }
-                g.AddEdge(new Edge(row.Item1, place, true, row.Item2.ToString(),
-                    new Dictionary<string, object> {{ "rgbcolor", color }}));
-            }
-            ShowGraph(g);
-        }
-
-        private static string PersonDescription(Person p) {
-            var b = new StringBuilder();
-            var info = CharacterAttributes.KeyIndex(person)[p];
-            var dead = info.Item6 == Dead;
-            var living = dead ? "Dead" : "Living";
-            var job = "Unemployed";
-            if (EmploymentIndex.ContainsKey(p)) job = EmploymentIndex[p].Item1.ToString();
-            b.Append(dead ? "<color=grey>" : "");
-            b.Append("<b>");
-            b.Append(p.FullName);
-            b.AppendLine("</b><size=24>");
-            b.AppendFormat("{0} {1}, age: {2}\n", living, info.Item4.ToString().ToLower(), info.Item2);
-            b.AppendLine(info.Item5.ToString());
-            b.AppendLine(job);
-            return b.ToString();
-        }
-        #endregion
-
         public static void UpdateSimulator() {
 #if ParallelUpdate
             if (update == null) LoopSimulator();
 #else
             Tick();
-            if (RecordPerformanceData) {
+            if (RecordingPerformance) {
                 PerformanceData.Add((WhereTheyAt.Length, ClockTick - InitialClockTick, Simulation.RuleExecutionTime));
                 if (Day() == 1 && Month() == January) {
                     using var file = AppendText("PerformanceData.csv");

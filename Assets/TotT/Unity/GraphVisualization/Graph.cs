@@ -31,6 +31,8 @@ using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 namespace TotT.Unity.GraphVisualization {
+    using static GUIManager; // used for showing the tilemap when clearing a graph
+
     /// <summary>
     /// An interactive graph visualization packaged as a Unity UI element
     /// </summary>
@@ -166,7 +168,7 @@ namespace TotT.Unity.GraphVisualization {
                     Destroy(child.gameObject);
 
             RepopulateMesh();
-            GUIManager.ShowTiles(true);
+            ShowTilemap = true;
         }
 
         public void GenerateFrom<TNode>(IEnumerable<TNode> keys, NodeFormatter<TNode> format, EdgeGenerator<TNode> edgeGenerator) {
@@ -665,7 +667,7 @@ namespace TotT.Unity.GraphVisualization {
 
         private void OnGUI() {
             if (nodes.Count == 0) return;
-            if (GUI.Button(GUIManager.RemoveGraphButton(), "Remove graph")) Clear();
+            if (GUI.Button(RemoveGraphButton(), "Remove graph")) Clear();
         }
     }
 }
