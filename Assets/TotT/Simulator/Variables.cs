@@ -24,13 +24,9 @@ namespace TotT.Simulator {
         public static readonly Var<string> lastName = (Var<string>)"lastName";
         public static readonly Var<string> locationName = (Var<string>)"locationName";
 
-        public static readonly Var<bool> state = (Var<bool>)"state";
-        public static readonly Var<bool> exists = (Var<bool>)"exists";
-
         public static readonly Var<int> age = (Var<int>)"age";
         public static readonly Var<int> num = (Var<int>)"num";
         public static readonly Var<float> rate = (Var<float>)"rate";
-        public static readonly Var<int> count = (Var<int>)"count";
         public static readonly Var<int> score = (Var<int>)"score";
         public static readonly Var<int> spark = (Var<int>)"spark";
         public static readonly Var<int> charge = (Var<int>)"charge";
@@ -52,9 +48,6 @@ namespace TotT.Simulator {
         public static readonly Var<TimePoint> birthday = (Var<TimePoint>)"birthday";
         public static readonly Var<TimePoint> conceived = (Var<TimePoint>)"conceived";
         public static readonly Var<TimePoint> founding = (Var<TimePoint>)"founding";
-        public static readonly Var<TimePoint> time = (Var<TimePoint>)"time";
-        public static readonly Var<TimePoint> start = (Var<TimePoint>)"start";
-        public static readonly Var<TimePoint> end = (Var<TimePoint>)"end";
 
         public static readonly Var<Location> location = (Var<Location>)"location";
         public static readonly Var<Location> otherLocation = (Var<Location>)"otherLocation";
@@ -74,5 +67,14 @@ namespace TotT.Simulator {
 
         public static readonly Var<ValueTuple<Person, Person>> pairing = (Var<ValueTuple<Person, Person>>)"pairing";
         public static readonly Var<SymmetricTuple<Person>> symmetricPair = (Var<SymmetricTuple<Person>>)"symmetricPair";
+
+        // ********************************** Socialog Variables **********************************
+
+        public static readonly Var<bool> state = (Var<bool>)"state";
+        public static readonly Var<bool> exists = (Var<bool>)"exists";
+        public static readonly Var<int> count = (Var<int>)"count";
+        public static readonly Var<TimePoint> time = (Var<TimePoint>)"time";
+        public static readonly Var<TimePoint> start = (Var<TimePoint>)"start";
+        public static readonly Var<TimePoint> end = (Var<TimePoint>)"end";
     }
 }

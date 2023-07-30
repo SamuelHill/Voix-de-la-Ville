@@ -94,8 +94,8 @@ namespace TotT.Simulator {
 
             // ************************************ Characters ************************************
 
-            var Character = Exists("Character", person, age, 
-                                   dateOfBirth.Indexed, sex.Indexed, sexuality, vitalStatus.Indexed, birthday)
+            var Character = Exists("Character", person, age, dateOfBirth.Indexed, 
+                                   sex.Indexed, sexuality, vitalStatus.Indexed, birthday)
                .InitiallyWhere(PrimordialBeing[person, age, dateOfBirth, __, __], TimeOfBirth[dateOfBirth, age, birthday]);
             Character.Attributes.Initially[person, age, dateOfBirth, sex, sexuality, Alive].Where(PrimordialBeing);
 

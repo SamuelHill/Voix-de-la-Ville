@@ -21,6 +21,7 @@ namespace TotT.Simulog {
         public readonly Event<T> Start;
         public readonly Event<T> End;
         public readonly Event<T, TimePoint> StartWith;
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         private readonly Var<TimePoint> _start;
 
@@ -82,8 +83,6 @@ namespace TotT.Simulog {
             StartWith.Causes(effects);
             return this;
         }
-        
-        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         #region Feature Tables
 
@@ -143,6 +142,7 @@ namespace TotT.Simulog {
         public readonly Event<T> Start;
         public readonly Event<T> End;
         public readonly Event<T, TimePoint> StartWith;
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         private readonly Var<TimePoint> _start;
 
@@ -208,10 +208,7 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
-
         #region Feature Tables
-
         public TablePredicate<T, T01> Features<T01>(string name, IColumnSpec<T01> feature) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature);
         public TablePredicate<T, T01, T02> Features<T01, T02>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2) =>
@@ -249,25 +246,17 @@ namespace TotT.Simulog {
         public TablePredicate<T, T01, T02, T03, T04, T05, T06, T07> FeaturesMultiple<T01, T02, T03, T04, T05, T06, T07>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2,
             IColumnSpec<T03> feature3, IColumnSpec<T04> feature4, IColumnSpec<T05> feature5, IColumnSpec<T06> feature6, IColumnSpec<T07> feature7) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
-
         #endregion
 
-        public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
-
-        public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
-            public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4)
-                : base(predicate, arg1, arg2, arg3, arg4) { }
-
-            public ExistentGoal Ended => new(TablePredicate, Arg1, false, Arg3, Arg4);
-            public ExistentGoal StartedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, t, Arg4);
-            public ExistentGoal EndedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, Arg3, t);
-        }
+        public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
+        
     }
 
     public class Existent<T, T1, T2> : TablePredicate<T, bool, TimePoint, TimePoint> {
         public readonly Event<T> Start;
         public readonly Event<T> End;
         public readonly Event<T, TimePoint> StartWith;
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         private readonly Var<TimePoint> _start;
 
@@ -287,12 +276,11 @@ namespace TotT.Simulog {
             this.Colorize(exists, s => s ? white : gray);
         }
 
+        #region Count table
         private TablePredicate<bool, int> _countPredicate;
-        // ReSharper disable once MemberCanBePrivate.Global
         public TablePredicate<bool, int> Count {
             get {
                 if (_countPredicate != null) return _countPredicate;
-                // No using default variables on an Existent.Count table
                 _countPredicate = CountsBy($"{Name}Count", this, exists, count);
                 _countPredicate.IndexByKey(exists);
                 return _countPredicate;
@@ -300,6 +288,7 @@ namespace TotT.Simulog {
         }
         public KeyIndex<(bool, int), bool> CountIndex =>
             (KeyIndex<(bool, int), bool>)Count.IndexFor(exists, true);
+        #endregion
 
         public Existent<T, T1, T2> InitiallyWhere(params Goal[] conditions) {
             Initially[(Var<T>)DefaultVariables[0], true, _start, Eschaton].Where(conditions);
@@ -333,10 +322,7 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
-
         #region Feature Tables
-
         public TablePredicate<T, T01> Features<T01>(string name, IColumnSpec<T01> feature) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature);
         public TablePredicate<T, T01, T02> Features<T01, T02>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2) =>
@@ -374,25 +360,16 @@ namespace TotT.Simulog {
         public TablePredicate<T, T01, T02, T03, T04, T05, T06, T07> FeaturesMultiple<T01, T02, T03, T04, T05, T06, T07>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2,
             IColumnSpec<T03> feature3, IColumnSpec<T04> feature4, IColumnSpec<T05> feature5, IColumnSpec<T06> feature6, IColumnSpec<T07> feature7) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
-
         #endregion
 
-        public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
-
-        public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
-            public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4)
-                : base(predicate, arg1, arg2, arg3, arg4) { }
-
-            public ExistentGoal Ended => new(TablePredicate, Arg1, false, Arg3, Arg4);
-            public ExistentGoal StartedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, t, Arg4);
-            public ExistentGoal EndedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, Arg3, t);
-        }
+        public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
     }
 
     public class Existent<T, T1, T2, T3> : TablePredicate<T, bool, TimePoint, TimePoint> {
         public readonly Event<T> Start;
         public readonly Event<T> End;
         public readonly Event<T, TimePoint> StartWith;
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         private readonly Var<TimePoint> _start;
 
@@ -413,12 +390,11 @@ namespace TotT.Simulog {
             this.Colorize(exists, s => s ? white : gray);
         }
 
+        #region Count table
         private TablePredicate<bool, int> _countPredicate;
-        // ReSharper disable once MemberCanBePrivate.Global
         public TablePredicate<bool, int> Count {
             get {
                 if (_countPredicate != null) return _countPredicate;
-                // No using default variables on an Existent.Count table
                 _countPredicate = CountsBy($"{Name}Count", this, exists, count);
                 _countPredicate.IndexByKey(exists);
                 return _countPredicate;
@@ -426,6 +402,7 @@ namespace TotT.Simulog {
         }
         public KeyIndex<(bool, int), bool> CountIndex =>
             (KeyIndex<(bool, int), bool>)Count.IndexFor(exists, true);
+        #endregion
 
         public Existent<T, T1, T2, T3> InitiallyWhere(params Goal[] conditions) {
             Initially[(Var<T>)DefaultVariables[0], true, _start, Eschaton].Where(conditions);
@@ -459,10 +436,7 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
-
         #region Feature Tables
-
         public TablePredicate<T, T01> Features<T01>(string name, IColumnSpec<T01> feature) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature);
         public TablePredicate<T, T01, T02> Features<T01, T02>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2) =>
@@ -500,25 +474,16 @@ namespace TotT.Simulog {
         public TablePredicate<T, T01, T02, T03, T04, T05, T06, T07> FeaturesMultiple<T01, T02, T03, T04, T05, T06, T07>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2,
             IColumnSpec<T03> feature3, IColumnSpec<T04> feature4, IColumnSpec<T05> feature5, IColumnSpec<T06> feature6, IColumnSpec<T07> feature7) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
-
         #endregion
 
-        public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
-
-        public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
-            public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4)
-                : base(predicate, arg1, arg2, arg3, arg4) { }
-
-            public ExistentGoal Ended => new(TablePredicate, Arg1, false, Arg3, Arg4);
-            public ExistentGoal StartedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, t, Arg4);
-            public ExistentGoal EndedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, Arg3, t);
-        }
+        public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
     }
 
     public class Existent<T, T1, T2, T3, T4> : TablePredicate<T, bool, TimePoint, TimePoint> {
         public readonly Event<T> Start;
         public readonly Event<T> End;
         public readonly Event<T, TimePoint> StartWith;
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         private readonly Var<TimePoint> _start;
 
@@ -540,12 +505,11 @@ namespace TotT.Simulog {
             this.Colorize(exists, s => s ? white : gray);
         }
 
+        #region Count table
         private TablePredicate<bool, int> _countPredicate;
-        // ReSharper disable once MemberCanBePrivate.Global
         public TablePredicate<bool, int> Count {
             get {
                 if (_countPredicate != null) return _countPredicate;
-                // No using default variables on an Existent.Count table
                 _countPredicate = CountsBy($"{Name}Count", this, exists, count);
                 _countPredicate.IndexByKey(exists);
                 return _countPredicate;
@@ -553,6 +517,7 @@ namespace TotT.Simulog {
         }
         public KeyIndex<(bool, int), bool> CountIndex =>
             (KeyIndex<(bool, int), bool>)Count.IndexFor(exists, true);
+        #endregion
 
         public Existent<T, T1, T2, T3, T4> InitiallyWhere(params Goal[] conditions) {
             Initially[(Var<T>)DefaultVariables[0], true, _start, Eschaton].Where(conditions);
@@ -586,10 +551,7 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
-
         #region Feature Tables
-
         public TablePredicate<T, T01> Features<T01>(string name, IColumnSpec<T01> feature) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature);
         public TablePredicate<T, T01, T02> Features<T01, T02>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2) =>
@@ -627,25 +589,16 @@ namespace TotT.Simulog {
         public TablePredicate<T, T01, T02, T03, T04, T05, T06, T07> FeaturesMultiple<T01, T02, T03, T04, T05, T06, T07>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2,
             IColumnSpec<T03> feature3, IColumnSpec<T04> feature4, IColumnSpec<T05> feature5, IColumnSpec<T06> feature6, IColumnSpec<T07> feature7) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
-
         #endregion
 
-        public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
-
-        public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
-            public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4)
-                : base(predicate, arg1, arg2, arg3, arg4) { }
-
-            public ExistentGoal Ended => new(TablePredicate, Arg1, false, Arg3, Arg4);
-            public ExistentGoal StartedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, t, Arg4);
-            public ExistentGoal EndedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, Arg3, t);
-        }
+        public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
     }
 
     public class Existent<T, T1, T2, T3, T4, T5> : TablePredicate<T, bool, TimePoint, TimePoint> {
         public readonly Event<T> Start;
         public readonly Event<T> End;
         public readonly Event<T, TimePoint> StartWith;
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         private readonly Var<TimePoint> _start;
 
@@ -663,17 +616,16 @@ namespace TotT.Simulog {
             Add[existent, true, start, Eschaton].If(StartWith);
             Set(existent, end, time).If(End, CurrentTimePoint[time]);
             Set(existent, exists, false).If(End);
+            this.Colorize(exists, s => s ? white : gray);
             Attributes = Predicate($"{name}Attributes", ((Var<T>)DefaultVariables[0]).Key,
                                    feature1, feature2, feature3, feature4, feature5);
-            this.Colorize(exists, s => s ? white : gray);
         }
 
+        #region Count table
         private TablePredicate<bool, int> _countPredicate;
-        // ReSharper disable once MemberCanBePrivate.Global
         public TablePredicate<bool, int> Count {
             get {
                 if (_countPredicate != null) return _countPredicate;
-                // No using default variables on an Existent.Count table
                 _countPredicate = CountsBy($"{Name}Count", this, exists, count);
                 _countPredicate.IndexByKey(exists);
                 return _countPredicate;
@@ -681,6 +633,7 @@ namespace TotT.Simulog {
         }
         public KeyIndex<(bool, int), bool> CountIndex =>
             (KeyIndex<(bool, int), bool>)Count.IndexFor(exists, true);
+        #endregion
 
         public Existent<T, T1, T2, T3, T4, T5> InitiallyWhere(params Goal[] conditions) {
             Initially[(Var<T>)DefaultVariables[0], true, _start, Eschaton].Where(conditions);
@@ -714,10 +667,7 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
-
         #region Feature Tables
-
         public TablePredicate<T, T01> Features<T01>(string name, IColumnSpec<T01> feature) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature);
         public TablePredicate<T, T01, T02> Features<T01, T02>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2) =>
@@ -755,25 +705,16 @@ namespace TotT.Simulog {
         public TablePredicate<T, T01, T02, T03, T04, T05, T06, T07> FeaturesMultiple<T01, T02, T03, T04, T05, T06, T07>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2,
             IColumnSpec<T03> feature3, IColumnSpec<T04> feature4, IColumnSpec<T05> feature5, IColumnSpec<T06> feature6, IColumnSpec<T07> feature7) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
-
         #endregion
 
-        public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
-
-        public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
-            public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4)
-                : base(predicate, arg1, arg2, arg3, arg4) { }
-
-            public ExistentGoal Ended => new(TablePredicate, Arg1, false, Arg3, Arg4);
-            public ExistentGoal StartedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, t, Arg4);
-            public ExistentGoal EndedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, Arg3, t);
-        }
+        public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
     }
 
     public class Existent<T, T1, T2, T3, T4, T5, T6> : TablePredicate<T, bool, TimePoint, TimePoint> {
         public readonly Event<T> Start;
         public readonly Event<T> End;
         public readonly Event<T, TimePoint> StartWith;
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         private readonly Var<TimePoint> _start;
 
@@ -791,17 +732,16 @@ namespace TotT.Simulog {
             Add[existent, true, start, Eschaton].If(StartWith);
             Set(existent, end, time).If(End, CurrentTimePoint[time]);
             Set(existent, exists, false).If(End);
+            this.Colorize(exists, s => s ? white : gray);
             Attributes = Predicate($"{name}Attributes", ((Var<T>)DefaultVariables[0]).Key,
                                    feature1, feature2, feature3, feature4, feature5, feature6);
-            this.Colorize(exists, s => s ? white : gray);
         }
 
+        #region Count table
         private TablePredicate<bool, int> _countPredicate;
-        // ReSharper disable once MemberCanBePrivate.Global
         public TablePredicate<bool, int> Count {
             get {
                 if (_countPredicate != null) return _countPredicate;
-                // No using default variables on an Existent.Count table
                 _countPredicate = CountsBy($"{Name}Count", this, exists, count);
                 _countPredicate.IndexByKey(exists);
                 return _countPredicate;
@@ -809,6 +749,7 @@ namespace TotT.Simulog {
         }
         public KeyIndex<(bool, int), bool> CountIndex =>
             (KeyIndex<(bool, int), bool>)Count.IndexFor(exists, true);
+        #endregion
 
         public Existent<T, T1, T2, T3, T4, T5, T6> InitiallyWhere(params Goal[] conditions) {
             Initially[(Var<T>)DefaultVariables[0], true, _start, Eschaton].Where(conditions);
@@ -842,10 +783,7 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
-
         #region Feature Tables
-
         public TablePredicate<T, T01> Features<T01>(string name, IColumnSpec<T01> feature) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature);
         public TablePredicate<T, T01, T02> Features<T01, T02>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2) =>
@@ -883,25 +821,16 @@ namespace TotT.Simulog {
         public TablePredicate<T, T01, T02, T03, T04, T05, T06, T07> FeaturesMultiple<T01, T02, T03, T04, T05, T06, T07>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2,
             IColumnSpec<T03> feature3, IColumnSpec<T04> feature4, IColumnSpec<T05> feature5, IColumnSpec<T06> feature6, IColumnSpec<T07> feature7) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
-
         #endregion
 
-        public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
-
-        public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
-            public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4)
-                : base(predicate, arg1, arg2, arg3, arg4) { }
-
-            public ExistentGoal Ended => new(TablePredicate, Arg1, false, Arg3, Arg4);
-            public ExistentGoal StartedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, t, Arg4);
-            public ExistentGoal EndedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, Arg3, t);
-        }
+        public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
     }
 
     public class Existent<T, T1, T2, T3, T4, T5, T6, T7> : TablePredicate<T, bool, TimePoint, TimePoint> {
         public readonly Event<T> Start;
         public readonly Event<T> End;
         public readonly Event<T, TimePoint> StartWith;
+        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
 
         private readonly Var<TimePoint> _start;
 
@@ -919,17 +848,16 @@ namespace TotT.Simulog {
             Add[existent, true, start, Eschaton].If(StartWith);
             Set(existent, end, time).If(End, CurrentTimePoint[time]);
             Set(existent, exists, false).If(End);
+            this.Colorize(exists, s => s ? white : gray);
             Attributes = Predicate($"{name}Attributes", ((Var<T>)DefaultVariables[0]).Key, 
                                    feature1, feature2, feature3, feature4, feature5, feature6, feature7);
-            this.Colorize(exists, s => s ? white : gray);
         }
 
+        #region Count table
         private TablePredicate<bool, int> _countPredicate;
-        // ReSharper disable once MemberCanBePrivate.Global
         public TablePredicate<bool, int> Count {
             get {
                 if (_countPredicate != null) return _countPredicate;
-                // No using default variables on an Existent.Count table
                 _countPredicate = CountsBy($"{Name}Count", this, exists, count);
                 _countPredicate.IndexByKey(exists);
                 return _countPredicate;
@@ -937,6 +865,7 @@ namespace TotT.Simulog {
         }
         public KeyIndex<(bool, int), bool> CountIndex =>
             (KeyIndex<(bool, int), bool>)Count.IndexFor(exists, true);
+        #endregion
 
         public Existent<T, T1, T2, T3, T4, T5, T6, T7> InitiallyWhere(params Goal[] conditions) {
             Initially[(Var<T>)DefaultVariables[0], true, _start, Eschaton].Where(conditions);
@@ -970,10 +899,7 @@ namespace TotT.Simulog {
             return this;
         }
 
-        public TablePredicate<T, TimePoint, TimePoint> StartWithChronicle => StartWith.Chronicle;
-
         #region Feature Tables
-
         public TablePredicate<T, T01> Features<T01>(string name, IColumnSpec<T01> feature) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature);
         public TablePredicate<T, T01, T02> Features<T01, T02>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2) =>
@@ -993,8 +919,8 @@ namespace TotT.Simulog {
             IColumnSpec<T03> feature3, IColumnSpec<T04> feature4, IColumnSpec<T05> feature5, IColumnSpec<T06> feature6, IColumnSpec<T07> feature7) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Key, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
 
-        public TablePredicate<T, T01> FeaturesMultiple<T01>(string name, IColumnSpec<T01> feature) =>
-                    Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature);
+        public TablePredicate<T, T01> FeaturesMultiple<T01>(string name, IColumnSpec<T01> feature) => 
+            Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature);
         public TablePredicate<T, T01, T02> FeaturesMultiple<T01, T02>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2);
         public TablePredicate<T, T01, T02, T03> FeaturesMultiple<T01, T02, T03>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2, IColumnSpec<T03> feature3) =>
@@ -1011,18 +937,8 @@ namespace TotT.Simulog {
         public TablePredicate<T, T01, T02, T03, T04, T05, T06, T07> FeaturesMultiple<T01, T02, T03, T04, T05, T06, T07>(string name, IColumnSpec<T01> feature1, IColumnSpec<T02> feature2,
             IColumnSpec<T03> feature3, IColumnSpec<T04> feature4, IColumnSpec<T05> feature5, IColumnSpec<T06> feature6, IColumnSpec<T07> feature7) =>
             Predicate(name, ((Var<T>)DefaultVariables[0]).Indexed, feature1, feature2, feature3, feature4, feature5, feature6, feature7);
-
         #endregion
 
-        public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
-
-        public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
-            public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4)
-                : base(predicate, arg1, arg2, arg3, arg4) { }
-
-            public ExistentGoal Ended => new(TablePredicate, Arg1, false, Arg3, Arg4);
-            public ExistentGoal StartedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, t, Arg4);
-            public ExistentGoal EndedAt(Term<TimePoint> t) => new(TablePredicate, Arg1, __, Arg3, t);
-        }
+        public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
     }
 }
