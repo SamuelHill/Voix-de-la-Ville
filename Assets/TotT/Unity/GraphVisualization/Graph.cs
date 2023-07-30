@@ -98,7 +98,8 @@ namespace TotT.Unity.GraphVisualization {
         /// <summary>
         /// How far to keep nodes from the edge of the Rect for this UI element.
         /// </summary>
-        public float Border = 100;
+        [Tooltip("X = T, Y = R, Z = B, W = L")]
+        public Vector4 Border = new(100, 100, 100, 100);
         /// <summary>
         /// Text object in which to display additional information about a node, or null if no info to be displayed.
         /// </summary>
@@ -513,6 +514,11 @@ namespace TotT.Unity.GraphVisualization {
         /// </summary>
         public float targetEdgeLength;
 
+        public float TopBorder => Bounds.yMax - Border.x;
+        public float RightBorder => Bounds.xMax - Border.y;
+        public float BottomBorder => Bounds.yMin + Border.z;
+        public float LeftBorder => Bounds.xMin + Border.w;
+
         /// <summary>
         /// Compute forces on nodes and update their positions.
         /// This just updates the internal Position field of the GraphNodes.  The actual
@@ -529,8 +535,8 @@ namespace TotT.Unity.GraphVisualization {
             // Keep nodes on screen
             foreach (var n in nodes) {
                 UpdatePosition(n);
-                n.Position = new Vector2(Mathf.Clamp(n.Position.x, Bounds.xMin + Border, Bounds.xMax - Border),
-                                         Mathf.Clamp(n.Position.y, Bounds.yMin + Border, Bounds.yMax - Border));
+                n.Position = new Vector2(Mathf.Clamp(n.Position.x, LeftBorder, RightBorder),
+                                         Mathf.Clamp(n.Position.y, BottomBorder, TopBorder));
             }
         }
 

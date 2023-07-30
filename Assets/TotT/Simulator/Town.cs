@@ -13,8 +13,8 @@ namespace TotT.Simulator {
     // ReSharper disable InconsistentNaming
     #pragma warning disable IDE1006
     public static class Town {
-        private static Vector2Int _max = new(8, 8);
-        private static Vector2Int _min = new(-8, -8);
+        private static Vector2Int _max = new(6, 6);
+        private static Vector2Int _min = new(-6, -6);
 
         private static Location newLocation(string name) => new(name);
         public static readonly Function<string, Location> NewLocation =

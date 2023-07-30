@@ -36,12 +36,17 @@ namespace TotT.Unity {
         public Tilemap Tilemap;
         // ReSharper disable once UnassignedField.Global
         public Tile OccupiedLot;
+        // ReSharper disable once UnassignedField.Global
+        public Component GraphComponent;
         // ReSharper restore FieldCanBeMadeReadOnly.Global
         // ReSharper restore MemberCanBePrivate.Global
 
         private const byte NumInRow = 3; // Used with ListWithRows
 
         private TileManager _tileManager;
+        private GraphVisualizer _graphVisualizer;
+        private Vector2 _graphCenterPoint;
+        private Vector2 _graphMaxDimensions;
         private bool _simulationRunning = true; // make public for unity inspector control of start
         private bool _simulationSingleStep;
         private bool _profileRuleExecutionTime;
@@ -52,6 +57,9 @@ namespace TotT.Unity {
             TED.Comparer<Vector2Int>.Default = new GridComparer();
             RecordingPerformance = RecordPerformanceData;
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
+            _graphVisualizer = GraphComponent.GetComponent<GraphVisualizer>();
+            GraphScreenCoordinates();
+            GraphBoundRect = REPLContainer;
             InitSimulator();
             AvailableTables((PrettyNamesOnly ? 
                 Simulation.Tables.Where(t => !t.Name.Contains("_")) :
@@ -68,6 +76,10 @@ namespace TotT.Unity {
             if (!_simulationRunning && GetKeyDown(KeyCode.Space)) _simulationSingleStep = true;
             if (GetKeyDown(KeyCode.BackQuote)) _profileRuleExecutionTime = !_profileRuleExecutionTime;
             if (GetKeyDown(KeyCode.F1)) ToggleShowTables();
+            if (GetKeyDown(KeyCode.F2)) {
+                ToggleREPLTable();
+                if (ShowREPLTable) _simulationRunning = false;
+            }
             if (_simulationRunning || _simulationSingleStep) {
                 try { UpdateSimulator(); } catch {
                     _simulationRunning = false;
@@ -80,7 +92,7 @@ namespace TotT.Unity {
                     PoppedTable = false;
                 }
             }
-            _tileManager.UpdateSelectedTile();
+            if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
         }
 
         // ReSharper disable once UnusedMember.Global
@@ -94,9 +106,10 @@ namespace TotT.Unity {
             ShowActiveTables();
             ChangeActiveTables();
             ShowFlowButtons();
+            ShowREPL();
             _tileManager.SetVisibility(ShowTilemap);
             if (_profileRuleExecutionTime) RuleExecutionTimes();
-            if (!_simulationRunning && !ChangeTable) ShowPaused();
+            if (!_simulationRunning && !ChangeTable && !ShowREPLTable) ShowPaused();
         }
 
         // ************************************ Location Tiles ************************************
@@ -174,5 +187,32 @@ namespace TotT.Unity {
             if (Button(DataFlowButton(false), "Update graph"))
                 ShowGraph(UpdateFlowVisualizer.MakeGraph(Simulation));
         }
+
+        // ************************************* REPL Layout **************************************
+        // ReSharper disable InconsistentNaming
+
+        private void GraphScreenCoordinates() {
+            var screenCenter = new Vector2(Screen.width, Screen.height) / 2;
+            var right = screenCenter.x + _graphVisualizer.RightBorder;
+            var left = screenCenter.x + _graphVisualizer.LeftBorder;
+            var width = right - left;
+            var top = screenCenter.y - _graphVisualizer.TopBorder;
+            var bottom = screenCenter.y - _graphVisualizer.BottomBorder;
+            var height = bottom - top;
+            _graphMaxDimensions = new Vector2(width, height);
+            var center = _graphMaxDimensions / 2;
+            _graphCenterPoint = new Vector2(left + center.x, top + center.y);
+        }
+
+        private Vector2 ClampREPLDimensions(int width, int height) =>
+            new(width > _graphMaxDimensions.x ? _graphMaxDimensions.x : width,
+                height > _graphMaxDimensions.y ? _graphMaxDimensions.y : height);
+        private Rect REPLContainer(int width, int height) {
+            var dimensions = ClampREPLDimensions(width, height);
+            var centerOffsets = dimensions / 2;
+            var center = _graphCenterPoint - centerOffsets;
+            return new Rect(center.x, center.y, dimensions.x, dimensions.y);
+        }
+        
     }
 }

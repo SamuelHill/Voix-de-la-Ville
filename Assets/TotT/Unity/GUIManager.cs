@@ -37,6 +37,8 @@ namespace TotT.Unity {
         private const int SelectionGridWidth = 760;
         private const int TileSize = 16;
         private const int TableDisplayNameCutoff = 20;
+        // ReSharper disable once InconsistentNaming
+        private const string REPLTableTitle = "REPL results";
 
         private static readonly Dictionary<Type, Delegate> DefaultColorizerTable = new();
         // ReSharper disable once CollectionNeverUpdated.Global
@@ -51,12 +53,20 @@ namespace TotT.Unity {
         private static string[] _activeTables;  // should also be a string[4]
         private static int _displayTableToChange;
         private static int _tableSelector;
+        // ReSharper disable once InconsistentNaming
+        public static bool ShowREPLTable;
         public static bool PoppedTable;
         public static bool ShowTilemap = true;
         public static bool ChangeTable;
         private static bool _showTables = true;
         private static readonly Rect ChangeTablesRect = new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
         private static readonly Rect ShowTablesRect = new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
+
+        public static Func<int, int, Rect> GraphBoundRect;
+        // ReSharper disable once InconsistentNaming
+        public static GUITable REPLTable;
+        // ReSharper disable once InconsistentNaming
+        public static string REPLQuery;
 
         // ********************************** GUITable extensions *********************************
 
@@ -117,8 +127,21 @@ namespace TotT.Unity {
         public static void InitAllTables() { foreach (var table in Tables.Values) table.Initialize(); }
 
         // ************************************** GUI control *************************************
-        
+
         public static void ToggleShowTables() => _showTables = !_showTables;
+        // ReSharper disable once InconsistentNaming
+        public static void ToggleREPLTable() {
+            if (ShowREPLTable) {
+                ShowREPLTable = false;
+                ShowTilemap = true;
+            } else {
+                ShowREPLTable = true;
+                ChangeTable = false;
+                Current.Clear();
+                ShowTilemap = false;
+            }
+        }
+
         public static void ShowPaused() => Paused.OnGUI();
         public static void ShowStrings() { foreach (var guiString in GuiStrings) guiString.OnGUI(); }
 
@@ -144,6 +167,33 @@ namespace TotT.Unity {
             _tableSelector = SelectionGrid(selectionGridRect, _tableSelector, _tableDisplayNames, 5);
             // update the active table to change with the selected table
             _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
+        }
+
+        // ReSharper disable once InconsistentNaming
+        public static void ShowREPL() {
+            if (!ShowREPLTable) return;
+            if (REPLTable == null) {
+                BeginArea(GraphBoundRect(400, 70));
+                REPLArea();
+                EndArea();
+            } else {
+                BeginArea(GraphBoundRect((int)REPLTable.TableWidth, REPLTable.REPLHeight + 70));
+                REPLTable.OnGUI(-1, GraphBoundRect((int)REPLTable.TableWidth, REPLTable.REPLHeight));
+                REPLArea();
+                EndArea();
+            }
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private static void REPLArea() {
+            REPLQuery = TextArea(REPLQuery, MaxHeight(70));
+            try {
+                var query = Simulation.Repl.Query(REPLTableTitle, REPLQuery);
+                REPLTable = new GUITable(query, 30);
+                REPLTable.Initialize();
+            } catch {
+                REPLTable = null;
+            }
         }
 
         private static void PopTableIfNewActivity(string tableName) {
@@ -223,7 +273,7 @@ namespace TotT.Unity {
                 ButtonLabel(title, out var pressed);
                 // Left side tables have an interface to the table change logic
                 if (pressed) TableTitleToggle(tableNum);
-            } else BoldLabel(title);
+            } else BoldLabel(REPLTableTitle);
         }
     }
 }

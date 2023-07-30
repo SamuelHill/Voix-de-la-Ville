@@ -73,7 +73,7 @@ namespace TotT.Unity {
         // _columnWidths are driven by LongestStrings, but with a decay rate to prevent the columns
         // from rapidly changing widths in dynamic intensional tables.
         private readonly float[] _columnWidths;
-        private float TableWidth {
+        public float TableWidth {
             get {
                 var toReturn = 0f;
                 if (RowCount == 0) toReturn = _noEntriesWidth;
@@ -81,9 +81,11 @@ namespace TotT.Unity {
                     for (var i = 0; i < NumColumns; i++)
                         toReturn += _columnWidths[i];
                 }
-                return Max(toReturn, _titleWidth);
+                return Max(toReturn, _titleWidth) + (_usingScroll ? ScrollbarOffset : 0) + TotalPadding;
             }
         }
+        // ReSharper disable once InconsistentNaming
+        public int REPLHeight => (NumDisplayRows + 5) * LabelHeight;
         #endregion
 
         #region Sorting
@@ -161,11 +163,10 @@ namespace TotT.Unity {
             else if (len < _columnWidths[i] - 2) _columnWidths[i] -= 0.005f;
             return Width(_columnWidths[i]);
         }
+        
+        private Rect LeftSideTables(int tableNum) => new(TablePadding, tableNum * 
+            (DefaultTableHeight + TablePadding) + TablePadding, TableWidth, DefaultTableHeight);
 
-        private Rect TableRect(int x, int y, int height) => // no width control - size of columns is calculated
-            new(x, y, TableWidth + (_usingScroll ? ScrollbarOffset : 0) + TotalPadding, height);
-        private Rect LeftSideTables(int tableNum) => // special case for the 4 tables on the left side
-            TableRect(TablePadding, tableNum * (DefaultTableHeight + TablePadding) + TablePadding, DefaultTableHeight);
 
         private static bool ScrollingInRect(Rect rect) => // Scroll check based on Rects
             rect.Contains(new Vector2(mousePosition.x, height - mousePosition.y)) &&
@@ -260,9 +261,10 @@ namespace TotT.Unity {
             }
         }
 
-        public void OnGUI(int tableNum) {
-            var tableRect = LeftSideTables(tableNum);
-            BeginArea(tableRect);
+        public void OnGUI(int tableNum) => OnGUI(tableNum, LeftSideTables(tableNum));
+
+        public void OnGUI(int tableNum, Rect rect) {
+            BeginArea(rect);
             BeginHorizontal(); // Title and header
             TableTitle(tableNum, TitleText);
             LayoutButtons();
@@ -270,15 +272,15 @@ namespace TotT.Unity {
             EndHorizontal(); // Title and header
             LayoutHeaderRow(_headings);
             BeginHorizontal(); // Table contents and scroll bar
-            BeginVertical(); // Table contents
+            BeginVertical();   // Table contents
             if (RowCount == 0) Label(NoEntriesText);
             else for (var i = 0; i < _buffer.Length; i++) LayoutRow(_buffer[i], _rowColors[i]);
             EndVertical(); // Table contents
             // Scrollbar and Update logic:
             if (RowCount != 0 && RowCount >= NumDisplayRows) {
-                _scrollPosition = VerticalScrollbar(_scrollPosition, NumDisplayRows - 0.1f, 
-                    0f, RowCount, ScrollHeight());
-                if (ScrollingInRect(tableRect)) 
+                _scrollPosition = VerticalScrollbar(_scrollPosition, NumDisplayRows - 0.1f,
+                                                    0f, RowCount, ScrollHeight());
+                if (ScrollingInRect(rect))
                     _scrollPosition = Clamp(_scrollPosition + current.delta.y, 0f, RowCount);
                 if (Scrolled || !_usingScroll || CheckForUpdate()) {
                     Update();

@@ -242,10 +242,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PrettyNamesOnly: 1
-  RecordPerformance: 0
+  RecordPerformanceData: 0
   TownCenter: {x: 12, y: 0}
   Tilemap: {fileID: 1000091122}
   OccupiedLot: {fileID: 11400000, guid: d9d4319b8860fe748b914d7823963c6d, type: 2}
+  GraphComponent: {fileID: 1926495701}
 --- !u!1 &646401261
 GameObject:
   m_ObjectHideFlags: 0
@@ -572,9 +573,9 @@ MonoBehaviour:
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   Bounds:
     serializedVersion: 2
-    x: -400
+    x: -290
     y: -540
-    width: 1400
+    width: 1250
     height: 1080
   NodeStyles:
   - Name: white
@@ -583,6 +584,7 @@ MonoBehaviour:
     FontSize: 20
     FontStyle: 0
     Prefab: {fileID: 4171966580229253261, guid: 0d5af7c3f54986c4789080fd325874e2, type: 3}
+  NodePrefab: {fileID: 4171966580229253261, guid: 0d5af7c3f54986c4789080fd325874e2, type: 3}
   EdgeStyles:
   - Name: Default
     Color: {r: 1, g: 1, b: 1, a: 1}
@@ -595,14 +597,13 @@ MonoBehaviour:
     FontSize: 20
     FontStyle: 0
     Prefab: {fileID: 4162852073145798541, guid: f46808bc7b40bbf44a73dd0db138678c, type: 3}
-  NodePrefab: {fileID: 4171966580229253261, guid: 0d5af7c3f54986c4789080fd325874e2, type: 3}
   EdgePrefab: {fileID: 4162852073145798541, guid: f46808bc7b40bbf44a73dd0db138678c, type: 3}
   SpringStiffness: 40
   RepulsionGain: 0
   SiblingRepulsionBoost: 0
   NodeDamping: 0.5
   GreyOutFactor: 0.5
-  Border: 100
+  Border: {x: 80, y: 100, z: 70, w: 0}
   ToolTip: {fileID: 2075306672}
   ToolTipProperty: 
   targetEdgeLength: 100
