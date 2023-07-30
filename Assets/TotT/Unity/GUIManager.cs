@@ -64,9 +64,9 @@ namespace TotT.Unity {
 
         public static Func<int, int, Rect> GraphBoundRect;
         // ReSharper disable once InconsistentNaming
-        public static GUITable REPLTable;
+        private static GUITable REPLTable;
         // ReSharper disable once InconsistentNaming
-        public static string REPLQuery;
+        private static string REPLQuery;
 
         // ********************************** GUITable extensions *********************************
 
