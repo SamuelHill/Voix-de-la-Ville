@@ -60,7 +60,8 @@ namespace TotT.Unity {
 
         // ********************************** GUITable extensions *********************************
 
-        public static void Button(this TablePredicate p, string buttonLabel, Action action) => tableButtons[p][buttonLabel] = action;
+        public static void TableButton(this TablePredicate p, string buttonLabel, Action action) =>
+            tableButtons[p][buttonLabel] = action;
 
         public static void Colorize(this TablePredicate p, Func<uint, Color> colorizer) => p.Property["Colorizer"] = colorizer;
         public static void Colorize<TColumn>(this TablePredicate p, Var<TColumn> column, Func<TColumn, Color> colorizer) => 
@@ -201,13 +202,13 @@ namespace TotT.Unity {
         }
         private static void ButtonLabel(string label, out bool pressed, params GUILayoutOption[] options) {
             skin.label.fontStyle = FontStyle.BoldAndItalic;
-            pressed = GUILayout.Button(label, skin.label, options);
+            pressed = Button(label, skin.label, options);
             skin.label.fontStyle = FontStyle.Normal;
         }
         public static bool HeaderButton(string label, params GUILayoutOption[] options) {
             skin.label.fontStyle = FontStyle.Bold;
             skin.label.normal.background = grayTexture;
-            var pressed = GUILayout.Button(label, skin.label, options);
+            var pressed = Button(label, skin.label, options);
             skin.label.normal.background = blackTexture;
             skin.label.fontStyle = FontStyle.Normal;
             return pressed;

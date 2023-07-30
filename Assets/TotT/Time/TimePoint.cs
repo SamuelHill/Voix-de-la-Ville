@@ -14,7 +14,8 @@ namespace TotT.Time {
         /// <param name="clock">Tick value</param>
         public TimePoint(uint clock) => Clock = clock;
 
-        public static TimePoint Eschaton = new(uint.MaxValue);
+        // ReSharper disable once InconsistentNaming
+        public static readonly TimePoint Eschaton = new(uint.MaxValue);
         private bool IsEschaton => Clock == uint.MaxValue;
 
         private TimePoint(Month month, byte day, int year, TimeOfDay time) :

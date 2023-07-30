@@ -51,7 +51,7 @@ namespace TotT.Simulator {
         private static readonly List<(uint, uint, float)> PerformanceData = new();
 
         static TalkOfTheTown() {
-            DeclareParsers();
+            DeclareParsers(); // Parsers used in the FromCsv calls in InitStaticTables
             Seed(Seed, Seed);
             BindGlobal(TownName, PossibleTownName.Random);
             BindGlobal(RandomNumber, "");
@@ -101,8 +101,8 @@ namespace TotT.Simulator {
 
             CharacterAttributes = Character.Attributes;
             Character.Attributes.Colorize(vitalStatus);
-            Character.Attributes.Button("Random friend network", VisualizeRandomFriendNetwork);
-            Character.Attributes.Button("Full network", VisualizeFullSocialNetwork);
+            Character.Attributes.TableButton("Random friend network", VisualizeRandomFriendNetwork);
+            Character.Attributes.TableButton("Full network", VisualizeFullSocialNetwork);
 
             #region Character helpers (Definitions)
             // TODO : Replace naming helpers with TextGenerator
@@ -163,7 +163,7 @@ namespace TotT.Simulator {
                        .EndWhen(Character.End, Character[otherPerson]);
 
             Parent = Predicate("Parent", parent.Indexed, child.Indexed);
-            Parent.Button("Visualize", VisualizeFamilies);
+            Parent.TableButton("Visualize", VisualizeFamilies);
             var FamilialRelation = Definition("FamilialRelation", person, otherPerson)
                .Is(Parent[person, otherPerson] | Parent[otherPerson, person]); // only immediate family
 
@@ -258,7 +258,7 @@ namespace TotT.Simulator {
 
             Home = Predicate("Home", occupant.Key, location.Indexed);
             Home.Unique = true;
-            Home.Button("Visualize", VisualizeHomes);
+            Home.TableButton("Visualize", VisualizeHomes);
 
             var Occupancy = Counts("Occupancy", location, occupant)
                 .By(Place.Attributes[location, House, __, __, InBusiness], Home);
@@ -327,7 +327,7 @@ namespace TotT.Simulator {
             Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
             EmploymentIndex = Employment.KeyIndex(employee);
             Employment.Colorize(location);
-            Employment.Button("Visualize", VisualizeJobs);
+            Employment.TableButton("Visualize", VisualizeJobs);
 
             var EmploymentStatus = Predicate("EmploymentStatus", employee.Key, state.Indexed);
             EmploymentStatus.Add[employee, true].If(Employment.Add);
@@ -491,7 +491,7 @@ namespace TotT.Simulator {
 
             WhereTheyAt = Predicate("WhereTheyAt", person.Key, actionType.Indexed, location.Indexed);
             WhereTheyAt.Colorize(location);
-            WhereTheyAt.Button("Snapshot", VisualizeWhereTheyAt);
+            WhereTheyAt.TableButton("Snapshot", VisualizeWhereTheyAt);
             WhereTheyAtLocationIndex = (WhereTheyAtIndex)WhereTheyAt.IndexFor(location, false);
             WhereTheyAt[person, GoingToSchool, location].If(AtSchool);
             WhereTheyAt[person, GoingToWork, location].If(Working);
@@ -542,7 +542,7 @@ namespace TotT.Simulator {
             TableGoal RomanticFavorability(Favorability favorability) => IsRomantic[person, otherPerson, favorability];
 
             Interaction = Predicate("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
-            Interaction.Button("Snapshot", VisualizeInteractions);
+            Interaction.TableButton("Snapshot", VisualizeInteractions);
 
             TableGoal InteractionOfType(InteractionType interaction) => Interaction[person, otherPerson, interaction];
 

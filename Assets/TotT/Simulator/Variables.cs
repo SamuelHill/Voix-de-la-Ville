@@ -25,6 +25,7 @@ namespace TotT.Simulator {
         public static readonly Var<string> locationName = (Var<string>)"locationName";
 
         public static readonly Var<bool> state = (Var<bool>)"state";
+        public static readonly Var<bool> exists = (Var<bool>)"exists";
 
         public static readonly Var<int> age = (Var<int>)"age";
         public static readonly Var<int> num = (Var<int>)"num";
@@ -53,6 +54,7 @@ namespace TotT.Simulator {
         public static readonly Var<TimePoint> founding = (Var<TimePoint>)"founding";
         public static readonly Var<TimePoint> time = (Var<TimePoint>)"time";
         public static readonly Var<TimePoint> start = (Var<TimePoint>)"start";
+        public static readonly Var<TimePoint> end = (Var<TimePoint>)"end";
 
         public static readonly Var<Location> location = (Var<Location>)"location";
         public static readonly Var<Location> otherLocation = (Var<Location>)"otherLocation";
