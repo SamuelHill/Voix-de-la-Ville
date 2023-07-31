@@ -20,7 +20,7 @@ namespace TotT.Unity {
     using static Mathf;
     using static StaticTables; // used in PlaceColor
     using static StringProcessing;
-    using static TalkOfTheTown; // used for RuleExecutionTime and PlaceColor
+    using static VoixDeLaVille; // used for RuleExecutionTime and PlaceColor
     using static Texture2D;
 
     // ReSharper disable InconsistentNaming

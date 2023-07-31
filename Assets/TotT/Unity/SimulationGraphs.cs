@@ -20,7 +20,7 @@ namespace TotT.Unity {
     using static GraphVisualizer;
     using static GUIManager;
     using static Variables;
-    using static TalkOfTheTown;
+    using static VoixDeLaVille;
 
     public static class SimulationGraphs {
 

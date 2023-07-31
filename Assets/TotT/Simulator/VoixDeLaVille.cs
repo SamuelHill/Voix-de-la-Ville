@@ -45,13 +45,13 @@ namespace TotT.Simulator {
     // TED Meta language hookup
     using static SimuLang;
 
-    public static class TalkOfTheTown {
+    public static class VoixDeLaVille {
         private const int Seed = 349571286;
         public static Simulation Simulation = null!;
         public static bool RecordingPerformance;
         private static readonly List<(uint, uint, float)> PerformanceData = new();
 
-        static TalkOfTheTown() {
+        static VoixDeLaVille() {
             DeclareParsers(); // Parsers used in the FromCsv calls in InitStaticTables
             Seed(Seed, Seed);
             BindGlobal(TownName, PossibleTownName.Random);

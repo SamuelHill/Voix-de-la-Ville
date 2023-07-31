@@ -18,7 +18,7 @@ namespace TotT.Unity {
     using static Input;
     using static StaticTables;
     using static StringProcessing;
-    using static TalkOfTheTown;
+    using static VoixDeLaVille;
 
     // ReSharper disable once UnusedMember.Global
     /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>
@@ -214,6 +214,5 @@ namespace TotT.Unity {
             var center = _graphCenterPoint - centerOffsets;
             return new Rect(center.x, center.y - offset, dimensions.x, dimensions.y);
         }
-        
     }
 }

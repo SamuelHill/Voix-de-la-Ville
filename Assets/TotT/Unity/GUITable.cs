@@ -175,7 +175,6 @@ namespace TotT.Unity {
         private Rect LeftSideTables(int tableNum) => new(TablePadding, tableNum * 
             (DefaultTableHeight + TablePadding) + TablePadding, TableWidth, DefaultTableHeight);
 
-
         private static bool ScrollingInRect(Rect rect) => // Scroll check based on Rects
             rect.Contains(new Vector2(mousePosition.x, height - mousePosition.y)) &&
             current.type is EventType.ScrollWheel or EventType.MouseDrag;
@@ -196,7 +195,7 @@ namespace TotT.Unity {
                 _noEntriesWidth = (int)skin.label.CalcSize(NoEntries).x;
                 _noEntriesWidth = Max(_noEntriesWidth, LongestRow);
             }
-            // GUITables must be initialized after Clock (inside TalkOfTheTown):
+            // GUITables must be initialized after Clock (inside VoixDeLaVille):
             if (UpdateMonthly) _lastMonth = Month();
             // Normal update, try to get row strings for the buffer:
             Update();
