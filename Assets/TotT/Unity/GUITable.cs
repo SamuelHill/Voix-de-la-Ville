@@ -5,9 +5,9 @@ using TED;
 using TotT.Time;
 using TotT.Utilities;
 using UnityEngine;
-
 namespace TotT.Unity {
     using static Array;
+    using static Clock;
     using static Color;
     using static Event;
     using static GUI;
@@ -30,7 +30,8 @@ namespace TotT.Unity {
         private const int DefaultNumRowsToDisplay = (DefaultTableHeight - TablePadding) / LabelHeight - 5;
         // - 5 from display rows; two for the bold title and header row, and three to not get cutoff/crowd the space
         // this could probably be calculated dynamically based on label margins but for now this offset math is good enough.
-        // to fix, update DefaultNumRowsToDisplay, ScrollHeight, NumRowsToHeight... everything derived from LabelHeight
+        // to fix, update DefaultNumRowsToDisplay, ScrollHeight, REPLHeight... everything derived from LabelHeight
+        private const int RowHeight = 22; // instead of math, manual count the pixels on screen... ~22?
         #endregion
 
         #region Fields & Properties
@@ -64,6 +65,8 @@ namespace TotT.Unity {
         private readonly string[][] _buffer;
         private int NumDisplayRows => _buffer.Length;
 
+        private uint _bufferedRows;
+
         // CalcSize results when called on all buffer strings/headers:
         private readonly int[] _longestBufferStrings;
         private readonly int[] _headingLengths;
@@ -84,8 +87,13 @@ namespace TotT.Unity {
                 return Max(toReturn, _titleWidth) + (_usingScroll ? ScrollbarOffset : 0) + TotalPadding;
             }
         }
+
         // ReSharper disable once InconsistentNaming
-        public int REPLHeight => (NumDisplayRows + 5) * LabelHeight;
+        private int MaxREPLHeight => (int)(NumDisplayRows * 1.5 * LabelHeight);
+        // ReSharper disable once InconsistentNaming
+        public int REPLHeight => _bufferedRows >= NumDisplayRows ? MaxREPLHeight : _bufferedRows > 0 ?
+                                     MaxREPLHeight - (int)((NumDisplayRows - _bufferedRows) * RowHeight) :
+                                     MaxREPLHeight - (NumDisplayRows - 1) * RowHeight;
         #endregion
 
         #region Sorting
@@ -138,8 +146,8 @@ namespace TotT.Unity {
 
         // *********************************** Update Functions ***********************************
         private bool MonthChanged() {
-            if (_lastMonth == Clock.Month()) return false;
-            _lastMonth = Clock.Month();
+            if (_lastMonth == Month()) return false;
+            _lastMonth = Month();
             return true;
         }
         private bool CheckForUpdate() => UpdateEveryTick || (UpdateMonthly && MonthChanged()) || _newlySorted;
@@ -156,7 +164,7 @@ namespace TotT.Unity {
 
         // *********************************** Layout Functions ***********************************
 
-        private GUILayoutOption ScrollHeight() => Height((NumDisplayRows + 3) * LabelHeight);
+        private GUILayoutOption ScrollHeight() => Height((int)(NumDisplayRows * 1.3 * LabelHeight));
         private GUILayoutOption ColumnWidth(int i) {
             var len = LongestStrings[i] + ColumnPadding;
             if (len > _columnWidths[i]) _columnWidths[i] = len;
@@ -189,13 +197,12 @@ namespace TotT.Unity {
                 _noEntriesWidth = Max(_noEntriesWidth, LongestRow);
             }
             // GUITables must be initialized after Clock (inside TalkOfTheTown):
-            if (UpdateMonthly) _lastMonth = Clock.Month();
+            if (UpdateMonthly) _lastMonth = Month();
             // Normal update, try to get row strings for the buffer:
             Update();
         }
 
         private void Update() {
-            uint bufferedRows;
             if (_sortComparer != null) {
                 if (_sortBuffer == null || _sortBuffer.Length < RowCount)
                     _sortBuffer = new uint[RowCount * 2];
@@ -207,15 +214,15 @@ namespace TotT.Unity {
                     _predicate.RowToStrings(_sortBuffer[ScrollRow + i], _buffer[i]);
                     _rowColors[i] = _colorizer(_sortBuffer[ScrollRow + i]);
                 }
-                bufferedRows = i;
+                _bufferedRows = i;
             } else {
-                bufferedRows = _predicate.RowRangeToStrings(ScrollRow, _buffer);
+                _bufferedRows = _predicate.RowRangeToStrings(ScrollRow, _buffer);
                 for (var i = 0; i < NumDisplayRows && ScrollRow + i < RowCount; i++)
                     _rowColors[i] = _colorizer((uint)(ScrollRow + i));
             }
             // update string lengths per tick - prevents permanent growth due to singular long entries
             var updatedBufferStrings = new int[NumColumns];
-            for (var i = 0; i < bufferedRows; i++)
+            for (var i = 0; i < _bufferedRows; i++)
                 CalcStringLengths(_buffer[i], updatedBufferStrings);
             Copy(updatedBufferStrings, _longestBufferStrings, NumColumns);
         }

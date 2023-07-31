@@ -78,10 +78,11 @@ namespace TotT.Unity {
             if (GetKeyDown(KeyCode.F1)) ToggleShowTables();
             if (GetKeyDown(KeyCode.F2)) {
                 ToggleREPLTable();
-                if (ShowREPLTable) _simulationRunning = false;
+                _simulationRunning = !ShowREPLTable;
             }
             if (_simulationRunning || _simulationSingleStep) {
-                try { UpdateSimulator(); } catch {
+                try { UpdateSimulator(); } catch (Exception e) {
+                    Debug.LogException(e);
                     _simulationRunning = false;
                     throw;
                 }
@@ -207,11 +208,11 @@ namespace TotT.Unity {
         private Vector2 ClampREPLDimensions(int width, int height) =>
             new(width > _graphMaxDimensions.x ? _graphMaxDimensions.x : width,
                 height > _graphMaxDimensions.y ? _graphMaxDimensions.y : height);
-        private Rect REPLContainer(int width, int height) {
+        private Rect REPLContainer(int width, int height, int offset) {
             var dimensions = ClampREPLDimensions(width, height);
             var centerOffsets = dimensions / 2;
             var center = _graphCenterPoint - centerOffsets;
-            return new Rect(center.x, center.y, dimensions.x, dimensions.y);
+            return new Rect(center.x, center.y - offset, dimensions.x, dimensions.y);
         }
         
     }

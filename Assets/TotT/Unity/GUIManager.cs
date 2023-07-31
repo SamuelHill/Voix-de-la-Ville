@@ -23,7 +23,7 @@ namespace TotT.Unity {
     using static TalkOfTheTown; // used for RuleExecutionTime and PlaceColor
     using static Texture2D;
 
-    // ReSharper disable once InconsistentNaming
+    // ReSharper disable InconsistentNaming
     /// <summary>OnGUI based layout logic (of tables and strings) as well as control interfaces.</summary>
     public static class GUIManager {
         private const string ShowHideTables = "Show/hide tables?";
@@ -37,8 +37,10 @@ namespace TotT.Unity {
         private const int SelectionGridWidth = 760;
         private const int TileSize = 16;
         private const int TableDisplayNameCutoff = 20;
-        // ReSharper disable once InconsistentNaming
         private const string REPLTableTitle = "REPL results";
+        private const int REPLQueryWidth = 400;
+        private const int QueryCenterXOffset = REPLQueryWidth / 2;
+        private const int REPLQueryHeight = 70;
 
         private static readonly Dictionary<Type, Delegate> DefaultColorizerTable = new();
         // ReSharper disable once CollectionNeverUpdated.Global
@@ -53,7 +55,6 @@ namespace TotT.Unity {
         private static string[] _activeTables;  // should also be a string[4]
         private static int _displayTableToChange;
         private static int _tableSelector;
-        // ReSharper disable once InconsistentNaming
         public static bool ShowREPLTable;
         public static bool PoppedTable;
         public static bool ShowTilemap = true;
@@ -62,11 +63,10 @@ namespace TotT.Unity {
         private static readonly Rect ChangeTablesRect = new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
         private static readonly Rect ShowTablesRect = new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
 
-        public static Func<int, int, Rect> GraphBoundRect;
-        // ReSharper disable once InconsistentNaming
+        public static Func<int, int, int, Rect> GraphBoundRect;
         private static GUITable REPLTable;
-        // ReSharper disable once InconsistentNaming
         private static string REPLQuery;
+        private static string _previousREPLQuery;
 
         // ********************************** GUITable extensions *********************************
 
@@ -129,7 +129,6 @@ namespace TotT.Unity {
         // ************************************** GUI control *************************************
 
         public static void ToggleShowTables() => _showTables = !_showTables;
-        // ReSharper disable once InconsistentNaming
         public static void ToggleREPLTable() {
             if (ShowREPLTable) {
                 ShowREPLTable = false;
@@ -168,31 +167,31 @@ namespace TotT.Unity {
             // update the active table to change with the selected table
             _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
         }
-
-        // ReSharper disable once InconsistentNaming
+        
         public static void ShowREPL() {
             if (!ShowREPLTable) return;
-            if (REPLTable == null) {
-                BeginArea(GraphBoundRect(400, 70));
-                REPLArea();
-                EndArea();
-            } else {
-                BeginArea(GraphBoundRect((int)REPLTable.TableWidth, REPLTable.REPLHeight + 70));
-                REPLTable.OnGUI(-1, GraphBoundRect((int)REPLTable.TableWidth, REPLTable.REPLHeight));
-                REPLArea();
-                EndArea();
+            Rect query;
+            if (REPLTable == null) query = GraphBoundRect(REPLQueryWidth, REPLQueryHeight, 0);
+            else {
+                var table = GraphBoundRect((int)REPLTable.TableWidth, REPLTable.REPLHeight, REPLQueryHeight);
+                REPLTable.OnGUI(-1, table);
+                query = new Rect(table.center.x - QueryCenterXOffset, table.yMax, REPLQueryWidth, REPLQueryHeight);
             }
+            BeginArea(query);
+            REPLArea();
+            EndArea();
         }
-
-        // ReSharper disable once InconsistentNaming
         private static void REPLArea() {
             REPLQuery = TextArea(REPLQuery, MaxHeight(70));
+            if(_previousREPLQuery == REPLQuery) return;
+            _previousREPLQuery = REPLQuery;
             try {
                 var query = Simulation.Repl.Query(REPLTableTitle, REPLQuery);
                 query.ForceRecompute();
-                REPLTable = new GUITable(query, 30);
+                REPLTable = new GUITable(query, 25);
                 REPLTable.Initialize();
-            } catch {
+            } catch (Exception e) {
+                Debug.LogException(e);
                 REPLTable = null;
             }
         }
@@ -246,10 +245,8 @@ namespace TotT.Unity {
 
         private static void BoldLabel(string label, params GUILayoutOption[] options) {
             skin.label.fontStyle = FontStyle.Bold;
-            skin.label.normal.background = grayTexture;
             Label(label, options);
             skin.label.fontStyle = FontStyle.Normal;
-            skin.label.normal.background = blackTexture;
         }
         private static void ButtonLabel(string label, out bool pressed, params GUILayoutOption[] options) {
             skin.label.fontStyle = FontStyle.BoldAndItalic;
