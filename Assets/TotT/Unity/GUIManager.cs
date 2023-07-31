@@ -189,6 +189,7 @@ namespace TotT.Unity {
             REPLQuery = TextArea(REPLQuery, MaxHeight(70));
             try {
                 var query = Simulation.Repl.Query(REPLTableTitle, REPLQuery);
+                query.ForceRecompute();
                 REPLTable = new GUITable(query, 30);
                 REPLTable.Initialize();
             } catch {

@@ -64,10 +64,11 @@ namespace TotT.Time {
         public static readonly Function<Date> RandomDate = new(nameof(RandomDate), Random, false);
 
         private static TimePoint TimePointFromDateAndAge(Date date, int age) => new(date, StartYear - age);
-        // ReSharper disable once InconsistentNaming
+        // ReSharper disable InconsistentNaming
         public static readonly Function<Date, int, TimePoint> TimeOfBirth = new(nameof(TimeOfBirth), TimePointFromDateAndAge);
-        // ReSharper disable once InconsistentNaming
         public static readonly Function<TimePoint, Date> TimePointToDate = new(nameof(TimePointToDate), t => t);
+        public static readonly Function<TimePoint, Month> TimePointToMonth = new(nameof(TimePointToMonth), t => ((Date)t).Month);
+        // ReSharper restore InconsistentNaming
 
         internal static bool IsScheduled(Schedule schedule, DayOfWeek dayOfWeek) => schedule.IsOpen(dayOfWeek);
         internal static bool IsOperating(DailyOperation operation, TimeOfDay timeOfDay) =>

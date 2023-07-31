@@ -5,6 +5,7 @@ using TotT.Utilities;
 namespace TotT.Time {
     using static Calendar;
     using static TimeOfDay;
+    using static Month;
 
     /// <summary>
     /// Internal clock, keeps time during a simulation by ticking along with Simulator.Update
@@ -35,9 +36,15 @@ namespace TotT.Time {
         private static ushort DaysSince(Date prevDate) => (ushort)(MonthsSince(prevDate) * DaysPerMonth + DaysSince(prevDate.Day));
         private static int YearsSince(TimePoint timePoint) => Calendar.YearsSince(ClockTick, timePoint);
 
+        public static Month LastMonth() {
+            var month = (int)Month() - 1;
+            return month == -1 ? December : (Month)month;
+        }
+
         // ReSharper disable InconsistentNaming
         public static readonly Function<int> CurrentYear = new($"Current{nameof(Year)}", Year, false);
         public static readonly Function<Month> CurrentMonth = new($"Current{nameof(Month)}", Month, false);
+        public static readonly Function<Month> PreviousMonth = new($"Previous{nameof(LastMonth)}", Month, false);
         public static readonly Function<byte> CurrentDay = new($"Current{nameof(Day)}", Day, false);
         public static readonly Function<DayOfWeek> CurrentDayOfWeek = new($"Current{nameof(DayOfWeek)}", DayOfWeek, false);
         public static readonly Function<TimeOfDay> CurrentTimeOfDay = new($"Current{nameof(TimeOfDay)}", TimeOfDay, false);

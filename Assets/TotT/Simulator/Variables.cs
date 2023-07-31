@@ -49,6 +49,8 @@ namespace TotT.Simulator {
         public static readonly Var<TimePoint> conceived = (Var<TimePoint>)"conceived";
         public static readonly Var<TimePoint> founding = (Var<TimePoint>)"founding";
 
+        public static readonly Var<Month> month = (Var<Month>)"month";
+
         public static readonly Var<Location> location = (Var<Location>)"location";
         public static readonly Var<Location> otherLocation = (Var<Location>)"otherLocation";
         public static readonly Var<Vector2Int> position = (Var<Vector2Int>)"position";

@@ -32,6 +32,7 @@ namespace TotT.Simulator {
     using static Generators;     // Name generation
     using static Randomize;      // Seed and RandomElement
     using TimePoint = TimePoint; // (clock hides TimePoint with a method, this fixes that)
+    using TimeOfDay = TimeOfDay; // (clock hides TimeOfDay)
     // GUI/graphics
     using static Color;
     using static GUIManager;       // Colorizers and Pop tables
@@ -67,7 +68,7 @@ namespace TotT.Simulator {
 
         #region Tables and Indexers for GUI and Graph visuals
         public static TablePredicate<Person, int, Date, Sex, Sexuality, VitalStatus> CharacterAttributes;
-        public static TablePredicate<Person, Person, InteractionType> Interaction;
+        public static Event<Person, Person, InteractionType> Interaction;
         public static TablePredicate<Person, ActionType, Location> WhereTheyAt;
         public static TablePredicate<Person, Location> Home;
         public static TablePredicate<Person, Person> Parent;
@@ -541,7 +542,7 @@ namespace TotT.Simulator {
             TableGoal PlatonicFavorability(Favorability favorability) => IsPlatonic[person, otherPerson, favorability];
             TableGoal RomanticFavorability(Favorability favorability) => IsRomantic[person, otherPerson, favorability];
 
-            Interaction = Predicate("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
+            Interaction = Event("Interaction", person.Indexed, otherPerson.Indexed, interactionType.Indexed);
             Interaction.TableButton("Snapshot", VisualizeInteractions);
 
             TableGoal InteractionOfType(InteractionType interaction) => Interaction[person, otherPerson, interaction];
