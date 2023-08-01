@@ -252,7 +252,9 @@ namespace VdlV.Simulog {
         #endregion
 
         public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
-        
+        public new Existent<T>.ExistentGoal this[Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
+
     }
 
     public class Existent<T, T1, T2> : TablePredicate<T, bool, TimePoint, TimePoint> {
@@ -366,6 +368,8 @@ namespace VdlV.Simulog {
         #endregion
 
         public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
+        public new Existent<T>.ExistentGoal this[Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
     }
 
     public class Existent<T, T1, T2, T3> : TablePredicate<T, bool, TimePoint, TimePoint> {
@@ -480,6 +484,8 @@ namespace VdlV.Simulog {
         #endregion
 
         public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
+        public new Existent<T>.ExistentGoal this[Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
     }
 
     public class Existent<T, T1, T2, T3, T4> : TablePredicate<T, bool, TimePoint, TimePoint> {
@@ -595,6 +601,8 @@ namespace VdlV.Simulog {
         #endregion
 
         public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
+        public new Existent<T>.ExistentGoal this[Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
     }
 
     public class Existent<T, T1, T2, T3, T4, T5> : TablePredicate<T, bool, TimePoint, TimePoint> {
@@ -711,6 +719,8 @@ namespace VdlV.Simulog {
         #endregion
 
         public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
+        public new Existent<T>.ExistentGoal this[Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
     }
 
     public class Existent<T, T1, T2, T3, T4, T5, T6> : TablePredicate<T, bool, TimePoint, TimePoint> {
@@ -827,6 +837,8 @@ namespace VdlV.Simulog {
         #endregion
 
         public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
+        public new Existent<T>.ExistentGoal this[Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
     }
 
     public class Existent<T, T1, T2, T3, T4, T5, T6, T7> : TablePredicate<T, bool, TimePoint, TimePoint> {
@@ -943,5 +955,7 @@ namespace VdlV.Simulog {
         #endregion
 
         public Existent<T>.ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
+        public new Existent<T>.ExistentGoal this[Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
     }
 }

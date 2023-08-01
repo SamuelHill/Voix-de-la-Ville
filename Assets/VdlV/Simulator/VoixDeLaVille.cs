@@ -88,7 +88,7 @@ namespace VdlV.Simulator {
         #endregion
 
         public static void InitSimulator() {
-            Simulation = new Simulation("Talk of the Town");
+            Simulation = new Simulation("Voix de la Ville");
             Simulation.Exceptions.Colorize(_ => red);
             Simulation.Problems.Colorize(_ => red);
             Simulation.BeginPredicates();

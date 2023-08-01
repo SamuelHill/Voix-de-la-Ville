@@ -1,10 +1,6 @@
 ﻿using TED;
 using TED.Interpreter;
 using VdlV.Simulator;
-using VdlV.Time;
-
-// ReSharper disable ReturnTypeCanBeEnumerable.Global
-// ReSharper disable MemberCanBePrivate.Global
 
 namespace VdlV.Simulog {
     using static Variables;
