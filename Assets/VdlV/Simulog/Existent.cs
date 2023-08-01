@@ -128,6 +128,9 @@ namespace VdlV.Simulog {
 
         public ExistentGoal this[Term<T> arg] => new(this, arg, true, __, __);
 
+        public new ExistentGoal this[Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
+
         public class ExistentGoal : TableGoal<T, bool, TimePoint, TimePoint> {
             public ExistentGoal(TablePredicate predicate, Term<T> arg1, Term<bool> arg2, Term<TimePoint> arg3, Term<TimePoint> arg4) 
                 : base(predicate, arg1, arg2, arg3, arg4) {}

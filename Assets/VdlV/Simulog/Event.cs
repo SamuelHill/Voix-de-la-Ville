@@ -15,12 +15,11 @@ namespace VdlV.Simulog {
         public Event(string name, IColumnSpec<T1> arg1) : base(name, arg1) { }
 
         #region Chronicle
-        private TablePredicate<T1, TimePoint> _chronicle;
+        private EventChronicle<T1> _chronicle;
         
-        public TablePredicate<T1, TimePoint> Chronicle {
+        public EventChronicle<T1> Chronicle {
             get {
-                _chronicle ??= new TablePredicate<T1, TimePoint>(Name + "Chronicle", 
-                    (Var<T1>)DefaultVariables[0], time);
+                _chronicle ??= new EventChronicle<T1>(Name, (Var<T1>)DefaultVariables[0], time);
                 _chronicle.Add.If(this, CurrentTimePoint[time]);
                 return _chronicle;
             }
@@ -38,12 +37,7 @@ namespace VdlV.Simulog {
             return this;
         }
 
-        public override TableGoal<T1> this[Term<T1> arg1] => new EventGoal(this, arg1); 
-        
-        public class EventGoal : TableGoal<T1>, IOccurrence {
-            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-            public EventGoal(Event<T1> e, Term<T1> arg1) : base(e, arg1) { }
-        }
+        public override TableGoal<T1> this[Term<T1> arg1] => new(this, arg1);
     }
 
     public class Event<T1, T2> : TablePredicate<T1, T2>, IEvent {
