@@ -1,6 +1,7 @@
 ﻿using TED;
 using TED.Interpreter;
 using VdlV.Simulator;
+using VdlV.Time;
 
 namespace VdlV.Simulog {
     using static Variables;
@@ -10,6 +11,7 @@ namespace VdlV.Simulog {
         
         private EventChronicle<T1> _chronicle;
         
+        // ReSharper disable once MemberCanBePrivate.Global
         public EventChronicle<T1> Chronicle {
             get {
                 _chronicle ??= new EventChronicle<T1>(this, time);
@@ -24,6 +26,16 @@ namespace VdlV.Simulog {
         public Event<T1> Causes(params Effect[] effects) {
             foreach (var e in effects) e.GenerateCode(DefaultGoal);
             return this;
+        }
+
+        public new EventGoal this[Term<T1> arg1] => new (this, arg1);
+
+        public class EventGoal : TableGoal<T1> {
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            public EventGoal(Event<T1> e, Term<T1> arg1) : base(e, arg1) { }
+
+            public Goal At(Term<TimePoint> time) => 
+                ((Event<T1>)TablePredicate).Chronicle[Arg1, time];
         }
     }
 
@@ -48,6 +60,16 @@ namespace VdlV.Simulog {
             foreach (var e in effects) e.GenerateCode(DefaultGoal);
             return this;
         }
+
+        public new EventGoal this[Term<T1> arg1, Term<T2> arg2] => new(this, arg1, arg2);
+
+        public class EventGoal : TableGoal<T1, T2> {
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            public EventGoal(Event<T1, T2> e, Term<T1> arg1, Term<T2> arg2) : base(e, arg1, arg2) { }
+
+            public Goal At(Term<TimePoint> time) =>
+                ((Event<T1, T2>)TablePredicate).Chronicle[Arg1, Arg2, time];
+        }
     }
 
     public class Event<T1, T2, T3> : TablePredicate<T1, T2, T3> {
@@ -56,6 +78,7 @@ namespace VdlV.Simulog {
         
         private EventChronicle<T1, T2, T3> _chronicle;
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public EventChronicle<T1, T2, T3> Chronicle {
             get {
                 _chronicle ??= new EventChronicle<T1, T2, T3>(this, time);
@@ -71,6 +94,18 @@ namespace VdlV.Simulog {
             foreach (var e in effects) e.GenerateCode(DefaultGoal);
             return this;
         }
+
+        public new EventGoal this[Term<T1> arg1, Term<T2> arg2, Term<T3> arg3] =>
+            new(this, arg1, arg2, arg3);
+
+        public class EventGoal : TableGoal<T1, T2, T3> {
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            public EventGoal(Event<T1, T2, T3> e, Term<T1> arg1, Term<T2> arg2, Term<T3> arg3) :
+                base(e, arg1, arg2, arg3) { }
+
+            public Goal At(Term<TimePoint> time) =>
+                ((Event<T1, T2, T3>)TablePredicate).Chronicle[Arg1, Arg2, Arg3, time];
+        }
     }
 
     public class Event<T1, T2, T3, T4> : TablePredicate<T1, T2, T3, T4> {
@@ -80,6 +115,7 @@ namespace VdlV.Simulog {
         
         private EventChronicle<T1, T2, T3, T4> _chronicle;
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public EventChronicle<T1, T2, T3, T4> Chronicle {
             get {
                 _chronicle ??= new EventChronicle<T1, T2, T3, T4>(this, time);
@@ -95,6 +131,19 @@ namespace VdlV.Simulog {
             foreach (var e in effects) e.GenerateCode(DefaultGoal);
             return this;
         }
+
+        public new EventGoal this[Term<T1> arg1, Term<T2> arg2, Term<T3> arg3, Term<T4> arg4] =>
+            new(this, arg1, arg2, arg3, arg4);
+
+        public class EventGoal : TableGoal<T1, T2, T3, T4> {
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            public EventGoal(Event<T1, T2, T3, T4> e, Term<T1> arg1, Term<T2> arg2, 
+                             Term<T3> arg3, Term<T4> arg4) :
+                base(e, arg1, arg2, arg3, arg4) { }
+
+            public Goal At(Term<TimePoint> time) =>
+                ((Event<T1, T2, T3, T4>)TablePredicate).Chronicle[Arg1, Arg2, Arg3, Arg4, time];
+        }
     }
 
     public class Event<T1, T2, T3, T4, T5> : TablePredicate<T1, T2, T3, T4, T5> {
@@ -104,6 +153,7 @@ namespace VdlV.Simulog {
         
         private EventChronicle<T1, T2, T3, T4, T5> _chronicle;
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public EventChronicle<T1, T2, T3, T4, T5> Chronicle {
             get {
                 _chronicle ??= new EventChronicle<T1, T2, T3, T4, T5>(this, time);
@@ -119,6 +169,20 @@ namespace VdlV.Simulog {
             foreach (var e in effects) e.GenerateCode(DefaultGoal);
             return this;
         }
+
+        public new EventGoal this[Term<T1> arg1, Term<T2> arg2, Term<T3> arg3, Term<T4> arg4, Term<T5> arg5] =>
+            new(this, arg1, arg2, arg3, arg4, arg5);
+
+        public class EventGoal : TableGoal<T1, T2, T3, T4, T5> {
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            public EventGoal(Event<T1, T2, T3, T4, T5> e, Term<T1> arg1, Term<T2> arg2,
+                             Term<T3> arg3, Term<T4> arg4, Term<T5> arg5) :
+                base(e, arg1, arg2, arg3, arg4, arg5) { }
+
+            public Goal At(Term<TimePoint> time) =>
+                ((Event<T1, T2, T3, T4, T5>)TablePredicate).Chronicle[
+                    Arg1, Arg2, Arg3, Arg4, Arg5, time];
+        }
     }
 
     public class Event<T1, T2, T3, T4, T5, T6> : TablePredicate<T1, T2, T3, T4, T5, T6> {
@@ -128,6 +192,7 @@ namespace VdlV.Simulog {
         
         private EventChronicle<T1, T2, T3, T4, T5, T6> _chronicle;
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public EventChronicle<T1, T2, T3, T4, T5, T6> Chronicle {
             get {
                 _chronicle ??= new EventChronicle<T1, T2, T3, T4, T5, T6>(this, time);
@@ -143,6 +208,21 @@ namespace VdlV.Simulog {
             foreach (var e in effects) e.GenerateCode(DefaultGoal);
             return this;
         }
+
+        public new EventGoal this[Term<T1> arg1, Term<T2> arg2, Term<T3> arg3, Term<T4> arg4,
+                                  Term<T5> arg5, Term<T6> arg6] =>
+            new(this, arg1, arg2, arg3, arg4, arg5, arg6);
+
+        public class EventGoal : TableGoal<T1, T2, T3, T4, T5, T6> {
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            public EventGoal(Event<T1, T2, T3, T4, T5, T6> e, Term<T1> arg1, Term<T2> arg2,
+                             Term<T3> arg3, Term<T4> arg4, Term<T5> arg5, Term<T6> arg6) :
+                base(e, arg1, arg2, arg3, arg4, arg5, arg6) { }
+
+            public Goal At(Term<TimePoint> time) =>
+                ((Event<T1, T2, T3, T4, T5, T6>)TablePredicate).Chronicle[
+                    Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, time];
+        }
     }
 
     public class Event<T1, T2, T3, T4, T5, T6, T7> : TablePredicate<T1, T2, T3, T4, T5, T6, T7> {
@@ -152,6 +232,7 @@ namespace VdlV.Simulog {
         
         private EventChronicle<T1, T2, T3, T4, T5, T6, T7> _chronicle;
         
+        // ReSharper disable once MemberCanBePrivate.Global
         public EventChronicle<T1, T2, T3, T4, T5, T6, T7> Chronicle {
             get {
                 _chronicle ??= new EventChronicle<T1, T2, T3, T4, T5, T6, T7>(this, time);
@@ -166,6 +247,21 @@ namespace VdlV.Simulog {
         public Event<T1, T2, T3, T4, T5, T6, T7> Causes(params Effect[] effects) {
             foreach (var e in effects) e.GenerateCode(DefaultGoal);
             return this;
+        }
+
+        public new EventGoal this[Term<T1> arg1, Term<T2> arg2, Term<T3> arg3, Term<T4> arg4,
+                                  Term<T5> arg5, Term<T6> arg6, Term<T7> arg7] => 
+            new(this, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+
+        public class EventGoal : TableGoal<T1, T2, T3, T4, T5, T6, T7> {
+            // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+            public EventGoal(Event<T1, T2, T3, T4, T5, T6, T7> e, Term<T1> arg1, Term<T2> arg2, 
+                             Term<T3> arg3, Term<T4> arg4, Term<T5> arg5, Term<T6> arg6, Term<T7> arg7) : 
+                base(e, arg1, arg2, arg3, arg4, arg5, arg6, arg7) { }
+
+            public Goal At(Term<TimePoint> time) =>
+                ((Event<T1, T2, T3, T4, T5, T6, T7>)TablePredicate).Chronicle[
+                    Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, time];
         }
     }
 }
