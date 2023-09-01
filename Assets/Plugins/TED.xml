@@ -2957,7 +2957,7 @@
             Matches or stores the value of the functional expression to the variable.
             </summary>
         </member>
-        <member name="F:TED.Language.Prob">
+        <member name="P:TED.Language.Prob">
             <summary>
             Prob(p) succeeds with a probability of p (p in the range [0,1])
             </summary>
@@ -9081,18 +9081,31 @@
             Set the seed on this if you want deterministic behavior.
             </summary>
         </member>
-        <member name="M:TED.Utilities.Random.Float">
+        <member name="M:TED.Utilities.Random.SetGlobalSeed(System.Int32)">
+            <summary>
+            Set the seed of the global random number generator used by TED.
+            If this is not called, then randomization has the same behavior as System.Random.
+            </summary>
+        </member>
+        <member name="M:TED.Utilities.Random.MakeRng">
+            <summary>
+            Generate a new random number generator whose initial seed is determined by the global RNG.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TED.Utilities.Random.Float(System.Random)">
             <summary>
             Generate a random float
             </summary>
         </member>
-        <member name="M:TED.Utilities.Random.Roll(System.Single)">
+        <member name="M:TED.Utilities.Random.Roll(System.Random,System.Single)">
             <summary>
             Generate a random Boolean with a specified probability of being true
             </summary>
+            <param name="rng">Random number generator</param>
             <param name="probability">Probability of returning true.</param>
         </member>
-        <member name="M:TED.Utilities.Random.InRangeExclusive(System.Int32,System.Int32)">
+        <member name="M:TED.Utilities.Random.InRangeExclusive(System.Random,System.Int32,System.Int32)">
             <summary>
             Return a random integer from start to end-1.
             </summary>
