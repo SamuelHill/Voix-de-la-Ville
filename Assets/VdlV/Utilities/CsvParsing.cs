@@ -11,9 +11,7 @@ namespace VdlV.Utilities {
     /// for passing in the name of a CSV file and mapping to that file in the Data folder.
     /// </summary>
     public static class CsvParsing {
-        private const string DataPath = "../VoixDeLaVille/Assets/Data/";
-
-        public static string Csv(string filename) => $"{DataPath}{filename}.csv";
+        public static string Csv(string filename) => $"Assets/Data/{filename}.csv";
 
         public static void DeclareParsers() {
             CsvReader.DeclareParser(typeof(Vector2Int), ParseVector2Int);
