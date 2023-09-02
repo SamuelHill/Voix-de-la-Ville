@@ -21,7 +21,7 @@ namespace VdlV.TextGenerator {
         public T Lookup<T>(Parameter<T> p) {
             for (var b = this; b != null; b = b.Next)
                 if (b.Parameter == p) return (T)b.Value;
-            throw new KeyNotFoundException($"Not value given for text generation parameter {p}");
+            throw new KeyNotFoundException($"Value not given for text generation parameter {p}");
         }
     }
 }
