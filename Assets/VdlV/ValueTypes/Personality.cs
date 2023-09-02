@@ -9,9 +9,9 @@ namespace VdlV.ValueTypes {
         private readonly sbyte[] _personality;
         private readonly Vector<sbyte> _personalityVector;
 
-        public Personality() {
+        public Personality(Random rng) {
             _personality = new sbyte[Enum.GetValues(typeof(Facet)).Length];
-            for (var i = 0; i < _personality.Length; i++) _personality[i] = SByteBellCurve();
+            for (var i = 0; i < _personality.Length; i++) _personality[i] = SByteBellCurve(rng);
             _personalityVector = new Vector<sbyte>(_personality);
         }
 

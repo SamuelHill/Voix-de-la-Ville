@@ -18,15 +18,16 @@ namespace VdlV.ValueTypes {
         public string FullName;
 
         private readonly Personality _personality;
-        
+
         /// <param name="firstName">First name of this person - will be transformed to title case.</param>
         /// <param name="lastName">Last name of this person - will be transformed to title case.</param>
-        public Person(string firstName, string lastName) {
+        /// <param name="rng">...</param>
+        public Person(string firstName, string lastName, Random rng) {
             _firstName = Title(firstName);
             LastName = Title(lastName);
             _maidenName = LastName;
             FullName = _firstName + " " + LastName;
-            _personality = new Personality();
+            _personality = new Personality(rng);
         }
 
         private void NewLastName(string lastName) {
@@ -68,9 +69,10 @@ namespace VdlV.ValueTypes {
         /// person from the two names found in the split (first and last for the new person).
         /// </summary>
         /// <param name="personName">FullName of the new person</param>
-        public static Person FromString(string personName) {
+        /// <param name="rng">...</param>
+        public static Person FromString(string personName, Random rng) {
             var person = personName.Split(' ');
-            return new Person(person[0], person[1]);
+            return new Person(person[0], person[1], rng);
         }
     }
 }

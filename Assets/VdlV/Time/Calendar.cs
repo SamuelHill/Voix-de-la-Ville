@@ -57,24 +57,27 @@ namespace VdlV.Time {
         internal static byte ToDay(string day) => CheckDayInRange(byte.Parse(day));
         internal static int ToYear(string year) => int.Parse(year);
 
-        private static Month RandomMonth() => (Month)Byte(Months - 1);
-        private static byte RandomDay() => Byte(1, DaysPerMonth);
-        private static Date Random() => new(RandomMonth(), RandomDay());
-        // ReSharper disable once InconsistentNaming
-        public static readonly Function<Date> RandomDate = new(nameof(RandomDate), Random, false);
+        private static Month RandomMonth(Random rng) => (Month)Byte(rng, Months - 1);
+        private static byte RandomDay(Random rng) => Byte(rng, 1, DaysPerMonth);
+        private static Date Random(Random rng) => new(RandomMonth(rng), RandomDay(rng));
+        public static Function<Date> RandomDate {
+            get {
+                var rng = MakeRng();
+                return new Function<Date>(nameof(RandomDate), 
+                    () => Random(rng), false);
+            }
+        }
 
         private static TimePoint TimePointFromDateAndAge(Date date, int age) => new(date, StartYear - age);
-        // ReSharper disable InconsistentNaming
         public static readonly Function<Date, int, TimePoint> TimeOfBirth = new(nameof(TimeOfBirth), TimePointFromDateAndAge);
         public static readonly Function<TimePoint, Date> TimePointToDate = new(nameof(TimePointToDate), t => t);
         public static readonly Function<TimePoint, Month> TimePointToMonth = new(nameof(TimePointToMonth), t => ((Date)t).Month);
-        // ReSharper restore InconsistentNaming
 
         internal static bool IsScheduled(Schedule schedule, DayOfWeek dayOfWeek) => schedule.IsOpen(dayOfWeek);
         internal static bool IsOperating(DailyOperation operation, TimeOfDay timeOfDay) =>
             operation is AllDay || (operation is Morning && timeOfDay == AM) || (operation is Evening && timeOfDay == PM);
 
-        public static float ChancePerDay(float chance) => chance / TimesOfDay;
+        private static float ChancePerDay(float chance) => chance / TimesOfDay;
         private static float ChancePerWeek(float chance) => chance / TicksPerWeek;
         private static float ChancePerMonth(float chance) => chance / TicksPerMonth;
         private static float ChancePerYear(float chance) => chance / NumTicks;

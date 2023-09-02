@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace VdlV.TextGenerator {
@@ -6,7 +7,7 @@ namespace VdlV.TextGenerator {
         private readonly TextGenerator[] _generators;
         public Sequence(TextGenerator[] generators) => _generators = generators;
 
-        public override bool  Generate(StringBuilder output, BindingList b)
-            => _generators.All(g => g.Generate(output, b));
+        public override bool Generate(StringBuilder output, BindingList b, Random rng)
+            => _generators.All(g => g.Generate(output, b, rng));
     }
 }

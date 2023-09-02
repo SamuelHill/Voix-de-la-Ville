@@ -10,6 +10,7 @@ using VdlV.Simulator;
 using VdlV.Unity.GraphVisualization;
 using VdlV.Utilities;
 using VdlV.ValueTypes;
+using Random = System.Random;
 
 namespace VdlV.Unity {
     using PersonRelationIndex = GeneralIndex<((Person, Person), Person, Person, bool), Person>;
@@ -23,6 +24,7 @@ namespace VdlV.Unity {
     using static VoixDeLaVille;
 
     public static class SimulationGraphs {
+        private static readonly Random Rng = MakeRng();
 
         // ********************************** Visualize Functions *********************************
 
@@ -57,7 +59,7 @@ namespace VdlV.Unity {
 
         public static void VisualizeRandomFriendNetwork() => VisualizeFriendNetworkOf(
             CharacterAttributes.ColumnValueFromRowNumber(person)(
-                (uint)Integer(0, (int)CharacterAttributes.Length)));
+                (uint)Integer(Rng, 0, (int)CharacterAttributes.Length)));
 
         private static GraphViz<TGraph> TraceToDepth<TGraph, T>(int maxDepth, T start, 
             Func<T, IEnumerable<(T neighbor, string label, string color)>> edges) where T : TGraph {

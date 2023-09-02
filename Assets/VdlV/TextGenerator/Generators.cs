@@ -30,11 +30,15 @@ namespace VdlV.TextGenerator {
             });
         private static readonly TextGenerator PositionName = Choice(PositionXComponentName, PositionYComponentName);
 
-        public static readonly Function<Vector2Int, string> NamePosition =
-            new(nameof(NamePosition), v => {
-                var bind = new BindingList(PositionXComponentName, v, null).Bind(PositionYComponentName, v);
-                return PositionName.Generate(bind);
-            }, false);
+        public static Function<Vector2Int, string> NamedPosition {
+            get {
+                var rng = MakeRng();
+                return new Function<Vector2Int, string>(nameof(NamedPosition), v => {
+                    var bind = new BindingList(PositionXComponentName, v, null).Bind(PositionYComponentName, v);
+                    return PositionName.Generate(bind, rng);
+                }, false);
+            }
+        }
         #endregion
 
         public static Parameter<string> TownName = new(nameof(TownName));
@@ -57,7 +61,13 @@ namespace VdlV.TextGenerator {
         private static readonly TextGenerator BankName = Sequence(TheTownName, "Bank");
         private static readonly TextGenerator CommunityCenterName = Sequence(TheTownName, "Community Center");
 
-        public static Parameter<string> RandomNumber = new(nameof(RandomNumber), _ => Byte(55).ToString());
+        public static Parameter<string> RandomNumber {
+            get {
+                var rng = MakeRng();
+                return new Parameter<string>(nameof(RandomNumber), _ => Byte(rng, 55).ToString());
+            }
+        }
+
         private static readonly TextGenerator StreetName = Sequence(
             OneOf("Elm", "Oak", "Maple", "Pine", "Cedar", "Walnut", "Spruce", "Ash", "Birch", "Chestnut", "Sycamore", 
                   "Hickory", "Beech", "Poplar", "Willow", "Juniper", "Pinecone", "Redwood", "Cypress"), " ", 

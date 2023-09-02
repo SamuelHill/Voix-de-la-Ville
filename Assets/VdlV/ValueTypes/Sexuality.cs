@@ -79,9 +79,10 @@ namespace VdlV.ValueTypes {
         /// and the Sex of the individual being assigned this Sexuality.
         /// </summary>
         /// <param name="sex">Sex of the individual being assigned this Sexuality</param>
+        /// <param name="rng">...</param>
         /// <returns>new Sexuality</returns>
-        public static Sexuality Random(Sex sex) {
-            return Probability() switch {
+        public static Sexuality Random(Sex sex, Random rng) {
+            return Probability(rng) switch {
                 >= NonHeteroOccurrenceRate => Heterosexual(sex),
                 >= BisexualOccurrenceRate + AsexualOccurrenceRate => Homosexual(sex),
                 >= AsexualOccurrenceRate => Bi(),

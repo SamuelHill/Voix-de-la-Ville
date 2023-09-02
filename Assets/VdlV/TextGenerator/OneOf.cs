@@ -36,8 +36,8 @@ namespace VdlV.TextGenerator {
 
         public OneOf(params Choice[] choices) : this("text", choices) { }
 
-        public override bool Generate(StringBuilder output, BindingList b) {
-            var weight = Randomize.Double(totalWeight);
+        public override bool Generate(StringBuilder output, BindingList b, Random rng) {
+            var weight = Randomize.Double(rng, totalWeight);
             var i = Array.BinarySearch(cumulative, weight);
             if (i < 0) i = ~i;
             output.Append(choices[i].Text);

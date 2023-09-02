@@ -18,25 +18,42 @@ namespace VdlV.Simulator {
     // ReSharper disable InconsistentNaming
     #pragma warning disable IDE1006
     public static class Sims {
-        private static Person newPerson(string first, string last) => new(first, last);
-        public static readonly Function<string, string, Person> NewPerson =
-            new(nameof(NewPerson), newPerson, false);
+        public static Function<string, string, Person> NewPerson {
+            get {
+                var rng = MakeRng();
+                return new Function<string, string, Person>(nameof(NewPerson), 
+                    (first, last) => new Person(first, last, rng), false);
+            }
+        }
 
         public static readonly Function<Person, string> Surname = 
             new(nameof(Surname), p => p.LastName);
 
         public static readonly Function<int, int> Incr = new(nameof(Incr), i => i + 1);
+        
+        public static Function<int> RandomAdultAge {
+            get {
+                var rng = MakeRng();
+                return new Function<int>(nameof(RandomAdultAge),
+                    () => Integer(rng, 18, 72), false);
+            }
+        }
+        
+        public static Function<Sex> RandomSex {
+            get {
+                var rng = MakeRng();
+                return new Function<Sex>(nameof(RandomSex), 
+                    () => (Sex)BooleanInt(rng), false);
+            }
+        }
 
-        private static int randomAdultAge() => Integer(18, 72);
-        public static readonly Function<int> RandomAdultAge =
-            new(nameof(RandomAdultAge), randomAdultAge, false);
-
-        private static Sex randomSex() => (Sex)BooleanInt();
-        public static readonly Function<Sex> RandomSex =
-            new(nameof(RandomSex), randomSex, false);
-
-        public static readonly Function<Sex, Sexuality> RandomSexuality = 
-            new(nameof(RandomSexuality), Random, false);
+        public static Function<Sex, Sexuality> RandomSexuality {
+            get {
+                var rng = MakeRng();
+                return new Function<Sex, Sexuality>(nameof(RandomSexuality),
+                    sex => Random(sex, rng), false);
+            }
+        }
 
         #region Fertility Math
         internal static void FertilityCurve(float t) {
@@ -98,18 +115,26 @@ namespace VdlV.Simulator {
             0
         };
 
-        private static readonly float[] FertilityForAge = (from t in SolvedTForAge select SimpleY(t)).ToArray();
+        private static readonly float[] FertilityForAges = (from t in SolvedTForAge select SimpleY(t)).ToArray();
+
+        private static float FertilityForAge(int age) => age >= FertilityForAges.Length ? 0 : FertilityForAges[age];
         #endregion
 
-        private static float fertilityRate(int age) => age >= FertilityForAge.Length ? 0 : FertilityForAge[age];
-        public static readonly Function<int, float> FertilityRate =
-            new(nameof(FertilityRate), fertilityRate);
+        public static readonly Function<int, float> FertilityRate = new(nameof(FertilityRate), FertilityForAge);
 
-        private static Favorability favorable() => BellCurve() switch {
-            > 18 => MostPositive, > 8 => Positive, >= -8 => Neutral, >= -18 => Negative, _ => MostNegative
-        };
-        public static readonly Function<Favorability> Favorable =
-            new(nameof(Favorable), favorable, false);
+        private static Favorability favorable(Random rng) => BellCurve(rng) switch {
+            > 18 => MostPositive, 
+            > 8 => Positive, 
+            >= -8 => Neutral, 
+            >= -18 => Negative, 
+            _ => MostNegative };
+        public static Function<Favorability> Favorable {
+            get {
+                var rng = MakeRng();
+                return new Function<Favorability>(nameof(Favorable), 
+                    () => favorable(rng), false);
+            }
+        }
 
         private static bool attractedTo(Sexuality sexuality, Sex sex) => sexuality.IsAttracted(sex);
         public static readonly PrimitiveTest<Sexuality, Sex> AttractedTo = new(nameof(AttractedTo), attractedTo);

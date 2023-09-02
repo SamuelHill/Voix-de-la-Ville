@@ -3,6 +3,7 @@ using TED;
 using VdlV.Utilities;
 using VdlV.ValueTypes;
 using UnityEngine;
+using Random = System.Random;
 
 namespace VdlV.Simulator {
     using static Randomize;
@@ -10,26 +11,29 @@ namespace VdlV.Simulator {
     /// <summary>
     /// Location creation wrapper, distance calculations, and a random lot/position function
     /// </summary>
-    // ReSharper disable InconsistentNaming
-    #pragma warning disable IDE1006
     public static class Town {
+        public static readonly Function<string, Location> NewLocation =
+            new(nameof(NewLocation), name => new Location(name), false);
+
         private static Vector2Int _max = new(6, 6);
         private static Vector2Int _min = new(-6, -6);
 
-        private static Location newLocation(string name) => new(name);
-        public static readonly Function<string, Location> NewLocation =
-            new(nameof(NewLocation), newLocation, false);
-
         private static int GridSpaces() => (Math.Abs(_min.x) + _max.x) * (Math.Abs(_min.y) + _max.y);
         private static void ExpandAllSides() { _min.x--; _max.x++; _min.y--; _max.y++; }
-        private static Vector2Int RandomLotWithinTown() => 
-            new(Integer(_min.x, _max.x), Integer(_min.y, _max.y));
-        private static Vector2Int RandomLotExpandWhenDense(int lotCount) {
+        private static Vector2Int RandomLotWithinTown(Random rng) => 
+            new(Integer(rng, _min.x, _max.x), Integer(rng, _min.y, _max.y));
+        private static Vector2Int RandomLotExpandWhenDense(int lotCount, Random rng) {
             if (lotCount * 2 >= GridSpaces()) ExpandAllSides();
-            return RandomLotWithinTown();
+            return RandomLotWithinTown(rng);
         }
-        public static readonly Function<int, Vector2Int> RandomLot = 
-            new(nameof(RandomLot), RandomLotExpandWhenDense, false);
+
+        public static Function<int, Vector2Int> RandomLot {
+            get {
+                var rng = MakeRng();
+                return new Function<int, Vector2Int>(nameof(RandomLot), 
+                    lotCount => RandomLotExpandWhenDense(lotCount, rng), false);
+            }
+        }
 
         private static int EuclideanSquare(int x1, int y1, int x2, int y2) =>
             (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
@@ -39,5 +43,4 @@ namespace VdlV.Simulator {
         public static readonly Function<Vector2Int, Vector2Int, int> Distance = 
             new(nameof(Distance), EuclideanDistance);
     }
-    #pragma warning restore IDE1006
 }

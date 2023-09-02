@@ -54,8 +54,8 @@ namespace VdlV.Simulator {
 
         static VoixDeLaVille() {
             DeclareParsers(); // Parsers used in the FromCsv calls in InitStaticTables
-            Seed(Seed, Seed);
-            BindGlobal(TownName, PossibleTownName.Random);
+            Seed(Seed);
+            BindGlobal(TownName, PossibleTownName.Random(RngForInitialization));
             BindGlobal(RandomNumber, "");
             SetDefaultColorizers();
             SetDescriptionMethods();
@@ -380,7 +380,7 @@ namespace VdlV.Simulator {
             // Need to decide on the position in NewPlace if we want to name based on position
             // NewPlace[locationName, LocationType.House]
             //    .If(Once[WantToMove[__] | Unhoused[__]],
-            //        NamePosition[position, locationName]); 
+            //        NamedPosition[position, locationName]); 
 
             // Start with, and always keep one in business
             OnlyLocation(PostOffice, True);

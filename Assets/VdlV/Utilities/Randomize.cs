@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using TED;
-using Random = TED.Utilities.Random;
+using TEDRandom = TED.Utilities.Random;
 
 namespace VdlV.Utilities {
     using static Enumerable;
@@ -13,15 +13,12 @@ namespace VdlV.Utilities {
     /// Maps over System.Random.Next for basic types and provides pseudo-normal bell curve
     /// random scoring and various random element/shuffle functions.
     /// </summary>
+    // ReSharper disable MemberCanBePrivate.Global
     public static class Randomize {
-        // ReSharper disable once InconsistentNaming
-        private static System.Random RNG;
-
         private static readonly uint[] Primes = {
             1u,  2u,  3u,  5u,  7u,  11u, 13u, 17u, 19u, 23u,
             29u, 31u, 37u, 41u, 43u, 53u, 59u, 61u, 67u, 71u,
-            73u, 79u, 83u, 89u, 97u
-        };
+            73u, 79u, 83u, 89u, 97u };
         private static readonly int[] HighPrimes = new int[100];
 
         static Randomize() {
@@ -30,59 +27,68 @@ namespace VdlV.Utilities {
                 if (index < Primes.Length - 1 && i > Primes[index + 1]) index++;
                 HighPrimes[i] = index;
             }
-            RNG = new System.Random();
         }
 
-        public static void Seed(int seed, int tedSeed) {
-            Seed(seed);
-            TEDSeed(tedSeed);
-        }
-        private static void Seed(int seed) => RNG = new System.Random(seed);
-        // ReSharper disable once InconsistentNaming
-        private static void TEDSeed(int seed) => Random.Rng = new System.Random(seed);
+        public static void Seed(int seed) => TEDRandom.SetGlobalSeed(seed);
+        public static Random MakeRng() => TEDRandom.MakeRng();
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        public static int Integer(int high) => RNG.Next(high + 1);
-        public static int Integer(int low, int high) => RNG.Next(low, high + 1);
-        public static sbyte SByte(sbyte high) => (sbyte)Integer(high);
-        public static sbyte SByte(sbyte low, sbyte high) => (sbyte)Integer(low, high);
-        public static byte Byte(byte high) => (byte)Integer(high);
-        public static byte Byte(byte low, byte high) => (byte)Integer(low, high);
-        public static int BooleanInt() => Integer(0, 1);
-        public static bool Boolean() => BooleanInt() == 1;
+        public static readonly Random RngForInitialization = MakeRng();
+        
+        public static int Integer(Random rng, int high) => rng.Next(high + 1);
+        public static int Integer(Random rng, int low, int high) => rng.Next(low, high + 1);
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        public static float Float(float min, float max) => (float)RNG.NextDouble() * (max - min) + min;
-        // ReSharper disable once MemberCanBePrivate.Global
-        public static float Float(float max) => Float(0.0F, max);
-        public static float Probability() => Float(1.0F);
-        public static double Double(double max) => RNG.NextDouble() * max;
+        public static sbyte SByte(Random rng, sbyte high) => (sbyte)Integer(rng, high);
+        public static sbyte SByte(Random rng, sbyte low, sbyte high) => (sbyte)Integer(rng, low, high);
+        public static byte Byte(Random rng, byte high) => (byte)Integer(rng, high);
+        public static byte Byte(Random rng, byte low, byte high) => (byte)Integer(rng, low, high);
+        public static int BooleanInt(Random rng) => Integer(rng, 0, 1);
+        public static bool Boolean(Random rng) => BooleanInt(rng) == 1;
 
-        private static int NormalDistribution(int low, int high, int numAggregate = 10) => // "Normal"
+        public static float Float(Random rng, float min, float max) => (float)rng.NextDouble() * (max - min) + min;
+        public static float Float(Random rng, float max) => Float(rng, 0.0F, max);
+        public static float Probability(Random rng) => Float(rng, 1.0F);
+        public static double Double(Random rng, double max) => rng.NextDouble() * max;
+
+        private static int NormalDistribution(Random rng, int low, int high, int numAggregate = 10) => // "Normal"
             Range(0, numAggregate + 1).Aggregate((value, _) => 
-                value + Integer((high + Abs(low)) / numAggregate)) + low;
+                value + Integer(rng, (high + Abs(low)) / numAggregate)) + low;
 
-        private static float NormalDistribution(float low, float high, int numAggregate = 10) =>
+        private static float NormalDistribution(Random rng, float low, float high, int numAggregate = 10) =>
             Range(0, numAggregate + 1).Select(i => (float)i).Aggregate((value, _) =>
-                value + Float((high + Abs(low)) / numAggregate)) + low;
+                value + Float(rng, (high + Abs(low)) / numAggregate)) + low;
 
-        public static int BellCurve() => NormalDistribution(-50, 50);
-        public static sbyte SByteBellCurve() => (sbyte)BellCurve();
-        // ReSharper disable once MemberCanBePrivate.Global
-        public static float FloatBellCurve() => NormalDistribution(-50f, 50f);
-
-        // ReSharper disable InconsistentNaming
-        public static readonly Function<int> RandomNormal = new(nameof(RandomNormal), BellCurve, false);
-        public static readonly Function<sbyte> RandomNormalSByte = new(nameof(RandomNormalSByte), SByteBellCurve, false);
-        public static readonly Function<float> RandomNormalFloat = new(nameof(RandomNormalFloat), FloatBellCurve, false);
-        // ReSharper restore InconsistentNaming
+        public static int BellCurve(Random rng) => NormalDistribution(rng, -50, 50);
+        public static sbyte SByteBellCurve(Random rng) => (sbyte)BellCurve(rng);
+        public static float FloatBellCurve(Random rng) => NormalDistribution(rng, -50f, 50f);
+        
+        public static Function<int> RandomNormal {
+            get {
+                var rng = MakeRng(); 
+                return new Function<int>(nameof(RandomNormal), 
+                    () => BellCurve(rng), false);
+            }
+        }
+        public static Function<sbyte> RandomNormalSByte {
+            get {
+                var rng = MakeRng(); 
+                return new Function<sbyte>(nameof(RandomNormalSByte), 
+                    () => SByteBellCurve(rng), false);
+            }
+        }
+        public static Function<float> RandomNormalFloat {
+            get {
+                var rng = MakeRng();
+                return new Function<float>(nameof(RandomNormalFloat), 
+                    () => FloatBellCurve(rng), false);
+            }
+        }
 
         // like Probability() but allows for more or less than 1.0f total options... (non-scaled probabilities)
         // with 1.0f float sum, this function will act much like a switch statement called on Probability()
         // wherein the key T will be returned if the "probability" is in the associated value float range
-        public static T RandomFromDict<T>(Dictionary<T, float> dict) where T : notnull {
+        public static T RandomFromDict<T>(Random rng, Dictionary<T, float> dict) where T : notnull {
             var floatMax = dict.Values.Sum();
-            var randomFloat = Float(dict.Values.Sum());
+            var randomFloat = Float(rng, dict.Values.Sum());
             foreach (var kvp in dict) {
                 floatMax -= kvp.Value;
                 if (randomFloat > floatMax) return kvp.Key;
@@ -91,29 +97,29 @@ namespace VdlV.Utilities {
             return default!;
         }
 
-        public static T RandomElement<T>(this IList<T> list) {
+        public static T RandomElement<T>(this IList<T> list, Random rng) {
             var size = list.Count;
             Debug.Assert(size > 0,
                          "cannot choose random element from empty list");
-            return list[RNG.Next(size)];
+            return list[rng.Next(size)];
         }
 
-        public static T[] Shuffle<T>(this IEnumerable<T> sequence) {
+        public static T[] Shuffle<T>(this IEnumerable<T> sequence, Random rng) {
             var result = sequence.ToArray();
             for (var i = result.Length - 1; i > 0; i--) {
-                var index = RNG.Next(i + 1);
+                var index = rng.Next(i + 1);
                 (result[index], result[i]) = (result[i], result[index]);
             }
             return result;
         }
 
-        public static IEnumerable<T> BadShuffle<T>(this IList<T> list) {
+        public static IEnumerable<T> BadShuffle<T>(this IList<T> list, Random rng) {
             var length = (uint)list.Count;
             if (length == 0) yield break;
-            var position = RNG.Next() % length;
+            var position = rng.Next() % length;
             var maxPrimeIndex = Primes.Length - 1;
             if (length < HighPrimes.Length) maxPrimeIndex = HighPrimes[length];
-            var step = Primes[RNG.Next() % (maxPrimeIndex + 1)];
+            var step = Primes[rng.Next() % (maxPrimeIndex + 1)];
             for (uint i = 0; i < length; i++) {
                 yield return list[(int)position];
                 position = (position + step) % length;

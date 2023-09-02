@@ -15,7 +15,7 @@ namespace VdlV.TextGenerator {
 
         private readonly Func<T, string> _generator;
 
-        public override bool Generate(StringBuilder output, BindingList b) { 
+        public override bool Generate(StringBuilder output, BindingList b, Random rng) { 
             output.Append(_generator(b.Lookup(this)));
             return true;
         }

@@ -24,15 +24,15 @@ namespace VdlV.TextGenerator {
         private double _totalWeight;
         public Choice(params Option[] choices) => _choices = choices;
 
-        public override bool Generate(StringBuilder output, BindingList b) {
+        public override bool Generate(StringBuilder output, BindingList b, Random rng) {
             var startingLength = output.Length;
             var sorted = new Option[_choices.Length];
             for (var i = 0; i < sorted.Length; i++)
-                sorted[i] = new Option(Math.Pow(Randomize.Double(1), 1 / _choices[i].Weight), _choices[i].Generator);
+                sorted[i] = new Option(Math.Pow(Randomize.Double(rng, 1), 1 / _choices[i].Weight), _choices[i].Generator);
             Array.Sort(sorted, (a, b) => -a.Weight.CompareTo(b.Weight));
             return sorted.Any(choice => {
                 output.Length = startingLength; // backtrack
-                return choice.Generator.Generate(output, b);
+                return choice.Generator.Generate(output, b, rng);
             });
         }
     }

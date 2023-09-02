@@ -6,12 +6,17 @@ using VdlV.ValueTypes;
 using UnityEngine;
 
 namespace VdlV.Utilities {
+    using static Randomize;
+
     /// <summary>
     /// Handles declaring CsvReader parsers for all relevant ValueTypes and gives a function
     /// for passing in the name of a CSV file and mapping to that file in the Data folder.
     /// </summary>
     public static class CsvParsing {
         public static string Csv(string filename) => $"Assets/Data/{filename}.csv";
+
+        private static readonly System.Random PersonalityRng;
+        static CsvParsing() { PersonalityRng = MakeRng(); }
 
         public static void DeclareParsers() {
             CsvReader.DeclareParser(typeof(Vector2Int), ParseVector2Int);
@@ -24,7 +29,7 @@ namespace VdlV.Utilities {
             CsvReader.DeclareParser(typeof(Location), ParseLocation);
         }
 
-        private static object ParsePerson(string personString) => Person.FromString(personString);
+        private static object ParsePerson(string personString) => Person.FromString(personString, PersonalityRng);
         private static object ParseLocation(string locationString) => Location.FromString(locationString);
         private static object ParseDate(string dateString) => Date.FromString(dateString);
         private static object ParseTimePoint(string dateString) => TimePoint.FromString(dateString);
