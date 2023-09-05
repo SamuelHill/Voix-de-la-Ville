@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TED;
 using VdlV.Utilities;
 using VdlV.ValueTypes;
@@ -68,11 +69,13 @@ namespace VdlV.TextGenerator {
             }
         }
 
+        private static readonly TextGenerator StreetNumbers = OneOf(Enumerable.Range(1, 56).Select(i => (OneOf.Choice)i.ToString()).ToArray());
+
         private static readonly TextGenerator StreetName = Sequence(
             OneOf("Elm", "Oak", "Maple", "Pine", "Cedar", "Walnut", "Spruce", "Ash", "Birch", "Chestnut", "Sycamore", 
                   "Hickory", "Beech", "Poplar", "Willow", "Juniper", "Pinecone", "Redwood", "Cypress"), " ", 
             OneOf("Street", "Avenue", "Lane", "Drive", "Boulevard"));
-        private static readonly TextGenerator AddressedStreet = Sequence(RandomNumber, " ", StreetName);
+        private static readonly TextGenerator AddressedStreet = Sequence(StreetNumbers, " ", StreetName);
 
         private static readonly TextGenerator FarmName = Sequence(
             OneOf("Tumbleweed", "Prairie", "Wildflower", "Lone Oak", "Crown", "Happy Horse", "Sweet Dreams", 
