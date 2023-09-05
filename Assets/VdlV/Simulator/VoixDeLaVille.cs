@@ -563,11 +563,11 @@ namespace VdlV.Simulator {
             InteractionOfType(Negging).If(RomanticFavorability(Negative));
             InteractionOfType(Insulting).If(RomanticFavorability(MostNegative));
 
-            PotentialProcreation.If(dateGoers[woman, man] | dateGoers[man, woman],
-                                    Woman, Man, !Pregnant[woman], Age[woman, age], Prob[FertilityRate[age]]);
+            PotentialProcreation.If(dateGoers[woman, man] | dateGoers[man, woman], 
+                Woman, Man, !Pregnant[woman], Age[woman, age], Prob[FertilityRate[age]]);
 
-            InteractionOfType(Snogging).If(dateGoers[person, otherPerson],
-                                           Once[!PotentialProcreation[person, otherPerson] | !PotentialProcreation[otherPerson, person]]);
+            InteractionOfType(Snogging).If(dateGoers[person, otherPerson], 
+                Once[!PotentialProcreation[person, otherPerson] | !PotentialProcreation[otherPerson, person]]);
             InteractionOfType(Snogging).If(dateGoers[otherPerson, person], 
                 Once[!PotentialProcreation[person, otherPerson] | !PotentialProcreation[otherPerson, person]]);
             InteractionOfType(Procreating).If(PotentialProcreation[person, otherPerson]);

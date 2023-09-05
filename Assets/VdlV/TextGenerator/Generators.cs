@@ -62,6 +62,7 @@ namespace VdlV.TextGenerator {
         private static readonly TextGenerator BankName = Sequence(TheTownName, "Bank");
         private static readonly TextGenerator CommunityCenterName = Sequence(TheTownName, "Community Center");
 
+        // Broken!!
         public static Parameter<string> RandomNumber {
             get {
                 var rng = MakeRng();

@@ -15,8 +15,6 @@ namespace VdlV.Simulator {
     /// as well as the math behind fertility rates. Also holds miscellaneous TED wrappers
     /// for several Person and Sexuality based C# functions.
     /// </summary>
-    // ReSharper disable InconsistentNaming
-    #pragma warning disable IDE1006
     public static class Sims {
         public static Function<string, string, Person> NewPerson {
             get {
@@ -121,35 +119,34 @@ namespace VdlV.Simulator {
         #endregion
 
         public static readonly Function<int, float> FertilityRate = new(nameof(FertilityRate), FertilityForAge);
-
-        private static Favorability favorable(Random rng) => BellCurve(rng) switch {
-            > 18 => MostPositive, 
-            > 8 => Positive, 
-            >= -8 => Neutral, 
-            >= -18 => Negative, 
-            _ => MostNegative };
+        
         public static Function<Favorability> Favorable {
             get {
                 var rng = MakeRng();
                 return new Function<Favorability>(nameof(Favorable), 
-                    () => favorable(rng), false);
+                    () => BellCurve(rng) switch {
+                        > 18 => MostPositive,
+                        > 8 => Positive,
+                        >= -8 => Neutral,
+                        >= -18 => Negative,
+                        _ => MostNegative
+                    }, false);
             }
         }
-
-        private static bool attractedTo(Sexuality sexuality, Sex sex) => sexuality.IsAttracted(sex);
-        public static readonly PrimitiveTest<Sexuality, Sex> AttractedTo = new(nameof(AttractedTo), attractedTo);
-
-        private static bool takeLastName(Person person1, Person person2) => person1.TakeLastName(person2);
-        public static readonly PrimitiveTest<Person, Person> TakeLastName = new(nameof(TakeLastName), takeLastName);
-
-        private static int similarity(Person person1, Person person2) => person1.Similarity(person2);
-        public static readonly Function<Person, Person, int> Similarity = new(nameof(Similarity), similarity);
-
-        private static int compatibility(Person person1, Person person2) => person1.Compatibility(person2);
-        public static readonly Function<Person, Person, int> Compatibility = new(nameof(Compatibility), compatibility);
-
-        private static sbyte personalityFacet(Person person, Facet facet) => person.Facet(facet);
-        public static readonly Function<Person, Facet, sbyte> PersonalityFacet = new(nameof(PersonalityFacet), personalityFacet);
+        
+        public static readonly PrimitiveTest<Sexuality, Sex> AttractedTo = new(nameof(AttractedTo), 
+            (sexuality, sex) => sexuality.IsAttracted(sex));
+        
+        public static readonly PrimitiveTest<Person, Person> TakeLastName = new(nameof(TakeLastName), 
+            (person1, person2) => person1.TakeLastName(person2));
+        
+        public static readonly Function<Person, Person, int> Similarity = new(nameof(Similarity), 
+            (person1, person2) => person1.Similarity(person2));
+        
+        public static readonly Function<Person, Person, int> Compatibility = new(nameof(Compatibility), 
+            (person1, person2) => person1.Compatibility(person2));
+        
+        public static readonly Function<Person, Facet, sbyte> PersonalityFacet = new(nameof(PersonalityFacet), 
+            (person, facet) => person.Facet(facet));
     }
-    #pragma warning restore IDE1006
 }
