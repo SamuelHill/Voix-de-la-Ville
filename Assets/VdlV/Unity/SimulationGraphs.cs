@@ -59,7 +59,7 @@ namespace VdlV.Unity {
 
         public static void VisualizeRandomFriendNetwork() => VisualizeFriendNetworkOf(
             CharacterAttributes.ColumnValueFromRowNumber(person)(
-                (uint)Integer(Rng, 0, (int)CharacterAttributes.Length)));
+                (uint)Integer(0, (int)CharacterAttributes.Length, Rng)));
 
         private static GraphViz<TGraph> TraceToDepth<TGraph, T>(int maxDepth, T start, 
             Func<T, IEnumerable<(T neighbor, string label, string color)>> edges) where T : TGraph {

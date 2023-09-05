@@ -57,8 +57,8 @@ namespace VdlV.Time {
         internal static byte ToDay(string day) => CheckDayInRange(byte.Parse(day));
         internal static int ToYear(string year) => int.Parse(year);
 
-        private static Month RandomMonth(Random rng) => (Month)Byte(rng, Months - 1);
-        private static byte RandomDay(Random rng) => Byte(rng, 1, DaysPerMonth);
+        private static Month RandomMonth(Random rng) => (Month)Byte(Months - 1, rng);
+        private static byte RandomDay(Random rng) => Byte(1, DaysPerMonth, rng);
         private static Date Random(Random rng) => new(RandomMonth(rng), RandomDay(rng));
         public static Function<Date> RandomDate {
             get {

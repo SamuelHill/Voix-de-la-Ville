@@ -65,11 +65,12 @@ namespace VdlV.TextGenerator {
         public static Parameter<string> RandomNumber {
             get {
                 var rng = MakeRng();
-                return new Parameter<string>(nameof(RandomNumber), _ => Byte(rng, 55).ToString());
+                return new Parameter<string>(nameof(RandomNumber), _ => Byte(55, rng).ToString());
             }
         }
 
-        private static readonly TextGenerator StreetNumbers = OneOf(Enumerable.Range(1, 56).Select(i => (OneOf.Choice)i.ToString()).ToArray());
+        private static readonly TextGenerator StreetNumbers = OneOf(
+            Enumerable.Range(1, 56).Select(i => (OneOf.Choice)i.ToString()).ToArray());
 
         private static readonly TextGenerator StreetName = Sequence(
             OneOf("Elm", "Oak", "Maple", "Pine", "Cedar", "Walnut", "Spruce", "Ash", "Birch", "Chestnut", "Sycamore", 

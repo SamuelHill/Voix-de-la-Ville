@@ -21,7 +21,7 @@ namespace VdlV.Simulator {
         private static int GridSpaces() => (Math.Abs(_min.x) + _max.x) * (Math.Abs(_min.y) + _max.y);
         private static void ExpandAllSides() { _min.x--; _max.x++; _min.y--; _max.y++; }
         private static Vector2Int RandomLotWithinTown(Random rng) => 
-            new(Integer(rng, _min.x, _max.x), Integer(rng, _min.y, _max.y));
+            new(Integer(_min.x, _max.x, rng), Integer(_min.y, _max.y, rng));
         private static Vector2Int RandomLotExpandWhenDense(int lotCount, Random rng) {
             if (lotCount * 2 >= GridSpaces()) ExpandAllSides();
             return RandomLotWithinTown(rng);

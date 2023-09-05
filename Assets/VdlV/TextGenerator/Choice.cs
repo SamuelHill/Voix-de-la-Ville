@@ -4,6 +4,9 @@ using System.Text;
 using VdlV.Utilities;
 
 namespace VdlV.TextGenerator {
+    using static Math;
+    using static Randomize;
+
     public class Choice : TextGenerator {
         public readonly struct Option {
             public readonly double Weight;
@@ -22,13 +25,14 @@ namespace VdlV.TextGenerator {
 
         private readonly Option[] _choices;
         private double _totalWeight;
+
         public Choice(params Option[] choices) => _choices = choices;
 
         public override bool Generate(StringBuilder output, BindingList b, Random rng) {
             var startingLength = output.Length;
             var sorted = new Option[_choices.Length];
             for (var i = 0; i < sorted.Length; i++)
-                sorted[i] = new Option(Math.Pow(Randomize.Double(rng, 1), 1 / _choices[i].Weight), _choices[i].Generator);
+                sorted[i] = new Option(Pow(Double(1, rng), 1 / _choices[i].Weight), _choices[i].Generator);
             Array.Sort(sorted, (a, b) => -a.Weight.CompareTo(b.Weight));
             return sorted.Any(choice => {
                 output.Length = startingLength; // backtrack

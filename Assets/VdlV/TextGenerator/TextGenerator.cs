@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using VdlV.Utilities;
 using TED;
 
 namespace VdlV.TextGenerator {
-    using static Utilities.Randomize;
+    using static Randomize;
+    using static BindingList;
 
+    // ReSharper disable MemberCanBePrivate.Global
     public abstract class TextGenerator {
-        public string Random(Random rng) => Generate(BindingList.Global, rng);
+        public string Random(Random rng) => Generate(Global, rng);
         public Function<string> GenerateRandom {
             get {
                 var rng = MakeRng();
@@ -16,7 +19,7 @@ namespace VdlV.TextGenerator {
             }
         }
 
-        public string RandomUnique(Random rng) => GenerateUnique(BindingList.Global, rng);
+        public string RandomUnique(Random rng) => GenerateUnique(Global, rng);
         public Function<string> GenerateRandomUnique {
             get {
                 var rng = MakeRng();
@@ -25,8 +28,7 @@ namespace VdlV.TextGenerator {
             }
         }
 
-        public string Generate(BindingList parameters, Random rng)
-        {
+        public string Generate(BindingList parameters, Random rng) {
             var b = new StringBuilder();
             Generate(b, parameters, rng);
             return b.ToString();

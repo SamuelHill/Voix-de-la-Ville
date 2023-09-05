@@ -35,7 +35,7 @@ namespace VdlV.Simulator {
             get {
                 var rng = MakeRng();
                 return new Function<int>(nameof(RandomAdultAge),
-                    () => Integer(rng, 18, 72), false);
+                    () => Integer(18, 72, rng), false);
             }
         }
         
