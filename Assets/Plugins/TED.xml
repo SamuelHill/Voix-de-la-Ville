@@ -1351,7 +1351,7 @@
             Whether to maintain an index for the column
             </summary>
         </member>
-        <member name="M:TED.Interpreter.IndexedColumnSpec`1.#ctor(TED.Var{`0},TED.Tables.IndexMode,System.Nullable{System.Int32})">
+        <member name="M:TED.Interpreter.IndexedColumnSpec`1.#ctor(TED.Var{`0},TED.Tables.IndexMode,System.Nullable{System.Int32},System.Boolean)">
             <summary>
             Specify information about a column/argument of a table
             </summary>
@@ -6195,14 +6195,14 @@
             Add an index; the column isn't a key, i.e. rows aren't assumed to have unique values for this column
             </summary>
         </member>
-        <member name="M:TED.TablePredicate.IndexBy``2(TED.Var{``0},TED.Var{``1})">
-            <summary>
-            Add an index based on the specified two columns
-            </summary>
-        </member>
         <member name="M:TED.TablePredicate.IndexByKey``2(TED.Var{``0},TED.Var{``1})">
             <summary>
             Add a key index in which the two columns jointly specify the key.
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.IndexBy``2(TED.Var{``0},TED.Var{``1})">
+            <summary>
+            Add an index based on the specified two columns
             </summary>
         </member>
         <member name="M:TED.TablePredicate.AddIndex``3(TED.Var{``1},TED.Var{``2},System.Boolean)">
@@ -6236,6 +6236,11 @@
         <member name="M:TED.TablePredicate.AddIndex(System.Int32,System.Boolean)">
             <summary>
             Add an index to the predicate's table
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.AddIndex(System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Add a joint index to the predicate's table
             </summary>
         </member>
         <member name="M:TED.TablePredicate.IndexFor(System.Int32[],System.Boolean)">
@@ -6564,10 +6569,13 @@
         <member name="M:TED.TablePredicate`1.GetGoal(TED.Term[])">
             <inheritdoc />
         </member>
+        <member name="M:TED.TablePredicate`1.AddIndex(System.Int32,System.Boolean)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`1.AddIndex``2(TED.Var{``0},TED.Var{``1},System.Boolean)">
             <inheritdoc />
         </member>
-        <member name="M:TED.TablePredicate`1.AddIndex(System.Int32,System.Boolean)">
+        <member name="M:TED.TablePredicate`1.AddIndex(System.Int32,System.Int32,System.Boolean)">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`1.If(TED.Interpreter.Goal[])">
@@ -6705,10 +6713,13 @@
         <member name="M:TED.TablePredicate`2.GetGoal(TED.Term[])">
             <inheritdoc />
         </member>
+        <member name="M:TED.TablePredicate`2.AddIndex(System.Int32,System.Boolean)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`2.AddIndex``2(TED.Var{``0},TED.Var{``1},System.Boolean)">
             <inheritdoc />
         </member>
-        <member name="M:TED.TablePredicate`2.AddIndex(System.Int32,System.Boolean)">
+        <member name="M:TED.TablePredicate`2.AddIndex(System.Int32,System.Int32,System.Boolean)">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`2.#ctor(System.String,TED.Interpreter.IColumnSpec{`0},TED.Interpreter.IColumnSpec{`1})">
@@ -6872,6 +6883,9 @@
         <member name="M:TED.TablePredicate`3.GetGoal(TED.Term[])">
             <inheritdoc />
         </member>
+        <member name="M:TED.TablePredicate`3.AddIndex(System.Int32,System.Boolean)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`3.AddIndex``2(TED.Var{``0},TED.Var{``1},System.Boolean)">
             <summary>
             Add an index on a pair of columns
@@ -6882,7 +6896,7 @@
             <typeparam name="TColumn1">Type of the first column</typeparam>
             <typeparam name="TColumn2">Type of the second column</typeparam>
         </member>
-        <member name="M:TED.TablePredicate`3.AddIndex(System.Int32,System.Boolean)">
+        <member name="M:TED.TablePredicate`3.AddIndex(System.Int32,System.Int32,System.Boolean)">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`3.JointKey``2(TED.Var{``0},TED.Var{``1})">
@@ -7076,6 +7090,9 @@
             <param name="keyIndex">True if the two columns function as a key, i.e. now two rows will have the same values for the two at the same time</param>
             <typeparam name="TColumn1">Type of the first column</typeparam>
             <typeparam name="TColumn2">Type of the second column</typeparam>
+        </member>
+        <member name="M:TED.TablePredicate`4.AddIndex(System.Int32,System.Int32,System.Boolean)">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`4.JointKey``2(TED.Var{``0},TED.Var{``1})">
             <summary>
@@ -7273,6 +7290,9 @@
             <param name="keyIndex">True if the two columns function as a key, i.e. now two rows will have the same values for the two at the same time</param>
             <typeparam name="TColumn1">Type of the first column</typeparam>
             <typeparam name="TColumn2">Type of the second column</typeparam>
+        </member>
+        <member name="M:TED.TablePredicate`5.AddIndex(System.Int32,System.Int32,System.Boolean)">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`5.JointKey``2(TED.Var{``0},TED.Var{``1})">
             <summary>
@@ -7475,6 +7495,9 @@
             <param name="keyIndex">True if the two columns function as a key, i.e. now two rows will have the same values for the two at the same time</param>
             <typeparam name="TColumn1">Type of the first column</typeparam>
             <typeparam name="TColumn2">Type of the second column</typeparam>
+        </member>
+        <member name="M:TED.TablePredicate`6.AddIndex(System.Int32,System.Int32,System.Boolean)">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`6.JointKey``2(TED.Var{``0},TED.Var{``1})">
             <summary>
@@ -7682,6 +7705,9 @@
             <param name="keyIndex">True if the two columns function as a key, i.e. now two rows will have the same values for the two at the same time</param>
             <typeparam name="TColumn1">Type of the first column</typeparam>
             <typeparam name="TColumn2">Type of the second column</typeparam>
+        </member>
+        <member name="M:TED.TablePredicate`7.AddIndex(System.Int32,System.Int32,System.Boolean)">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`7.JointKey``2(TED.Var{``0},TED.Var{``1})">
             <summary>
@@ -7894,6 +7920,9 @@
             <param name="keyIndex">True if the two columns function as a key, i.e. now two rows will have the same values for the two at the same time</param>
             <typeparam name="TColumn1">Type of the first column</typeparam>
             <typeparam name="TColumn2">Type of the second column</typeparam>
+        </member>
+        <member name="M:TED.TablePredicate`8.AddIndex(System.Int32,System.Int32,System.Boolean)">
+            <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`8.JointKey``2(TED.Var{``0},TED.Var{``1})">
             <summary>

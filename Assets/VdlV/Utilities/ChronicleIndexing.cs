@@ -5,9 +5,5 @@ namespace VdlV.Utilities {
     public static class ChronicleIndexing {
         public static IColumnSpec<T> DemoteKey<T>(IColumnSpec<T> columnSpec) => 
             columnSpec.IndexMode == Key ? columnSpec.TypedVariable.Indexed : columnSpec;
-
-        //public static IColumnSpec<T> JointColumnSpec<T>(IColumnSpec<T> columnSpec) {
-        //    columnSpec.TypedVariable
-        //}
     }
 }
