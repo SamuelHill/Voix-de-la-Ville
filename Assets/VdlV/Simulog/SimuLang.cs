@@ -99,8 +99,8 @@ namespace VdlV.Simulog {
         public static FloatAffinity<T1, T2> Affinity<T1, T2>(string name, Var<(T1, T2)> pair, Var<T1> main, Var<T2> other, Var<float> value) 
             where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> => new(name, pair, main, other, value);
 
-        public static Relationship<T1, T2> Relationship<T1, T2>(string name, Var<(T1, T2)> pair, Var<T1> main, Var<T2> other, Var<bool> state) 
-            where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> => new(name, pair, main, other, state);
+        public static Relationship<T1, T2> Relationship<T1, T2>(string name, Var<T1> main, Var<T2> other, Var<bool> state) 
+            where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> => new(name, main, other, state);
         public static SymmetricRelationship<T> Relationship<T>(string name, Var<SymmetricTuple<T>> pair, 
             Var<T> main, Var<T> other, Var<bool> state) where T : IComparable<T>, IEquatable<T> => new(name, pair, main, other, state);
         public static ExclusiveSymmetricRelationship<T> ExclusiveRelationship<T>(string name, Var<SymmetricTuple<T>> pair, 
