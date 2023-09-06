@@ -7,8 +7,10 @@ namespace VdlV.Simulog {
     using static Variables;
 
     public class Event<T1> : TablePredicate<T1> {
-        public Event(string name, IColumnSpec<T1> arg1) : base(name, arg1) { }
-        
+        public Event(string name, IColumnSpec<T1> arg1) : base(name, arg1) { Arg1 = arg1; }
+
+        internal readonly IColumnSpec<T1> Arg1;
+
         private EventChronicle<T1> _chronicle;
         
         // ReSharper disable once MemberCanBePrivate.Global
@@ -40,9 +42,14 @@ namespace VdlV.Simulog {
     }
 
     public class Event<T1, T2> : TablePredicate<T1, T2> {
-        public Event(string name, IColumnSpec<T1> arg1, IColumnSpec<T2> arg2) :
-            base(name, arg1, arg2) { }
-        
+        public Event(string name, IColumnSpec<T1> arg1, IColumnSpec<T2> arg2) : base(name, arg1, arg2) {
+            Arg1 = arg1;
+            Arg2 = arg2;
+        }
+
+        internal readonly IColumnSpec<T1> Arg1;
+        internal readonly IColumnSpec<T2> Arg2;
+
         private EventChronicle<T1, T2> _chronicle;
 
         public EventChronicle<T1, T2> Chronicle {
@@ -73,9 +80,17 @@ namespace VdlV.Simulog {
     }
 
     public class Event<T1, T2, T3> : TablePredicate<T1, T2, T3> {
-        public Event(string name, IColumnSpec<T1> arg1, IColumnSpec<T2> arg2, IColumnSpec<T3> arg3) :
-            base(name, arg1, arg2, arg3) { }
-        
+        public Event(string name, IColumnSpec<T1> arg1, IColumnSpec<T2> arg2, IColumnSpec<T3> arg3) : 
+            base(name, arg1, arg2, arg3) {
+            Arg1 = arg1;
+            Arg2 = arg2;
+            Arg3 = arg3;
+        }
+
+        internal readonly IColumnSpec<T1> Arg1;
+        internal readonly IColumnSpec<T2> Arg2;
+        internal readonly IColumnSpec<T3> Arg3;
+
         private EventChronicle<T1, T2, T3> _chronicle;
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -111,8 +126,18 @@ namespace VdlV.Simulog {
     public class Event<T1, T2, T3, T4> : TablePredicate<T1, T2, T3, T4> {
         public Event(string name, IColumnSpec<T1> arg1, IColumnSpec<T2> arg2, 
                      IColumnSpec<T3> arg3, IColumnSpec<T4> arg4) :
-            base(name, arg1, arg2, arg3, arg4) { }
-        
+            base(name, arg1, arg2, arg3, arg4) {
+            Arg1 = arg1;
+            Arg2 = arg2;
+            Arg3 = arg3;
+            Arg4 = arg4;
+        }
+
+        internal readonly IColumnSpec<T1> Arg1;
+        internal readonly IColumnSpec<T2> Arg2;
+        internal readonly IColumnSpec<T3> Arg3;
+        internal readonly IColumnSpec<T4> Arg4;
+
         private EventChronicle<T1, T2, T3, T4> _chronicle;
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -149,8 +174,20 @@ namespace VdlV.Simulog {
     public class Event<T1, T2, T3, T4, T5> : TablePredicate<T1, T2, T3, T4, T5> {
         public Event(string name, IColumnSpec<T1> arg1, IColumnSpec<T2> arg2, IColumnSpec<T3> arg3,
                      IColumnSpec<T4> arg4, IColumnSpec<T5> arg5) :
-            base(name, arg1, arg2, arg3, arg4, arg5) { }
-        
+            base(name, arg1, arg2, arg3, arg4, arg5) {
+            Arg1 = arg1;
+            Arg2 = arg2;
+            Arg3 = arg3;
+            Arg4 = arg4;
+            Arg5 = arg5;
+        }
+
+        internal readonly IColumnSpec<T1> Arg1;
+        internal readonly IColumnSpec<T2> Arg2;
+        internal readonly IColumnSpec<T3> Arg3;
+        internal readonly IColumnSpec<T4> Arg4;
+        internal readonly IColumnSpec<T5> Arg5;
+
         private EventChronicle<T1, T2, T3, T4, T5> _chronicle;
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -188,8 +225,22 @@ namespace VdlV.Simulog {
     public class Event<T1, T2, T3, T4, T5, T6> : TablePredicate<T1, T2, T3, T4, T5, T6> {
         public Event(string name, IColumnSpec<T1> arg1, IColumnSpec<T2> arg2, IColumnSpec<T3> arg3,
                      IColumnSpec<T4> arg4, IColumnSpec<T5> arg5, IColumnSpec<T6> arg6) :
-            base(name, arg1, arg2, arg3, arg4, arg5, arg6) { }
-        
+            base(name, arg1, arg2, arg3, arg4, arg5, arg6) {
+            Arg1 = arg1;
+            Arg2 = arg2;
+            Arg3 = arg3;
+            Arg4 = arg4;
+            Arg5 = arg5;
+            Arg6 = arg6;
+        }
+
+        internal readonly IColumnSpec<T1> Arg1;
+        internal readonly IColumnSpec<T2> Arg2;
+        internal readonly IColumnSpec<T3> Arg3;
+        internal readonly IColumnSpec<T4> Arg4;
+        internal readonly IColumnSpec<T5> Arg5;
+        internal readonly IColumnSpec<T6> Arg6;
+
         private EventChronicle<T1, T2, T3, T4, T5, T6> _chronicle;
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -228,8 +279,24 @@ namespace VdlV.Simulog {
     public class Event<T1, T2, T3, T4, T5, T6, T7> : TablePredicate<T1, T2, T3, T4, T5, T6, T7> {
         public Event(string name, IColumnSpec<T1> arg1, IColumnSpec<T2> arg2, IColumnSpec<T3> arg3,
                      IColumnSpec<T4> arg4, IColumnSpec<T5> arg5, IColumnSpec<T6> arg6, IColumnSpec<T7> arg7) :
-            base(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7) { }
-        
+            base(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+            Arg1 = arg1;
+            Arg2 = arg2;
+            Arg3 = arg3;
+            Arg4 = arg4;
+            Arg5 = arg5;
+            Arg6 = arg6;
+            Arg7 = arg7;
+        }
+
+        internal readonly IColumnSpec<T1> Arg1;
+        internal readonly IColumnSpec<T2> Arg2;
+        internal readonly IColumnSpec<T3> Arg3;
+        internal readonly IColumnSpec<T4> Arg4;
+        internal readonly IColumnSpec<T5> Arg5;
+        internal readonly IColumnSpec<T6> Arg6;
+        internal readonly IColumnSpec<T7> Arg7;
+
         private EventChronicle<T1, T2, T3, T4, T5, T6, T7> _chronicle;
         
         // ReSharper disable once MemberCanBePrivate.Global

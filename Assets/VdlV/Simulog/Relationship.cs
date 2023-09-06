@@ -55,7 +55,7 @@ namespace VdlV.Simulog {
             }
         }
 
-        public TableGoal<(T1, T2), T1, T2, bool> this[Term<T1> main, Term<T2> other] => new(this, __, main, other, true);
+        public TableGoal<T1, T2, bool> this[Term<T1> main, Term<T2> other] => new(this, main, other, true);
     }
 
     public class AffinityRelationship<T1, T2> : TablePredicate<T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
@@ -110,7 +110,7 @@ namespace VdlV.Simulog {
         public TableGoal<T1, T2, bool> this[Term<T1> main, Term<T2> other] => new(this, main, other, true);
     }
 
-    public class FloatAffinityRelationship<T1, T2> : TablePredicate<(T1, T2), T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
+    public class FloatAffinityRelationship<T1, T2> : TablePredicate<T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         public readonly Event<T1, T2> Start;
         public readonly Event<T1, T2> End;
 
@@ -120,22 +120,20 @@ namespace VdlV.Simulog {
             new(nameof(EndTransitionPoint), (t, value) => t >= 0 ? value < t : value > t);
 
         public FloatAffinityRelationship(string name, FloatAffinity<T1, T2> affinity, Var<bool> state, float start, float end) :
-            base(name, ((Var<(T1, T2)>)affinity.DefaultVariables[0]).Key, ((Var<T1>)affinity.DefaultVariables[1]).Indexed,
-                 ((Var<T2>)affinity.DefaultVariables[2]).Indexed, state.Indexed) {
-            var pair = (Var<(T1, T2)>)affinity.DefaultVariables[0];
+            base(name, ((Var<T1>)affinity.DefaultVariables[1]).JointKey, ((Var<T2>)affinity.DefaultVariables[2]).JointKey, state.Indexed) {
             var main = (Var<T1>)affinity.DefaultVariables[1];
             var other = (Var<T2>)affinity.DefaultVariables[2];
             var value = (Var<float>)affinity.DefaultVariables[3];
 
-            Add[pair, main, other, true].If(affinity[pair, main, other, value], StartTransitionPoint[start, value], !this[pair, main, other, __]);
-            Set(pair, state, false).If(affinity[pair, main, other, value], EndTransitionPoint[end, value], this[pair, main, other, true]);
-            Set(pair, state, true).If(affinity[pair, main, other, value], StartTransitionPoint[start, value], this[pair, main, other, false]);
+            Add[main, other, true].If(affinity[__, main, other, value], StartTransitionPoint[start, value], !this[main, other, __]);
+            Set((main, other), state, false).If(affinity[__, main, other, value], EndTransitionPoint[end, value], this[main, other, true]);
+            Set((main, other), state, true).If(affinity[__, main, other, value], StartTransitionPoint[start, value], this[main, other, false]);
 
             Start = Event($"{name}Start", main, other);
             Start.OccursWhen(Add);
-            Start.OccursWhen(Set(pair, state, true), this);
+            Start.OccursWhen(Set((main, other), state, true), this);
             End = Event($"{name}End", main, other);
-            End.OccursWhen(Set(pair, state, false), this);
+            End.OccursWhen(Set((main, other), state, false), this);
             this.Colorize(state);
         }
 
