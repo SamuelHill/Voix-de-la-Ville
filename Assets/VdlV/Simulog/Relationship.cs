@@ -2,14 +2,15 @@
 using TED;
 using TED.Interpreter;
 using TED.Primitives;
-using UnityEngine;
 using VdlV.Unity;
 using static TED.Language;
 
 namespace VdlV.Simulog {
     using static SimuLang;
 
-    public class Relationship<T1, T2> : TablePredicate<T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
+    // ReSharper disable MemberCanBePrivate.Global
+    public class Relationship<T1, T2> : TablePredicate<T1, T2, bool> 
+        where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         public readonly Event<T1, T2> Start;
         public readonly Event<T1, T2> End;
 
@@ -43,12 +44,11 @@ namespace VdlV.Simulog {
         }
 
         private RelationshipChronicle<T1, T2> _chronicle;
-        private readonly Var<RelationshipInstance<T1, T2>> _pair = (Var<RelationshipInstance<T1, T2>>)"pair";
-
-        // ReSharper disable once MemberCanBePrivate.Global
+        
         public RelationshipChronicle<T1, T2> Chronicle {
             get {
-                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", _pair, (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
+                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", 
+                    (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
                 _chronicle.StartWhen(Start);
                 _chronicle.EndWhen(End);
                 return _chronicle;
@@ -58,7 +58,8 @@ namespace VdlV.Simulog {
         public TableGoal<T1, T2, bool> this[Term<T1> main, Term<T2> other] => new(this, main, other, true);
     }
 
-    public class AffinityRelationship<T1, T2> : TablePredicate<T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
+    public class AffinityRelationship<T1, T2> : TablePredicate<T1, T2, bool> 
+        where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         public readonly Event<T1, T2> Start;
         public readonly Event<T1, T2> End;
 
@@ -68,14 +69,18 @@ namespace VdlV.Simulog {
             new(nameof(EndTransitionPoint), (t, value) => t >= 0 ? value < t : value > t);
 
         public AffinityRelationship(string name, Affinity<T1, T2> affinity, Var<bool> state, int start, int end) :
-            base(name, ((Var<T1>)affinity.DefaultVariables[1]).JointKey, ((Var<T2>)affinity.DefaultVariables[2]).JointKey, state.Indexed) {
+            base(name, ((Var<T1>)affinity.DefaultVariables[1]).JointKey, 
+                 ((Var<T2>)affinity.DefaultVariables[2]).JointKey, state.Indexed) {
             var main = (Var<T1>)affinity.DefaultVariables[1];
             var other = (Var<T2>)affinity.DefaultVariables[2];
             var value = (Var<int>)affinity.DefaultVariables[3];
 
-            Add[main, other, true].If(affinity[__, main, other, value], StartTransitionPoint[start, value], !this[main, other, __]);
-            Set((main, other), state, false).If(affinity[__, main, other, value], EndTransitionPoint[end, value], this[main, other, true]);
-            Set((main, other), state, true).If(affinity[__, main, other, value], StartTransitionPoint[start, value], this[main, other, false]);
+            Add[main, other, true].If(affinity[__, main, other, value], 
+                StartTransitionPoint[start, value], !this[main, other, __]);
+            Set((main, other), state, false).If(affinity[__, main, other, value], 
+                EndTransitionPoint[end, value], this[main, other, true]);
+            Set((main, other), state, true).If(affinity[__, main, other, value], 
+                StartTransitionPoint[start, value], this[main, other, false]);
 
             Start = Event($"{name}Start", main, other);
             Start.OccursWhen(Add);
@@ -95,12 +100,11 @@ namespace VdlV.Simulog {
         }
 
         private RelationshipChronicle<T1, T2> _chronicle;
-        private readonly Var<RelationshipInstance<T1, T2>> _pair = (Var<RelationshipInstance<T1, T2>>)"pair";
-
-        // ReSharper disable once MemberCanBePrivate.Global
+        
         public RelationshipChronicle<T1, T2> Chronicle {
             get {
-                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", _pair, (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
+                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", 
+                    (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
                 _chronicle.StartWhen(Start);
                 _chronicle.EndWhen(End);
                 return _chronicle;
@@ -110,7 +114,8 @@ namespace VdlV.Simulog {
         public TableGoal<T1, T2, bool> this[Term<T1> main, Term<T2> other] => new(this, main, other, true);
     }
 
-    public class FloatAffinityRelationship<T1, T2> : TablePredicate<T1, T2, bool> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
+    public class FloatAffinityRelationship<T1, T2> : TablePredicate<T1, T2, bool> 
+        where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         public readonly Event<T1, T2> Start;
         public readonly Event<T1, T2> End;
 
@@ -120,14 +125,18 @@ namespace VdlV.Simulog {
             new(nameof(EndTransitionPoint), (t, value) => t >= 0 ? value < t : value > t);
 
         public FloatAffinityRelationship(string name, FloatAffinity<T1, T2> affinity, Var<bool> state, float start, float end) :
-            base(name, ((Var<T1>)affinity.DefaultVariables[1]).JointKey, ((Var<T2>)affinity.DefaultVariables[2]).JointKey, state.Indexed) {
+            base(name, ((Var<T1>)affinity.DefaultVariables[1]).JointKey, 
+                 ((Var<T2>)affinity.DefaultVariables[2]).JointKey, state.Indexed) {
             var main = (Var<T1>)affinity.DefaultVariables[1];
             var other = (Var<T2>)affinity.DefaultVariables[2];
             var value = (Var<float>)affinity.DefaultVariables[3];
 
-            Add[main, other, true].If(affinity[__, main, other, value], StartTransitionPoint[start, value], !this[main, other, __]);
-            Set((main, other), state, false).If(affinity[__, main, other, value], EndTransitionPoint[end, value], this[main, other, true]);
-            Set((main, other), state, true).If(affinity[__, main, other, value], StartTransitionPoint[start, value], this[main, other, false]);
+            Add[main, other, true].If(affinity[__, main, other, value], 
+                StartTransitionPoint[start, value], !this[main, other, __]);
+            Set((main, other), state, false).If(affinity[__, main, other, value], 
+                EndTransitionPoint[end, value], this[main, other, true]);
+            Set((main, other), state, true).If(affinity[__, main, other, value], 
+                StartTransitionPoint[start, value], this[main, other, false]);
 
             Start = Event($"{name}Start", main, other);
             Start.OccursWhen(Add);
@@ -147,12 +156,11 @@ namespace VdlV.Simulog {
         }
 
         private RelationshipChronicle<T1, T2> _chronicle;
-        private readonly Var<RelationshipInstance<T1, T2>> _pair = (Var<RelationshipInstance<T1, T2>>)"pair";
-
-        // ReSharper disable once MemberCanBePrivate.Global
+        
         public RelationshipChronicle<T1, T2> Chronicle {
             get {
-                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", _pair, (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
+                _chronicle ??= new RelationshipChronicle<T1, T2>(Name + "Chronicle", 
+                    (Var<T1>)DefaultVariables[1], (Var<T2>)DefaultVariables[2]);
                 _chronicle.StartWhen(Start);
                 _chronicle.EndWhen(End);
                 return _chronicle;

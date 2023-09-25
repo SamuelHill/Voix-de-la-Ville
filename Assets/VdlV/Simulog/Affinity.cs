@@ -6,9 +6,11 @@ using static TED.Language;
 
 namespace VdlV.Simulog {
     using static Calendar; // Only using for PerDay in Decay
-    using static SimuLang; // Need to use generic events to eliminate this using
+    using static SimuLang;
 
-    public class Affinity<T1, T2> : TablePredicate<(T1, T2), T1, T2, int> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
+    // ReSharper disable MemberCanBePrivate.Global
+    public class Affinity<T1, T2> : TablePredicate<(T1, T2), T1, T2, int> 
+        where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         // ReSharper disable StaticMemberInGenericType
         // ReSharper disable InconsistentNaming
         private static readonly Var<int> _setVal = (Var<int>)"setVal";
@@ -27,8 +29,10 @@ namespace VdlV.Simulog {
         public Affinity(string name, Var<(T1, T2)> pair, Var<T1> main, Var<T2> other, Var<int> value) :
             base(name, pair.Key, main.Indexed, other.Indexed, value) {
             Changed = Event($"{name}Changed", main.Indexed, other.Indexed, value);
-            Add[pair, main, other, value].If(Changed, !this[__, main, other, __], NewTuple[main, other, pair]);
-            Set(pair, value, _setVal).If(Changed, this[pair, main, other, _tempVal], _setVal == _tempVal + value);
+            Add[pair, main, other, value].If(Changed, 
+                !this[__, main, other, __], NewTuple[main, other, pair]);
+            Set(pair, value, _setVal).If(Changed, 
+                this[pair, main, other, _tempVal], _setVal == _tempVal + value);
             Unchanged = Predicate($"{name}Unchanged", pair).If(this, !Changed[main, other, __]);
         }
 
@@ -52,12 +56,14 @@ namespace VdlV.Simulog {
             new(name, this, state, start, end);
         
         public class AffinityGoal : TableGoal<(T1, T2), T1, T2, int> {
-            public AffinityGoal(TablePredicate predicate, Term<(T1, T2)> pair, Term<T1> main, Term<T2> other, Term<int> value)
+            public AffinityGoal(TablePredicate predicate, Term<(T1, T2)> pair,
+                                Term<T1> main, Term<T2> other, Term<int> value)
                 : base(predicate, pair, main, other, value) { }
         }
     }
 
-    public class FloatAffinity<T1, T2> : TablePredicate<(T1, T2), T1, T2, float> where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
+    public class FloatAffinity<T1, T2> : TablePredicate<(T1, T2), T1, T2, float> 
+        where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         // ReSharper disable StaticMemberInGenericType
         // ReSharper disable InconsistentNaming
         private static readonly Var<float> _setVal = (Var<float>)"setVal";
@@ -76,8 +82,10 @@ namespace VdlV.Simulog {
         public FloatAffinity(string name, Var<(T1, T2)> pair, Var<T1> main, Var<T2> other, Var<float> value) :
             base(name, pair.Key, main.Indexed, other.Indexed, value) {
             Change = Event($"{name}Changed", main.Indexed, other.Indexed, value);
-            Add[pair, main, other, value].If(Change, !this[__, main, other, __], NewTuple[main, other, pair]);
-            Set(pair, value, _setVal).If(Change, this[pair, main, other, _tempVal], _setVal == _tempVal + value);
+            Add[pair, main, other, value].If(Change, 
+                !this[__, main, other, __], NewTuple[main, other, pair]);
+            Set(pair, value, _setVal).If(Change, 
+                this[pair, main, other, _tempVal], _setVal == _tempVal + value);
             Unchanged = Predicate($"{name}Unchanged", pair).If(this, !Change[main, other, __]);
         }
 
@@ -101,7 +109,8 @@ namespace VdlV.Simulog {
             new(name, this, state, start, end);
         
         public class AffinityGoal : TableGoal<(T1, T2), T1, T2, float> {
-            public AffinityGoal(TablePredicate predicate, Term<(T1, T2)> pair, Term<T1> main, Term<T2> other, Term<float> value)
+            public AffinityGoal(TablePredicate predicate, Term<(T1, T2)> pair, 
+                                Term<T1> main, Term<T2> other, Term<float> value)
                 : base(predicate, pair, main, other, value) { }
         }
     }
