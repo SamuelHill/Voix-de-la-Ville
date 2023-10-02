@@ -13,7 +13,7 @@ using VdlV.ValueTypes;
 using Random = System.Random;
 
 namespace VdlV.Unity {
-    using PersonRelationIndex = GeneralIndex<((Person, Person), Person, Person, bool), Person>;
+    using PersonRelationIndex = GeneralIndex<(Person, Person, bool), Person>;
     using static InteractionType;
     using static VitalStatus;
     using static Randomize;
@@ -86,11 +86,11 @@ namespace VdlV.Unity {
             var RomanticInterestIndex = (PersonRelationIndex)Romantic.IndexFor(person, false);
 
             IEnumerable<(Person, string, string)> FriendsOf(PersonRelationIndex friendIndex)
-                => friendIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "green"));
+                => friendIndex.RowsMatching(p).Select(r => (r.Item2, (string)null, "green"));
             IEnumerable<(Person, string, string)> EnemiesOf(PersonRelationIndex enemyIndex)
-                => enemyIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "red"));
+                => enemyIndex.RowsMatching(p).Select(r => (r.Item2, (string)null, "red"));
             IEnumerable<(Person, string, string)> RomanticInterestsOf(PersonRelationIndex romanticInterestIndex)
-                => romanticInterestIndex.RowsMatching(p).Select(r => (r.Item3, (string)null, "blue"));
+                => romanticInterestIndex.RowsMatching(p).Select(r => (r.Item2, (string)null, "blue"));
             IEnumerable<(Person, string, string)> ConnectionsOf(Person person) =>
                 FriendsOf(FriendIndex).Concat(EnemiesOf(EnemyIndex)).Concat(RomanticInterestsOf(RomanticInterestIndex));
 
@@ -114,13 +114,13 @@ namespace VdlV.Unity {
         public static void VisualizeFullSocialNetwork() {
             var g = new GraphViz<object>();
             foreach (var r in Friend)
-                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
+                g.AddEdge(new Edge(r.Item1, r.Item2, true, null,
                     new Dictionary<string, object> { { "color", "green" } }));
             foreach (var r in Enemy)
-                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
+                g.AddEdge(new Edge(r.Item1, r.Item2, true, null,
                     new Dictionary<string, object> { { "color", "red" } }));
             foreach (var r in Romantic)
-                g.AddEdge(new Edge(r.Item2, r.Item3, true, null,
+                g.AddEdge(new Edge(r.Item1, r.Item2, true, null,
                     new Dictionary<string, object> { { "color", "blue" } }));
             ShowGraph(g);
         }
