@@ -9,7 +9,9 @@ namespace VdlV.ValueTypes {
     /// </summary>
     public class Location : IComparable<Location>, IEquatable<Location> {
         /// <summary>Name of this location.</summary>
-        private readonly string _name;
+        [SerializeOnSave] private readonly string _name;
+
+        private Location() {}
         
         /// <param name="name">Name of this location - will be transformed to title case.</param>
         public Location(string name) => _name = Title(name);
@@ -35,6 +37,7 @@ namespace VdlV.ValueTypes {
 
         /// <returns>Name of this location.</returns>
         public override string ToString() => _name;
+
         /// <summary>For use by CsvReader.</summary>
         /// <param name="locationName">Name of the new location.</param>
         public static Location FromString(string locationName) => new(locationName);

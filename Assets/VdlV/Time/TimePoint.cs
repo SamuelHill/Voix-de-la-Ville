@@ -1,13 +1,15 @@
 ﻿using System;
+using VdlV.Utilities;
 
 namespace VdlV.Time {
     using static Calendar;
+    using static Enum;
     using static TimeOfDay;
 
     /// <summary>
     /// Record of a point in time at the finest possible temporal resolution.
     /// </summary>
-    public readonly struct TimePoint : IComparable<TimePoint>, IEquatable<TimePoint> {
+    public readonly struct TimePoint : IComparable<TimePoint>, IEquatable<TimePoint>, ISerializableValue<TimePoint> {
         /// <summary>Tick value within the simulation</summary>
         public readonly uint Clock;
 
@@ -45,20 +47,26 @@ namespace VdlV.Time {
         // ****************************************************************************************
 
         private int MonthNumber => MonthNumber(CalcMonth(CalendarFromClock(Clock)));
-        private string MiddleEndian => $"{MonthNumber}/{CalcDay(CalendarFromClock(Clock))}/{CalcYear(Clock)}";
+        private TimeOfDay Time => CalcTimeOfDay(CalendarFromClock(Clock));
+        private string MiddleEndian => $"{MonthNumber}/{CalcDay(CalendarFromClock(Clock))}/{CalcYear(Clock)} {Time}";
 
-        /// <returns>TimePoint in "mm/dd/yyyy" format.</returns>
-        /// <remarks>Not reflective of full resolution - ignores TimeOfDay.</remarks>
+        /// <returns>TimePoint in "M/d/yyyy tt" format.</returns>
         public override string ToString() => IsEschaton ? "Has not occurred" : MiddleEndian;
 
         /// <summary>
-        /// For use by CsvReader. Takes a string (expecting "mm/dd/yyyy" format), try's parsing as a Month,
+        /// For use by CsvReader. Takes a string (expecting "M/d/yyyy tt" format), try's parsing as a Month,
         /// Day, and Year, then returns the TimePoint made from this Month/Day/Year set.
         /// </summary>
-        /// <remarks>Not reflective of full resolution - always gives the AM TimePoint.</remarks>
         public static TimePoint FromString(string timePointString) {
-            var timePoint = timePointString.Split('/');
-            return new TimePoint(ToMonth(timePoint[0]), ToDay(timePoint[1]), ToYear(timePoint[2]), AM);
+            if (timePointString == "Has not occurred") return Eschaton;
+            var timeSplit = timePointString.Split(' ');
+            if (timeSplit.Length == 1) {
+                var timePoint = timePointString.Split('/');
+                return new TimePoint(ToMonth(timePoint[0]), ToDay(timePoint[1]), ToYear(timePoint[2]), AM);
+            } else {
+                var timePoint = timeSplit[0].Split('/');
+                return new TimePoint(ToMonth(timePoint[0]), ToDay(timePoint[1]), ToYear(timePoint[2]), Parse<TimeOfDay>(timeSplit[1]));
+            }
         }
     }
 }

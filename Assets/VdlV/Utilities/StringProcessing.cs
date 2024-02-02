@@ -6,20 +6,23 @@ using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace VdlV.Utilities {
+    using static CultureInfo;
+    using static DateTime;
+    using static Regex;
+    using static Thread;
+
     /// <summary>
     /// Handles display functions like TitleCase, special case list joins, and shortening table names
     /// </summary>
     public static class StringProcessing {
-        private const string Initially = "Initially";
-        private const string Update = "Update";
-        private static readonly CultureInfo CultureInfo = Thread.CurrentThread.CurrentCulture;
-        private static readonly TextInfo TextInfo = CultureInfo.TextInfo;
+        private static readonly TextInfo TextInfo = CurrentThread.CurrentCulture.TextInfo;
 
         public static string Title(string title) => TextInfo.ToTitleCase(title);
 
-        private static string VariableSpacing(string variable) =>
-            string.Join(" ", Regex.Split(variable, @"(?=[A-Z][^A-Z])"));
-        public static string Heading(string heading) => Title(VariableSpacing(heading));
+        private static string StandardizeSpacing(string str) =>
+            string.Join(" ", Split(str, @"(?=[A-Z][^A-Z])"));
+
+        public static string Heading(string heading) => Title(StandardizeSpacing(heading));
 
         private static string ListWithRows(IEnumerable<string> strings, int numInRow) =>
             // Concat an empty string to the beginning, takes place of title
@@ -30,42 +33,62 @@ namespace VdlV.Utilities {
         public static string ListWithRows(string title, IEnumerable<string> strings, int numInRow) =>
             $"{title}: {ListWithRows(strings, numInRow)}";
 
+        public static string NowString => Now.ToString("yyyy-MM-dd_HH-mm-ss");
+
+        public static string QuoteString(string toQuote) => $"\"{toQuote}\"";
+
+        public static int[] CommaSeparatedInts(string intsString) =>
+            CommaSeparated(intsString, s => int.Parse(s, InvariantCulture));
+        public static sbyte[] CommaSeparatedSbytes(string sbytesString) =>
+            CommaSeparated(sbytesString, s => sbyte.Parse(s, InvariantCulture));
+
+        public static T[] CommaSeparated<T>(string commaList, Func<string, T> parseFunc) =>
+            (from i in commaList.Split(',') select parseFunc(i)).ToArray();
+
+
+
+        #region Table Display Naming
+
         public static string TableShortName(string tableName, int maxLength) =>
             // Special case for add and initially as they can produce identical names when
             // naively shortening the table name...
-            CheckAddOrInit(tableName, out var nameParse) ?
-                nameParse.isAdd ? AddTableName(nameParse.name, maxLength)
-                    : InitiallyTableName(nameParse.name, maxLength)
+            ParseIfAddOrInit(tableName, out var nameParse) ?
+                nameParse.isAdd ? AddTable(nameParse.name, maxLength)
+                    : InitiallyTable(nameParse.name, maxLength)
                 // Update and Regular tables just get built and set to max length as needed
-                : ToLength(CheckUpdate(tableName, out var updateParse)
-                               ? UpdateTable(updateParse.name, updateParse.updateField) : tableName, maxLength);
+                : ShortenToMaxLength(ParseIfUpdate(tableName, out var updateParse)
+                    ? UpdateTable(updateParse.name, updateParse.updateField) : tableName, maxLength);
 
-        private static bool CheckAddOrInit(string tableName, out (string name, bool isAdd) nameParse) {
+        private static bool ParseIfAddOrInit(string tableName, out (string name, bool isAdd) nameParse) {
             var tableSplit = tableName.Split("__");
             nameParse = tableSplit.Length > 1 ?
                             new ValueTuple<string, bool>(tableSplit[0], tableSplit[1] == "add") :
-                            (null, false); // will be ignored if using the returned bool
+                            (null, false);
             return tableSplit.Length > 1;
         }
-        private static string AddTableName(string name, int maxLength) =>
-            name.Length >= maxLength - 4 ? $"{name[..(maxLength - 4)]}…Add" : $"{name}Add";
-        private static string InitiallyTableName(string name, int maxLength) =>
-            name.Length > maxLength - 4 ? $"{ToLength(name, maxLength - 5)}Init" :
-                name.Length == maxLength - 4 ? $"{name}Init" :
-                    name.Length + Initially.Length > maxLength ?
-                        $"{name}{ToLength(Initially, maxLength - name.Length - 1)}" :
-                        $"{name}{Initially}";
 
-        private static bool CheckUpdate(string tableName, out (string name, string updateField) nameParse) {
+        private static bool ParseIfUpdate(string tableName, out (string name, string updateField) nameParse) {
             var tableSplit = tableName.Split("_");
             nameParse = tableSplit.Length > 2 ?
                             new ValueTuple<string, string>(tableSplit[0], tableSplit[1]) :
                             (null, null);
             return tableSplit.Length > 2;
         }
-        private static string UpdateTable(string name, string updateField) => $"{name}{Title(updateField)}{Update}";
 
-        private static string ToLength(string name, int maxLength) =>
+        private static string ShortenToMaxLength(string name, int maxLength) =>
             name.Length > maxLength ? $"{name[..(maxLength - 1)]}…" : name;
+
+        private static string AffixWithMaxLength(string name, string affix, int maxLength) =>
+            $"{ShortenToMaxLength(name, maxLength - affix.Length)}{affix}";
+
+        private static string AddTable(string name, int maxLength) => AffixWithMaxLength(name, "Add", maxLength);
+
+        private static string InitiallyTable(string name, int maxLength) =>
+            name.Length >= maxLength - 4 ? AffixWithMaxLength(name, "Init", maxLength) :
+                ShortenToMaxLength($"{name}Initially", maxLength);
+
+        private static string UpdateTable(string name, string updateField) => $"{name}{Title(updateField)}Update";
+
+        #endregion
     }
 }

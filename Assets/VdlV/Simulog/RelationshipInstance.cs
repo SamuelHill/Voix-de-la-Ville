@@ -1,8 +1,11 @@
 ﻿using System;
+using VdlV.Utilities;
 using TED;
 using TED.Primitives;
 
 namespace VdlV.Simulog {
+    using static StringProcessing;
+
     public class RelationshipInstance<T1, T2> : IComparable<RelationshipInstance<T1, T2>>, IEquatable<RelationshipInstance<T1, T2>> 
         where T1 : IComparable<T1>, IEquatable<T1> where T2 : IComparable<T2>, IEquatable<T2> {
         public readonly T1 Main;
@@ -30,6 +33,6 @@ namespace VdlV.Simulog {
 
         // ****************************************************************************************
 
-        public override string ToString() => $"{Main}, {Other}";
+        public override string ToString() => QuoteString($"{Main}, {Other}");
     }
 }

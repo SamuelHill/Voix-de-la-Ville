@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using VdlV.Utilities;
 
 namespace VdlV.ValueTypes {
+    using static Enum;
     using static Randomize;
     using static Sex;
     using static SexualityName;
@@ -16,7 +17,7 @@ namespace VdlV.ValueTypes {
     /// outputting a Sexuality the name will only be one of the 4 SexualityNames (not reflecting the
     /// relationship to Sex).
     /// </summary>
-    public readonly struct Sexuality : IComparable<Sexuality>, IEquatable<Sexuality> {
+    public readonly struct Sexuality : IComparable<Sexuality>, IEquatable<Sexuality>, ISerializableValue<Sexuality> {
         /// <summary>5% chance of Random(Sex) assigning Asexual (false, false)</summary>
         private const float AsexualOccurrenceRate = 0.05F;
         /// <summary>15% chance of Random(Sex) assigning Bisexual (true, true)</summary>
@@ -95,10 +96,9 @@ namespace VdlV.ValueTypes {
         /// <summary>
         /// For use by CsvReader. Takes a string, try's parsing as a SexualityName, returns the associated Sexuality.
         /// </summary>
-        public static Sexuality FromString(string sexualityString) {
-            Enum.TryParse<SexualityName>(sexualityString, out var sexualities);
-            return SexualityFromName[(int)sexualities]();
-        }
+        public static Sexuality FromString(string sexualityString) => 
+            TryParse<SexualityName>(sexualityString, out var sexualities) ? SexualityFromName[(int)sexualities]()
+                : throw new ArgumentException($"Couldn't convert string {sexualityString} to a Sexuality");
 
         // Compare and Equality interfacing:
         public int CompareTo(Sexuality other) {

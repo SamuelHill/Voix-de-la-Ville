@@ -11,7 +11,7 @@ using static TED.Language;
 
 namespace VdlV.Simulator {
     using static Variables;
-    using static CsvParsing;
+    using static CsvManager;
 
     /// <summary>
     /// All static tables (Datalog style EDBs - in TED these can be extensional or intensional).
@@ -49,28 +49,28 @@ namespace VdlV.Simulator {
         };
 
         public static void InitStaticTables() {
-            FemaleNames = FromCsv("FemaleNames", Csv("female_names"), firstName);
-            MaleNames = FromCsv("MaleNames", Csv("male_names"), firstName);
-            Surnames = FromCsv("Surnames", Csv("english_surnames"), lastName);
+            FemaleNames = FromCsv("FemaleNames", CsvDataFile("female_names"), firstName);
+            MaleNames = FromCsv("MaleNames", CsvDataFile("male_names"), firstName);
+            Surnames = FromCsv("Surnames", CsvDataFile("english_surnames"), lastName);
 
             //Facets = EnumTable("Facets", facet);
             Jobs = EnumTable("Jobs", job);
 
-            PrimordialBeing = FromCsv("PrimordialBeing", Csv("agents"), 
+            PrimordialBeing = FromCsv("PrimordialBeing", CsvDataFile("agents"), 
                 person, age, dateOfBirth, sex, sexuality);
-            PrimordialLocation = FromCsv("PrimordialLocation", Csv("locations"),
+            PrimordialLocation = FromCsv("PrimordialLocation", CsvDataFile("locations"),
                 location, locationType, position, founding);
 
-            LocationInformation = FromCsv("LocationInformation", Csv("locationInformation"),
+            LocationInformation = FromCsv("LocationInformation", CsvDataFile("locationInformation"),
                 locationType.Key, locationCategory.Indexed, operation, schedule);
-            _vocationLocations = FromCsv("VocationLocations", Csv("vocationLocations"), job.Indexed, locationType.Indexed);
-            _operatingTimes = FromCsv("OperatingTimes", Csv("operatingTimes"), timeOfDay, operation);
+            _vocationLocations = FromCsv("VocationLocations", CsvDataFile("vocationLocations"), job.Indexed, locationType.Indexed);
+            _operatingTimes = FromCsv("OperatingTimes", CsvDataFile("operatingTimes"), timeOfDay, operation);
             VocationShift = Predicate("VocationShift", locationType.Indexed, job.Indexed, timeOfDay);
             VocationShift.Initially.Where(_vocationLocations, LocationInformation, _operatingTimes);
-            PositionsPerJob = FromCsv("PositionsPerJob", Csv("positionsPerJob"), job.Key, positions); // per time of day
-            ActionToCategory = FromCsv("ActionToCategory", Csv("actionCategories"), actionType, locationCategory);
+            PositionsPerJob = FromCsv("PositionsPerJob", CsvDataFile("positionsPerJob"), job.Key, positions); // per time of day
+            ActionToCategory = FromCsv("ActionToCategory", CsvDataFile("actionCategories"), actionType, locationCategory);
 
-            _categoryColors = FromCsv("CategoryColors", Csv("locationColors"), locationCategory.Key, color);
+            _categoryColors = FromCsv("CategoryColors", CsvDataFile("locationColors"), locationCategory.Key, color);
             _locationColors = Predicate("LocationColors", locationType.Key, color);
             _locationColors.Initially.Where(LocationInformation, _categoryColors);
             LocationColorsIndex = _locationColors.KeyIndex(locationType);

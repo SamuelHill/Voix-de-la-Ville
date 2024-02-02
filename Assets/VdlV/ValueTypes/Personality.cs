@@ -6,8 +6,10 @@ namespace VdlV.ValueTypes {
     using static Randomize;
 
     public record Personality {
-        private readonly sbyte[] _personality;
-        private readonly Vector<sbyte> _personalityVector;
+        [SerializeOnSave] private readonly sbyte[] _personality;
+        [SerializeOnSave] private readonly Vector<sbyte> _personalityVector;
+
+        private Personality() {}
 
         public Personality(Random rng) {
             _personality = new sbyte[Enum.GetValues(typeof(Facet)).Length];

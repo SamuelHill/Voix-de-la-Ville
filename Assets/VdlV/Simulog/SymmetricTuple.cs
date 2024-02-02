@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using VdlV.Utilities;
 using TED;
 using TED.Primitives;
 
 namespace VdlV.Simulog {
-    public readonly struct SymmetricTuple<T> : IComparable<SymmetricTuple<T>>, IEquatable<SymmetricTuple<T>> where T : IComparable<T>, IEquatable<T> {
+    using static StringProcessing;
+
+    public readonly struct SymmetricTuple<T> : IComparable<SymmetricTuple<T>>, IEquatable<SymmetricTuple<T>> //, ISerializableValue<SymmetricTuple<T>> 
+        where T : IComparable<T>, IEquatable<T> {
         public readonly T Item1;
         public readonly T Item2;
 
@@ -43,6 +47,12 @@ namespace VdlV.Simulog {
 
         // ****************************************************************************************
 
-        public override string ToString() => $"{Item1}, {Item2}";
+        public override string ToString() => QuoteString($"{Item1}, {Item2}");
+        
+        public static SymmetricTuple<T> FromString(string tuple, Func<string, T> fromString) {
+            var temp = CommaSeparated(tuple, fromString);
+            return temp is { Length: 2 } ? new SymmetricTuple<T>(temp[0], temp[1]) :
+                       throw new ArgumentException($"Couldn't convert string {tuple} to a SymmetricTuple<{typeof(T).Name}>");
+        }
     }
 }

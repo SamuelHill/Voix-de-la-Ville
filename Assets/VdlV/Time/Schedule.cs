@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using VdlV.Utilities;
 
 namespace VdlV.Time {
     using static Array;
     using static Enum;
     using static Calendar;
+    using static StringProcessing;
 
     /// <summary>
     /// Which days of the week a LocationType is open for (TimeOfDay is handled by DailyOperation).
     /// With 7 days (DayOfWeek) and binary open states we get 128 possible schedules - 12 of the more
     /// common schedules are named in the ScheduleName enum.
     /// </summary>
-    public readonly struct Schedule : IComparable<Schedule>, IEquatable<Schedule> {
+    public readonly struct Schedule : IComparable<Schedule>, IEquatable<Schedule>, ISerializableValue<Schedule> {
         /// <summary>Indicates which days the schedule is open on (array of booleans indexed by DayOfWeek).</summary>
         private readonly bool[] _openOn;
 
@@ -83,16 +86,21 @@ namespace VdlV.Time {
         /// </returns>
         public override string ToString() {
             var schedule = ScheduleName(this);
-            return schedule != -1 ? ((ScheduleName)schedule).ToString() : string.Join(", ", DaysOpen());
+            return schedule != -1 ? ((ScheduleName)schedule).ToString() : 
+                       QuoteString(string.Join(", ", DaysOpen()));
         }
 
         /// <summary>
-        /// For use by CsvReader. Takes a string, try's parsing as a ScheduleName, returns the associated Schedule.
+        /// Takes a string, try's parsing as a ScheduleName, returns the associated Schedule. Otherwise,
+        /// reads the days in the week the schedule is "open" on and creates the appropriate schedule.
         /// </summary>
-        /// <remarks>No options currently for FromString to parse custom openOn arrays.</remarks>
         public static Schedule FromString(string scheduleString) {
-            TryParse(scheduleString, out ScheduleName schedule);
-            return new Schedule(schedule);
+            if (TryParse(scheduleString, out ScheduleName schedule)) return new Schedule(schedule);
+            var daysOpen = (from day in scheduleString.Split(',') 
+                            select (int)Parse<DayOfWeek>(day)).ToArray();
+            var openOn = new bool[DaysOfWeek];
+            for (var i = 0; i < openOn.Length; i++) openOn[i] = daysOpen.Contains(i);
+            return new Schedule(openOn);
         }
     }
 }

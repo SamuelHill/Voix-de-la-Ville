@@ -6362,6 +6362,13 @@
             <param name="rowNumber">Row number within the table</param>
             <param name="buffer">Buffer in which to write the string forms</param>
         </member>
+        <member name="M:TED.TablePredicate.RowToCsv(System.UInt32,System.String[])">
+            <summary>
+            Write the columns of the specified tuple in to the specified array of strings
+            </summary>
+            <param name="rowNumber">Row number within the table</param>
+            <param name="buffer">Buffer in which to write the string forms</param>
+        </member>
         <member name="P:TED.TablePredicate.Length">
             <summary>
             Number of tuples (rows) in the predicates extension
@@ -6375,6 +6382,19 @@
             </summary>
             <param name="startRow">Row number within the table to start range from</param>
             <param name="buffer">Buffer in which to write the string forms</param>
+        </member>
+        <member name="M:TED.TablePredicate.ToCsv(System.String)">
+            <summary> Writes the entire table out to the specified path </summary>
+            <param name="path">Path to where the csv file should be written</param>
+        </member>
+        <member name="M:TED.TablePredicate.LoadCsv(System.String,System.String)">
+            <summary>Load CSV contents into the table that calls this load</summary>
+            <param name="name">Name of the csv file (if different from the name of the table)</param>
+            <param name="path">Path to the folder where the CSV file is (with trailing slash)</param>
+        </member>
+        <member name="M:TED.TablePredicate.LoadCsv(System.String)">
+            <summary>Load CSV contents into the table that calls this load</summary>
+            <param name="path">Path to the folder where the CSV file containing this tables data is (with trailing slash)</param>
         </member>
         <member name="T:TED.TablePredicate.Update`1">
             <summary>
@@ -6624,6 +6644,9 @@
             <param name="arg1">Argument to the predicate</param>
             <returns>The TablePredicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`1.LoadCsv(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="P:TED.TablePredicate`1.Length">
             <summary>
             Number of rows/items in the table/extension of the predicate
@@ -6642,6 +6665,11 @@
             </summary>
         </member>
         <member name="M:TED.TablePredicate`1.RowToStrings(System.UInt32,System.String[])">
+            <summary>
+            Convert the columns of the specified row to strings and write them to buffer
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate`1.RowToCsv(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
             </summary>
@@ -6775,7 +6803,15 @@
             <param name="arg2">Second argument</param>
             <returns>The TablePredicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`2.LoadCsv(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`2.RowToStrings(System.UInt32,System.String[])">
+            <summary>
+            Convert the columns of the specified row to strings and write them to buffer
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate`2.RowToCsv(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
             </summary>
@@ -6984,7 +7020,15 @@
             <param name="arg3">Third argument</param>
             <returns>The TablePredicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`3.LoadCsv(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`3.RowToStrings(System.UInt32,System.String[])">
+            <summary>
+            Convert the columns of the specified row to strings and write them to buffer
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate`3.RowToCsv(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
             </summary>
@@ -7183,7 +7227,15 @@
             <param name="arg4">Fourth argument</param>
             <returns>The TablePredicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`4.LoadCsv(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`4.RowToStrings(System.UInt32,System.String[])">
+            <summary>
+            Convert the columns of the specified row to strings and write them to buffer
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate`4.RowToCsv(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
             </summary>
@@ -7387,7 +7439,15 @@
             <param name="arg5">Fifth argument</param>
             <returns>The TablePredicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`5.LoadCsv(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`5.RowToStrings(System.UInt32,System.String[])">
+            <summary>
+            Convert the columns of the specified row to strings and write them to buffer
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate`5.RowToCsv(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
             </summary>
@@ -7596,7 +7656,15 @@
             <param name="arg6">Sixth argument</param>
             <returns>The TablePredicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`6.LoadCsv(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`6.RowToStrings(System.UInt32,System.String[])">
+            <summary>
+            Convert the columns of the specified row to strings and write them to buffer
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate`6.RowToCsv(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
             </summary>
@@ -7810,7 +7878,15 @@
             <param name="arg7">Seventh argument</param>
             <returns>The TablePredicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`7.LoadCsv(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`7.RowToStrings(System.UInt32,System.String[])">
+            <summary>
+            Convert the columns of the specified row to strings and write them to buffer
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate`7.RowToCsv(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
             </summary>
@@ -8029,7 +8105,15 @@
             <param name="arg8">Eighth argument</param>
             <returns>The TablePredicate</returns>
         </member>
+        <member name="M:TED.TablePredicate`8.LoadCsv(System.String,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`8.RowToStrings(System.UInt32,System.String[])">
+            <summary>
+            Convert the columns of the specified row to strings and write them to buffer
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate`8.RowToCsv(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
             </summary>
@@ -8737,53 +8821,112 @@
         </member>
         <member name="T:TED.Utilities.CsvReader">
             <summary>
-            Extremely simplistic CSV reader.  Doesn't handle embedded commas, quotes, or newlines in cells
+            Extremely simplistic CSV reader.
+            Doesn't handle embedded commas, quotes, or newlines in cells.
             </summary>
+        </member>
+        <member name="F:TED.Utilities.CsvReader._input">
+            <summary> TextReader that stores the text file when opened </summary>
+        </member>
+        <member name="F:TED.Utilities.CsvReader.CellBuffer">
+            <summary> Buffer of characters read in that are used to build a string </summary>
+        </member>
+        <member name="F:TED.Utilities.CsvReader.RowBuffer">
+            <summary> List of rows as strings </summary>
+        </member>
+        <member name="P:TED.Utilities.CsvReader.Peek">
+            <summary> Return the next character, without advancing </summary>
+        </member>
+        <member name="P:TED.Utilities.CsvReader.Read">
+            <summary> Return the next character and advance one character </summary>
+        </member>
+        <member name="M:TED.Utilities.CsvReader.Skip">
+            <summary> Advance without returning the next character </summary>
+        </member>
+        <member name="P:TED.Utilities.CsvReader.End">
+            <summary> True if we're at the end of the stream </summary>
+        </member>
+        <member name="P:TED.Utilities.CsvReader.EndOfLineChar">
+            <summary> True if the next character is a newline </summary>
+        </member>
+        <member name="M:TED.Utilities.CsvReader.AddCellToRow">
+            <summary> Moves the cell string buffer into the row buffer </summary>
+        </member>
+        <member name="M:TED.Utilities.CsvReader.ReadQuotedCell">
+            <summary>  Read a quoted column into the cell string buffer. </summary>
+        </member>
+        <member name="M:TED.Utilities.CsvReader.GetRow">
+            <summary> Read a row from the spreadsheet. </summary>
+            <returns>Array of column strings</returns>
         </member>
         <member name="M:TED.Utilities.CsvReader.ReadCsv(System.String)">
-            <summary>
-            Read a CSV file.
-            Returns the header line as an array of strings and the rest as an array of arrays of strings
-            </summary>
-            <param name="path"></param>
-            <returns></returns>
+            <summary> Read a CSV file. </summary>
+            <param name="path">Path to the csv file to be read</param>
+            <returns>Tuple of the header line as an array of strings and the rest as an array of arrays of strings</returns>
         </member>
-        <member name="M:TED.Utilities.CsvReader.ConvertCell``1(System.String)">
-            <summary>
-            Convert a string representation of a value to a specific type.
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cell"></param>
-            <returns></returns>
-        </member>
-        <member name="M:TED.Utilities.CsvReader.ConvertCellInternal(System.String,System.Type)">
-            <summary>
-            Convert a sting representation of a value to a specific type
-            </summary>
+        <member name="F:TED.Utilities.CsvReader.ParserTable">
+            <summary> Mapping of types to functions that convert a string to the specified type. </summary>
         </member>
         <member name="M:TED.Utilities.CsvReader.DeclareParser(System.Type,System.Func{System.String,System.Object})">
             <summary>
-            Provide a custom method for converting the string in a cell to a particular data type
+            Assigns a custom method for converting the string in a cell to a particular data type.
             </summary>
             <param name="t">Type to be parsed</param>
             <param name="parser">Function that will return the object given the string</param>
         </member>
-        <member name="P:TED.Utilities.CsvReader.End">
+        <member name="M:TED.Utilities.CsvReader.TryParse(System.Type,System.String,System.Object@)">
+            <summary> Try to convert a string representation of a value to a specific type. </summary>
+            <param name="t">Type to convert the string to</param>
+            <param name="input">String to be converted to type T</param>
+            <param name="result">Object of type T with value converted from the cell string if successful, otherwise null</param>
+        </member>
+        <member name="M:TED.Utilities.CsvReader.ConvertCell``1(System.String)">
+            <summary> Convert a string representation of a value to a specific type. </summary>
+            <typeparam name="T">Type to convert the string to</typeparam>
+            <param name="cell">String to be converted to type T</param>
+            <returns>Object of type T with value converted from the cell string</returns>
+        </member>
+        <member name="T:TED.Utilities.CsvWriter">
             <summary>
-            True if we're at the end of the stream
+            Handler for custom ToStrings that are used in the creation of CSVs
             </summary>
         </member>
-        <member name="M:TED.Utilities.CsvReader.GetRow">
-            <summary>
-            Read a row from the spreadsheet.
-            </summary>
-            <returns>Array of column strings</returns>
+        <member name="F:TED.Utilities.CsvWriter.WriterTable">
+            <summary> Mapping of types to functions that convert the specified type to a string. </summary>
         </member>
-        <member name="M:TED.Utilities.CsvReader.ReadQuoted">
-            <summary>
-            Read a quoted column
-            This just reads into the string buffer.  We depend on the caller to move the string buffer into the row buffer.
-            </summary>
+        <member name="F:TED.Utilities.CsvWriter.CsvBuilder">
+            <summary> String builder that creates the entire CSV in one WriteAllText </summary>
+        </member>
+        <member name="F:TED.Utilities.CsvWriter.RowBuffer">
+            <summary> Buffer of strings in an array converted from the content of one row in a table </summary>
+        </member>
+        <member name="M:TED.Utilities.CsvWriter.DeclareWriter(System.Type,System.Func{System.Object,System.String})">
+            <summary> Assigns a custom method for converting a particular data type into a string. </summary>
+            <param name="t">Type to be written</param>
+            <param name="writer">Function that will return a string given the object</param>
+        </member>
+        <member name="M:TED.Utilities.CsvWriter.HasDeclaredWriter(System.Type)">
+            <summary>Whether or not the given type has a writer func in the WriterTable</summary>
+            <param name="t">Type to check in the WriterTable</param>
+            <returns>True if the type has a writer function in the WriterTable</returns>
+        </member>
+        <member name="M:TED.Utilities.CsvWriter.GetDeclaredWriter(System.Type)">
+            <summary>The writer func from WriterTable for a given type</summary>
+            <param name="t">Type to get a function for from WriterTable</param>
+            <returns>The function that maps objects of the given type to a string</returns>
+        </member>
+        <member name="M:TED.Utilities.CsvWriter.Stringify``1(``0@)">
+            <summary> Null-tolerant, tries to get an appropriate CsvWriter falling back on ToString. </summary>
+        </member>
+        <member name="M:TED.Utilities.CsvWriter.TableToCsv(System.String,TED.TablePredicate)">
+            <summary> Writes an entire table out to a CSV file </summary>
+            <param name="path">Path to where the CSV file will be written</param>
+            <param name="table">Table to write out as a CSV file</param>
+        </member>
+        <member name="M:TED.Utilities.CsvWriter.WriteAllTables(System.String,TED.Simulation)">
+            <summary> Writes every table in a Simulation out to individual CSV files </summary>
+            <param name="path">Path to where the CSV files will be written</param>
+            <param name="simulation">Simulation that's tables will be written out as CSV files</param>
         </member>
         <member name="T:TED.Utilities.DataflowVisualizer">
             <summary>

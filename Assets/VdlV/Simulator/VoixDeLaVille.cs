@@ -30,7 +30,8 @@ namespace VdlV.Simulator {
     using static Clock;          // All current time functions
     using TimePoint = TimePoint; // (clock hides TimePoint with a method, this fixes that)
     using TimeOfDay = TimeOfDay; // (clock hides TimeOfDay)
-    using static CsvParsing;     // DeclareParsers
+    using static CsvManager;     // DeclareParsers
+    using static SaveManager;    // Save and Load simulation
     using static File;           // Performance CSV output
     using static Generators;     // Name generation
     using static Randomize;      // Seed and RandomElement
@@ -54,6 +55,7 @@ namespace VdlV.Simulator {
 
         static VoixDeLaVille() {
             DeclareParsers(); // Parsers used in the FromCsv calls in InitStaticTables
+            DeclareWriters();
             Seed(Seed);
             BindGlobal(TownName, PossibleTownName.Random(RngForInitialization));
             BindGlobal(RandomNumber, "");
@@ -219,9 +221,9 @@ namespace VdlV.Simulator {
             var NewPlace = Event("NewPlace", locationName, locationType);
 
             #region Tilemap/GUI helpers
-            // CreatedLocation is used for both adding tiles to the TileMap in Unity efficiently
-            // (not checking every row of the Locations table) and for collecting new locations
-            // with the minimal amount of information needed (excludes derivable columns).
+            // CreatedLocation collects new locations both for adding tiles to the 
+            // TileMap in Unity efficiently (not checking every row in Locations)
+            // and storing a minimal amount of information needed (no derivable values)
             CreatedLocation = Predicate("CreatedLocation", position, location, locationType);
             CreatedLocation.If(NewPlace, FreeLot, PerWeek(0.5f), NewLocation[locationName, location]);
             CreatedLocation.Colorize(location);
@@ -596,6 +598,9 @@ namespace VdlV.Simulator {
             UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
+
+            //Save("test", Simulation);
+            //Load("test", Simulation);
         }
 
         public static void UpdateSimulator() {

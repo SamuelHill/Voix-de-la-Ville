@@ -1,0 +1,6 @@
+location, locationType, locationCategory, position, businessStatus
+#100, House, Accommodation, "-1, 2", InBusiness
+#101, House, Accommodation, "-2, 3", InBusiness
+#102, House, Accommodation, "-2, 0", InBusiness
+#103, House, Accommodation, "-1, 1", InBusiness
+#104, House, Accommodation, "-1, -1", InBusiness

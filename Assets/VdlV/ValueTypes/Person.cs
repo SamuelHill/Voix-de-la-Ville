@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using VdlV.Utilities;
 
 namespace VdlV.ValueTypes {
@@ -9,15 +10,17 @@ namespace VdlV.ValueTypes {
     /// </summary>
     public class Person : IComparable<Person>, IEquatable<Person> {
         /// <summary>First name of this person.</summary>
-        private readonly string _firstName;
+        [SerializeOnSave] private readonly string _firstName;
         /// <summary>Maiden name of this person.</summary>
-        private readonly string _maidenName;
+        [SerializeOnSave] private readonly string _maidenName;
         /// <summary>Last name of this person.</summary>
         public string LastName;
         /// <summary>First and last name of this person.</summary>
         public string FullName;
 
-        private readonly Personality _personality;
+        [SerializeOnSave] private readonly Personality _personality;
+
+        private Person() {}
 
         /// <param name="firstName">First name of this person - will be transformed to title case.</param>
         /// <param name="lastName">Last name of this person - will be transformed to title case.</param>
@@ -64,6 +67,7 @@ namespace VdlV.ValueTypes {
 
         /// <returns>FullName of this person.</returns>
         public override string ToString() => FullName;
+
         /// <summary>
         /// For use by CsvReader, splits the input string on a single space then creates a new
         /// person from the two names found in the split (first and last for the new person).
