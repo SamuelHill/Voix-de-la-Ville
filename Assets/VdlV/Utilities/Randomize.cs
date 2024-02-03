@@ -23,6 +23,10 @@ namespace VdlV.Utilities {
 
         private const int PseudoNormalNumAggregations = 10;
 
+        public const sbyte BellCurveMax = 50;
+        public const sbyte BellCurveMin = -50;
+        public const sbyte BellCurveRange = BellCurveMax - BellCurveMin;
+
         public static readonly Random RngForInitialization = MakeRng();
 
         static Randomize() {
@@ -59,9 +63,9 @@ namespace VdlV.Utilities {
             Range(0, PseudoNormalNumAggregations + 1).Select(i => (float)i).Aggregate((value, _) =>
                 value + Float((high + Abs(low)) / PseudoNormalNumAggregations, rng)) + low;
 
-        public static int BellCurve(Random rng) => NormalDistribution(-50, 50, rng);
+        public static int BellCurve(Random rng) => NormalDistribution(BellCurveMin, BellCurveMax, rng);
         public static sbyte SByteBellCurve(Random rng) => (sbyte)BellCurve(rng);
-        public static float FloatBellCurve(Random rng) => NormalDistribution(-50f, 50f, rng);
+        public static float FloatBellCurve(Random rng) => NormalDistribution((float)BellCurveMin, BellCurveMax, rng);
         
         public static Function<int> RandomNormal {
             get {

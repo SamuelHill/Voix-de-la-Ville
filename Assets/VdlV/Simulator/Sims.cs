@@ -143,8 +143,8 @@ namespace VdlV.Simulator {
         public static readonly Function<Person, Person, int> Similarity = new(nameof(Similarity), 
             (person1, person2) => person1.Similarity(person2));
         
-        public static readonly Function<Person, Person, int> Compatibility = new(nameof(Compatibility), 
-            (person1, person2) => person1.Compatibility(person2));
+        public static readonly Function<Person, Person, int> Difference = new(nameof(Difference), 
+            (person1, person2) => person1.Difference(person2));
         
         public static readonly Function<Person, Facet, sbyte> PersonalityFacet = new(nameof(PersonalityFacet), 
             (person, facet) => person.Facet(facet));

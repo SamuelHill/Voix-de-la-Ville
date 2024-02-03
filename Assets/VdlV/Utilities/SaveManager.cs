@@ -16,7 +16,7 @@ namespace VdlV.Utilities {
     public static class SaveManager {
         private const string SerializeFile = "SerializedObjects.json";
 
-
+        // TODO: don't save to Assets/Saves/
         private static string SavePath(string saveName) => $"Assets/Saves/{saveName}/";
 
         public static StreamWriter SaveStream;

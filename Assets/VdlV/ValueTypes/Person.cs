@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using VdlV.Utilities;
 
 namespace VdlV.ValueTypes {
@@ -42,7 +41,7 @@ namespace VdlV.ValueTypes {
             return true;
         }
 
-        public int Compatibility(Person otherPerson) => _personality.Compatibility(otherPerson._personality);
+        public int Difference(Person otherPerson) => _personality.Difference(otherPerson._personality);
         public int Similarity(Person otherPerson) => _personality.Similarity(otherPerson._personality);
         public sbyte Facet(Facet facet) => _personality.Facet(facet);
 
