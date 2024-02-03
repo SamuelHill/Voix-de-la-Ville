@@ -1331,6 +1331,11 @@
             For general indices, the priority of this index
             </summary>
         </member>
+        <member name="P:TED.Interpreter.IColumnSpec.JointPartial">
+            <summary>
+            This is part of a joint key
+            </summary>
+        </member>
         <member name="T:TED.Interpreter.IColumnSpec`1">
             <summary>
             Used in the constructor of a TablePredicate to specify information about a column (argument) of the table
@@ -1351,6 +1356,11 @@
             Whether to maintain an index for the column
             </summary>
         </member>
+        <member name="P:TED.Interpreter.IndexedColumnSpec`1.JointPartial">
+            <summary>
+            This is part of a joint key
+            </summary>
+        </member>
         <member name="M:TED.Interpreter.IndexedColumnSpec`1.#ctor(TED.Var{`0},TED.Tables.IndexMode,System.Nullable{System.Int32},System.Boolean)">
             <summary>
             Specify information about a column/argument of a table
@@ -1358,6 +1368,7 @@
             <param name="defaultVariable">Default variable to use</param>
             <param name="indexMode">Whether to maintain an index</param>
             <param name="priority">Relative priority for using this index in a call versus other indices</param>
+            <param name="jointPartial">True if this column is part of a joint key</param>
         </member>
         <member name="T:TED.Interpreter.IConstant">
             <summary>
@@ -6402,6 +6413,13 @@
             </summary>
             <param name="updateFn"></param>
         </member>
+        <member name="F:TED.TablePredicate.Overwrite">
+            <summary>
+            If adding a row with the same key as an existing row, overwrite the original row rather
+            than throwing an exception.
+            This requires that there be exactly one key index.
+            </summary>
+        </member>
         <member name="M:TED.TablePredicate.AppendInputs">
             <summary>
             Append all the rows of the tables in Inputs to this table
@@ -6573,6 +6591,26 @@
             <summary>
             Used to add assertions to the Problems table for the current program.
             Usage: predicate.Problem(message).If(conditions...)
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.ColumnTest(System.Int32,System.Object)">
+            <summary>
+            Returns a delegate that will test a RowTest delegate for this table that tests whether the specified column has the specified value.
+            </summary>
+        </member>
+        <member name="M:TED.TablePredicate.ReclaimRowsWithColumnValue``1(TED.Var{``0},``0,System.Single)">
+            <summary>
+            Set the table to reclaim rows whose specified column have the specified value, when the table runs out of space.
+            Reclamation is triggered when the table runs out of space in its current backing array, or when Reclaim() is called
+            </summary>
+            <param name="column">Column whose value should be tested</param>
+            <param name="value">If column has this value, it can be reclaimed.</param>
+            <param name="targetLoad">If reclamation is triggered because the table is out of space, and the fraction of space used after reclamation is more than this, the table's array will be expanded.</param>
+        </member>
+        <member name="M:TED.TablePredicate.Reclaim">
+            <summary>
+            Force deletion of rows indicated by a previous call to ReclaimRowsWithColumnValue.
+            This will not expand the underlying array for the table.
             </summary>
         </member>
         <member name="T:TED.TablePredicate`1">
@@ -6903,6 +6941,9 @@
         <member name="M:TED.TablePredicate`2.ColumnValueFromRowNumber``1(TED.Var{``0})">
             <inheritdoc />
         </member>
+        <member name="M:TED.TablePredicate`2.ColumnTest(System.Int32,System.Object)">
+            <inheritdoc />
+        </member>
         <member name="T:TED.TablePredicate`3">
             <summary>
             A 3-argument TablePredicate
@@ -7103,6 +7144,9 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`3.ColumnValueFromRowNumber``1(TED.Var{``0})">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.TablePredicate`3.ColumnTest(System.Int32,System.Object)">
             <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`4">
@@ -7310,6 +7354,9 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`4.ColumnValueFromRowNumber``1(TED.Var{``0})">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.TablePredicate`4.ColumnTest(System.Int32,System.Object)">
             <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`5">
@@ -7522,6 +7569,9 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`5.ColumnValueFromRowNumber``1(TED.Var{``0})">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.TablePredicate`5.ColumnTest(System.Int32,System.Object)">
             <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`6">
@@ -7739,6 +7789,9 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`6.ColumnValueFromRowNumber``1(TED.Var{``0})">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.TablePredicate`6.ColumnTest(System.Int32,System.Object)">
             <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`7">
@@ -7961,6 +8014,9 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`7.ColumnValueFromRowNumber``1(TED.Var{``0})">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.TablePredicate`7.ColumnTest(System.Int32,System.Object)">
             <inheritdoc />
         </member>
         <member name="T:TED.TablePredicate`8">
@@ -8188,6 +8244,9 @@
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`8.ColumnValueFromRowNumber``1(TED.Var{``0})">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.TablePredicate`8.ColumnTest(System.Int32,System.Object)">
             <inheritdoc />
         </member>
         <member name="P:TED.Tables.ColumnAccessor`2.Item(`1)">
@@ -8506,6 +8565,24 @@
             This will not test for a duplicate index on the same column.
             </summary>
         </member>
+        <member name="M:TED.Tables.Table.SetReclamationRowTest(System.Delegate)">
+            <summary>
+            Set the test used to decide if a row should be reclaimed
+            </summary>
+            <param name="t">A RowTest that returns true if a row should be reclaimed</param>
+        </member>
+        <member name="M:TED.Tables.Table.Reclaim">
+            <summary>
+            Force deletion of reclaimable rows.
+            This will not grow the underlying array.
+            </summary>
+        </member>
+        <member name="F:TED.Tables.Table.PostCompactionTargetLoad">
+            <summary>
+            For use with tables that support compaction. Target fraction of space that should be used after compaction.
+            If more than this fraction of space is in use, the table will expand its space.  Default is 0.5 (50%).
+            </summary>
+        </member>
         <member name="T:TED.Tables.Table`1">
             <summary>
             A list of rows that hold the extension of a predicate
@@ -8526,6 +8603,16 @@
         <member name="F:TED.Tables.Table`1.rowSet">
             <summary>
             True if there's space to add another row before having to grow the table
+            </summary>
+        </member>
+        <member name="F:TED.Tables.Table`1.KeyIndex">
+            <summary>
+            The key index for this table, if any.
+            </summary>
+        </member>
+        <member name="F:TED.Tables.Table`1.ReclaimRowTest">
+            <summary>
+            If defined, then when the table runs out of space, it will delete all rows satisfying this predicate
             </summary>
         </member>
         <member name="M:TED.Tables.Table`1.EnsureSpace(System.Int32)">
@@ -8657,6 +8744,24 @@
             <summary>
             Function to extract the column value from a given row
             </summary>
+        </member>
+        <member name="T:TED.Tables.TableIndex`1">
+            <summary>
+            Partially typed base class for table indices
+            This contains members that need to know the row type but not the column type
+            </summary>
+            <typeparam name="TRow"></typeparam>
+        </member>
+        <member name="M:TED.Tables.TableIndex`1.#ctor(TED.TablePredicate,System.Int32[])">
+            <inheritdoc />
+        </member>
+        <member name="M:TED.Tables.TableIndex`1.RowWithKey(`0@)">
+            <summary>
+            For key indexes only
+            Return the row number of the containing the same key as rowData, if any
+            </summary>
+            <param name="rowData">Row data</param>
+            <returns>Row number of row containing the same key as rowData, or Table.NoRow, if it doesn't appear.</returns>
         </member>
         <member name="T:TED.Term">
             <summary>

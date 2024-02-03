@@ -317,12 +317,15 @@ v42 -> v73 [ constraint="false" ]
 v78 -> v73 [ constraint="false" ]
 v72 -> v78
 v16 -> v78
+v54 -> v73 [ constraint="false" ]
+v34 -> v73 [ constraint="false" ]
 v79 -> v72 [ color="blue" ]
 v80 -> v79 [ constraint="false" ]
 v5 -> v80
 v4 -> v79 [ constraint="false" ]
 v81 -> v72 [ color="red" ]
 v54 -> v81 [ constraint="false" ]
+v72 -> v81 [ constraint="false" ]
 v34 -> v81 [ constraint="false" ]
 v74 -> v81 [ constraint="false" ]
 v82 -> v81 [ constraint="false" ]
