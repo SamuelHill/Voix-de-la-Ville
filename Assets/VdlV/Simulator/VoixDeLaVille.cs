@@ -285,8 +285,11 @@ namespace VdlV.Simulator {
             Home.Add.If(Drifter[occupant, __, __], RandomElement(UnderOccupied, location));
             Home.Add.If(Unhoused[occupant], RandomElement(UnderOccupied, location));
 
-            Home.Set(occupant, location).If(Character.End[occupant],
+            Home.Set(occupant, location).If(Character.End[occupant], Home[occupant, __],
                 Place.Attributes[location, Cemetery, __, __, InBusiness]);
+            Home.Add.If(Character.End[occupant], !Home[occupant, __],
+                        Place.Attributes[location, Cemetery, __, __, InBusiness]);
+
             var BuriedAt = Predicate("BuriedAt", occupant, location)
                 .If(Place.Attributes[location, Cemetery, __, __, InBusiness], Home);
             Buried = Predicate("Buried", person).If(BuriedAt[person, __]);
@@ -329,6 +332,7 @@ namespace VdlV.Simulator {
             // ************************************ Vocations: ************************************
 
             Employment = Predicate("Employment", job.Indexed, employee.Key, location.Indexed, timeOfDay.Indexed);
+            Employment.Overwrite = true;
             EmploymentIndex = Employment.KeyIndex(employee);
             Employment.Colorize(location);
             Employment.TableButton("Visualize", VisualizeJobs);
