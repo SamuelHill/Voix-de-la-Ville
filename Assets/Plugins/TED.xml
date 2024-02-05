@@ -6413,7 +6413,7 @@
             </summary>
             <param name="updateFn"></param>
         </member>
-        <member name="F:TED.TablePredicate.Overwrite">
+        <member name="P:TED.TablePredicate.Overwrite">
             <summary>
             If adding a row with the same key as an existing row, overwrite the original row rather
             than throwing an exception.
@@ -8297,6 +8297,12 @@
             <summary>
             Previous row in a doubly-linked list of rows in a given bucket
             This is used if Remove() or changing values of the column is to be supported
+            </summary>
+        </member>
+        <member name="F:TED.Tables.GeneralIndex`2.completeDeletions">
+            <summary>
+            Number keys that have been completely removed since we last reindexed.
+            We need to track this since it's possible for the table to fill with deletions, making lookups loop infinitely.
             </summary>
         </member>
         <member name="F:TED.Tables.GeneralIndex`2.mask">

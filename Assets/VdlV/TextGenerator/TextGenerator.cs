@@ -15,7 +15,7 @@ namespace VdlV.TextGenerator {
             get {
                 var rng = MakeRng();
                 return new Function<string>(nameof(GenerateRandom),
-                    () => Random(rng),false);
+                    () => Random(rng), false);
             }
         }
 
