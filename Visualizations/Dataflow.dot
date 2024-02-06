@@ -100,6 +100,10 @@ subgraph "cluster_Employment"{
 v44 [ label = "Employment" fillcolor="limegreen"];
 v45 [ label = "Add"];
 }
+subgraph "cluster_InteractionChronicle"{
+v164 [ label = "InteractionChronicle" fillcolor="limegreen"];
+v165 [ label = "Add"];
+}
 v0 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
 v1 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
 v2 [ label = "Surnames" fillcolor="gold" shape="diamond"];
@@ -200,6 +204,10 @@ v157 [ label = "VacatedLocation"];
 v158 [ label = "DisplayLocations"];
 v159 [ label = "BuriedAt"];
 v160 [ label = "Buried"];
+v161 [ label = "LocationNameGenerators" fillcolor="gold" shape="diamond"];
+v162 [ label = "OnlyOne" fillcolor="gold" shape="diamond"];
+v163 [ label = "Monthly"];
+v166 [ label = "LoveTriangle"];
 v10 -> v9 [ color="blue" ]
 v7 -> v10 [ constraint="false" ]
 v6 -> v10 [ constraint="false" ]
@@ -530,4 +538,8 @@ v56 -> v158
 v34 -> v159
 v72 -> v159
 v159 -> v160
+v164 -> v163
+v165 -> v164 [ color="green" ]
+v106 -> v165 [ constraint="false" ]
+v163 -> v166
 }

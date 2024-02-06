@@ -22,7 +22,7 @@ namespace VdlV.Time {
         private const byte NumWeeksPerMonth = 4;
         private const byte TicksPerWeek = DaysOfWeek * TimesOfDay;        // 14
         internal const byte DaysPerMonth = DaysOfWeek * NumWeeksPerMonth; // 28
-        private const byte TicksPerMonth = DaysPerMonth * TimesOfDay;     // 56
+        internal const byte TicksPerMonth = DaysPerMonth * TimesOfDay;    // 56
         private const ushort NumTicks = Months * TicksPerMonth;           // 672
 
         internal const byte NineMonths = 9 * DaysPerMonth; // 252

@@ -58,6 +58,7 @@ namespace VdlV.Time {
         private static bool IsOpen(Schedule schedule) => IsScheduled(schedule, DayOfWeek());
         private static bool IsDate(Date date) => date.Equals(Month(), Day());
         private static bool NineMonthsPastDate(Date date) => DaysSince(date) >= NineMonths;
+        private static bool WithinOneMonthDate(TimePoint date) => YearsSince(date) == 0 && DaysSince(date) <= DaysPerMonth;
 
         // ReSharper disable InconsistentNaming
         public static readonly PrimitiveTest CurrentlyMorning = new(nameof(CurrentlyMorning), IsAM, false);
@@ -65,6 +66,7 @@ namespace VdlV.Time {
         public static readonly PrimitiveTest<DailyOperation> CurrentlyOperating = new(nameof(CurrentlyOperating), InOperation, false);
         public static readonly PrimitiveTest<Date> IsToday = new(nameof(IsToday), IsDate, false);
         public static readonly PrimitiveTest<Date> NineMonthsPast = new(nameof(NineMonthsPast), NineMonthsPastDate, false);
+        public static readonly PrimitiveTest<TimePoint> WithinOneMonth = new(nameof(WithinOneMonth), WithinOneMonthDate, false);
         // ReSharper restore InconsistentNaming
 
         public static string YearsAgo(TimePoint timePoint) {

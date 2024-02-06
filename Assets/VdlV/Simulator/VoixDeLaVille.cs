@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TED;
 using TED.Interpreter;
 using TED.Tables;
@@ -12,6 +13,7 @@ using VdlV.Utilities;
 using VdlV.ValueTypes;
 using UnityEngine;
 using static TED.Language;
+using TED.Primitives;
 
 namespace VdlV.Simulator {
     using WhereTheyAtIndex = GeneralIndex<(Person, ActionType, Location), Location>;
@@ -356,6 +358,7 @@ namespace VdlV.Simulator {
             var CandidatePerJob = Assign("CandidatePerJob", person, location).When(CandidateForJob.Assignments, BestCandidate);
 
             Employment.Add[job, person, location, CurrentTimeOfDay].If(CandidatePerJob.Assignments, CandidateForJob.Assignments);
+            // instead of overwrite = true, I could add Employment.Set options if the candidate exists in the employment table already
 
             // ********************************** New Locations ***********************************
 
@@ -382,6 +385,18 @@ namespace VdlV.Simulator {
                                   NumLocations[locType, num], count / perPopulation > num);
             }
             #endregion
+
+            var textGenerator = (Var<TextGenerator.TextGenerator>)"textGenerator";
+            var generateFunction = (Var<Function<string>>)"generateFunction";
+            var LocationNameGenerators = Predicate("LocationNameGenerators", 
+                LocationNames.Select(kv => (kv.Key, kv.Value)), locationType, textGenerator);
+            Function<TextGenerator.TextGenerator, Function<string>> GenerateLocationName = 
+                new(nameof(GenerateLocationName), generator => generator.GenerateRandom);
+
+            var OnlyOne = Predicate("OnlyOne", locationType);
+
+            //NewPlace.Add.If(OnlyOne, LocationNameGenerators[locationType, textGenerator], GenerateLocationName[textGenerator, generateFunction], locationName == generateFunction);
+
 
             // Need to decide on the position in NewPlace if we want to name based on position
             // NewPlace[locationName, LocationType.House]
@@ -509,7 +524,7 @@ namespace VdlV.Simulator {
 
             // This relies on the mom having a house when the baby is born
             WhereTheyAt[person, StayingIn, location].If(Character.Start[person], 
-                                                        Embryo.Attributes[person, woman, __, __, __], Home[woman, location]);
+                Embryo.Attributes[person, woman, __, __, __], Home[woman, location]);
 
             //WhereTheyAt.Problem("Not everyone moved").If(Character[person], !WhereTheyAt[person, __, __]);
 
@@ -594,6 +609,34 @@ namespace VdlV.Simulator {
             Spark.UpdateWhen(InteractionOfType(Flirting), spark == 150);
             Spark.UpdateWhen(InteractionOfType(Negging), spark == -120);
             Spark.UpdateWhen(InteractionOfType(Insulting), IsRomantic, spark == -750);
+
+
+            // ************************************* Sifting: *************************************
+
+            var Monthly = Predicate("Monthly", 
+                person.Indexed, otherPerson.Indexed, interactionType.Indexed, time.Indexed).If(Interaction.Chronicle, 
+                interactionType != Chatting, WithinOneMonth[time]);
+
+            var person1 = (Var<Person>)"person1";
+            var person2 = (Var<Person>)"person2";
+            var person3 = (Var<Person>)"person3";
+
+            var romanticInteractions = new InteractionType[] { Flirting, Courting, Snogging, Negging, Procreating };
+            PrimitiveTest<InteractionType> romantic = new("romantic", i => romanticInteractions.Contains(i));
+
+            var interaction1 = (Var<InteractionType>)"interaction1";
+            var interaction2 = (Var<InteractionType>)"interaction2";
+            var interaction3 = (Var<InteractionType>)"interaction3";
+            var interaction4 = (Var<InteractionType>)"interaction4";
+            var interaction5 = (Var<InteractionType>)"interaction5";
+            var interaction6 = (Var<InteractionType>)"interaction6";
+
+            var LoveTriangle = Predicate("LoveTriangle", person1, person2, person3)
+                .If((Monthly[person1, person2, interaction1, __] & romantic[interaction1]) | (Monthly[person2, person1, interaction2, __] & romantic[interaction2]), 
+                    (Monthly[person3, person2, interaction3, __] & romantic[interaction3]) | (Monthly[person2, person3, interaction4, __] & romantic[interaction4]), 
+                    (Monthly[person1, person3, interaction5, __] & romantic[interaction5]) | (Monthly[person3, person1, interaction6, __] & romantic[interaction6]));
+
+
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
