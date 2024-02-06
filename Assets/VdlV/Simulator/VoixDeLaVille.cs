@@ -222,6 +222,10 @@ namespace VdlV.Simulator {
 
             // NewPlace event drives CreatedLocation table
             var NewPlace = Event("NewPlace", locationName, locationType);
+            // Need to decide on the position in NewPlace if we want to name based on position
+            // NewPlace[locationName, LocationType.House, position]
+            //    .If(Once[WantToMove[__] | Unhoused[__]],
+            //        NamedPosition[position, locationName]); 
 
             #region Tilemap/GUI helpers
             // CreatedLocation collects new locations both for adding tiles to the 
@@ -379,75 +383,62 @@ namespace VdlV.Simulator {
             var NameLocation = Definition("NameLocation", locationType, locationName)
                .Is(LocationNameGenerators[locationType, textGenerator], GenerateLocationName[textGenerator, locationName]);
 
-
+            // TODO: Better table name...
             var OnlyOne = Predicate("OnlyOne", locationType);
-            NewPlace.If(OnlyOne, NameLocation);
+            NewPlace.If(OnlyOne, OnlyLocationOfType, NameLocation);
 
-
-            Goal OptionalOnlyLocationOfType(Goal goal, LocationType locType, bool onlyOne) => 
-                onlyOne ? OnlyLocationOfType[locType] & goal : goal;
-
-            void LocationFromGenerator(LocationType locType, bool onlyOne, params Goal[] readyToAdd) =>
-                NewPlace[LocationNames[locType].GenerateRandom, locType]
-                   .If(OptionalOnlyLocationOfType(And[readyToAdd], locType, onlyOne));
-
-            void OnlyLocation(LocationType locType, params Goal[] readyToAdd) =>
-                LocationFromGenerator(locType, true, readyToAdd);
-
-            void OnlyWhenPopOf(LocationType locType, int population) => 
-                OnlyLocation(locType, Population[count], count >= population);
-
-            void MultipleLocations(LocationType locType, params Goal[] readyToAdd) =>
-                LocationFromGenerator(locType, false, readyToAdd);
-
-            void PerCapita(LocationType locType, int perPopulation) {
-                OnlyWhenPopOf(locType, perPopulation);
-                MultipleLocations(locType, Population[count], 
-                                  NumLocations[locType, num], count / perPopulation > num);
-            }
-
-
-
-            // Need to decide on the position in NewPlace if we want to name based on position
-            // NewPlace[locationName, LocationType.House]
-            //    .If(Once[WantToMove[__] | Unhoused[__]],
-            //        NamedPosition[position, locationName]); 
 
             // Start with, and always keep one in business
-            OnlyLocation(PostOffice, True);
-            OnlyLocation(Park, True);
-            OnlyLocation(CarpentryCompany, True);
+            OnlyOne[PostOffice].If(True);
+            OnlyOne[Park].If(True);
+            OnlyOne[CarpentryCompany].If(True);
             // Spawn once, as needed
-            OnlyLocation(Cemetery, Once[And[Age, age >= 60]]); // before anyone can die
-            OnlyLocation(DayCare, Count(Age & (age < 6)) > 5);
-            OnlyLocation(School, Count(Age & (age >= 5) & (age < 18)) > 5);
+            OnlyOne[Cemetery].If(Once[And[Age, age >= 60]]); // before anyone can die
+            OnlyOne[DayCare].If(Count(Age & (age < 6)) > 5);
+            OnlyOne[School].If(Count(Age & (age >= 5) & (age < 18)) > 5);
             // Spawn once a competent enough individual comes along
-            OnlyLocation(DoctorOffice, Once[And[Aptitude[person, Vocation.Doctor, aptitude], aptitude > 20, Age, age > 30]]);
-            OnlyLocation(DentistOffice, Once[And[Aptitude[person, Vocation.Dentist, aptitude], aptitude > 22, Age, age > 30]]);
+            OnlyOne[DoctorOffice].If(Once[And[Aptitude[person, Vocation.Doctor, aptitude], aptitude > 20, Age, age > 30]]);
+            OnlyOne[DentistOffice].If(Once[And[Aptitude[person, Vocation.Dentist, aptitude], aptitude > 22, Age, age > 30]]);
+
+            var PopulationAtLeast = Definition("PopulationAtLeast", num)
+               .Is(Population[count], count >= num);
+
             // Spawn once the population reaches num
-            OnlyWhenPopOf(LumberMill, 50);
-            OnlyWhenPopOf(Brewery, 80);
-            OnlyWhenPopOf(CommunityCenter, 100);
-            OnlyWhenPopOf(JewelryShop, 170);
-            OnlyWhenPopOf(CityHall, 200);
-            OnlyWhenPopOf(TattooParlor, 220);
-            OnlyWhenPopOf(Hospital, 240);
-            OnlyWhenPopOf(DepartmentStore, 300);
+            OnlyOne[LumberMill].If(PopulationAtLeast[50]);
+            OnlyOne[Brewery].If(PopulationAtLeast[80]);
+            OnlyOne[CommunityCenter].If(PopulationAtLeast[100]);
+            OnlyOne[JewelryShop].If(PopulationAtLeast[170]);
+            OnlyOne[CityHall].If(PopulationAtLeast[200]);
+            OnlyOne[TattooParlor].If(PopulationAtLeast[220]);
+            OnlyOne[Hospital].If(PopulationAtLeast[240]);
+            OnlyOne[DepartmentStore].If(PopulationAtLeast[300]);
+
+            // TODO: Better table name...
+            var Multiple = Predicate("Multiple", locationType);
+            NewPlace.If(Multiple, NameLocation);
 
             // Houses whenever there is a need for housing
-            MultipleLocations(House, Once[WantToMove[__] | Unhoused[__]]);
+            Multiple[House].If(Once[WantToMove[__] | Unhoused[__]]);
+
+            var perPopulation = (Var<int>)"perPopulation";
+            // Needs the !NumLocations check as CountsBy won't have a row for a type with 0 occurrences
+            var BelowPerCapita = Definition("BelowPerCapita", locationType, perPopulation)
+               .Is((!NumLocations[locationType, __] & PopulationAtLeast[perPopulation]) | 
+                   (NumLocations[locationType, num] & Population[count] & (count / perPopulation > num)));
+
             // Spawn once per population density
-            PerCapita(Bar, 35);
-            PerCapita(Diner, 55);
-            PerCapita(Bakery, 125);
-            PerCapita(ButcherShop, 170);
-            PerCapita(CandyShop, 250);
-            PerCapita(GroceryStore, 95);
-            PerCapita(GeneralStore, 150);
-            PerCapita(Barbershop, 250);
-            PerCapita(TailorShop, 100);
-            PerCapita(Farm, 160);
-            PerCapita(Orchard, 220);
+            Multiple[Bar].If(BelowPerCapita[Bar, 35]);
+            Multiple[Diner].If(BelowPerCapita[Diner, 55]);
+            Multiple[Bakery].If(BelowPerCapita[Bakery, 125]);
+            Multiple[ButcherShop].If(BelowPerCapita[ButcherShop, 170]);
+            Multiple[CandyShop].If(BelowPerCapita[CandyShop, 250]);
+            Multiple[GroceryStore].If(BelowPerCapita[GroceryStore, 95]);
+            Multiple[GeneralStore].If(BelowPerCapita[GeneralStore, 150]);
+            Multiple[Barbershop].If(BelowPerCapita[Barbershop, 250]);
+            Multiple[TailorShop].If(BelowPerCapita[TailorShop, 100]);
+            Multiple[Farm].If(BelowPerCapita[Farm, 160]);
+            Multiple[Orchard].If(BelowPerCapita[Orchard, 220]);
+
 
             // ************************************* Movement: ************************************
             // TODO : NoOneToVisit change action assignment to StayingIn
