@@ -363,13 +363,33 @@ namespace VdlV.Simulator {
 
             // ********************************** New Locations ***********************************
 
-            #region New Location Macros
-            Goal OnlyLocationOfType(Goal goal, LocationType locType, bool onlyOne) => onlyOne ?
-                !Place.Attributes[__, locType, __, __, InBusiness] & goal : goal;
+            // TODO: Saves don't need to store the TextGenerators... Add a skip in saving/loading for static stables
+            // TODO: Move this to Variables
+            var textGenerator = (Var<TextGenerator.TextGenerator>)"textGenerator";
+            
+            // TODO: Move this to StaticTables
+            var LocationNameGenerators = Predicate("LocationNameGenerators", 
+                LocationNames.Select(kv => (kv.Key, kv.Value)), locationType.Indexed, textGenerator);
+
+            Function<TextGenerator.TextGenerator, string> GenerateLocationName =
+                new(nameof(GenerateLocationName), generator => generator.GenerateRandomString());
+
+            var OnlyLocationOfType = Definition("OnlyLocationOfType", locationType)
+               .Is(!Place.Attributes[__, locationType, __, __, InBusiness]);
+            var NameLocation = Definition("NameLocation", locationType, locationName)
+               .Is(LocationNameGenerators[locationType, textGenerator], GenerateLocationName[textGenerator, locationName]);
+
+
+            var OnlyOne = Predicate("OnlyOne", locationType);
+            NewPlace.If(OnlyOne, NameLocation);
+
+
+            Goal OptionalOnlyLocationOfType(Goal goal, LocationType locType, bool onlyOne) => 
+                onlyOne ? OnlyLocationOfType[locType] & goal : goal;
 
             void LocationFromGenerator(LocationType locType, bool onlyOne, params Goal[] readyToAdd) =>
                 NewPlace[LocationNames[locType].GenerateRandom, locType]
-                   .If(OnlyLocationOfType(And[readyToAdd], locType, onlyOne));
+                   .If(OptionalOnlyLocationOfType(And[readyToAdd], locType, onlyOne));
 
             void OnlyLocation(LocationType locType, params Goal[] readyToAdd) =>
                 LocationFromGenerator(locType, true, readyToAdd);
@@ -385,18 +405,7 @@ namespace VdlV.Simulator {
                 MultipleLocations(locType, Population[count], 
                                   NumLocations[locType, num], count / perPopulation > num);
             }
-            #endregion
 
-            var textGenerator = (Var<TextGenerator.TextGenerator>)"textGenerator";
-            var generateFunction = (Var<Function<string>>)"generateFunction";
-            var LocationNameGenerators = Predicate("LocationNameGenerators", 
-                LocationNames.Select(kv => (kv.Key, kv.Value)), locationType, textGenerator);
-            Function<TextGenerator.TextGenerator, Function<string>> GenerateLocationName = 
-                new(nameof(GenerateLocationName), generator => generator.GenerateRandom);
-
-            //var OnlyOne = Predicate("OnlyOne", locationType);
-
-            //NewPlace.Add.If(OnlyOne, LocationNameGenerators[locationType, textGenerator], GenerateLocationName[textGenerator, generateFunction], locationName == generateFunction);
 
 
             // Need to decide on the position in NewPlace if we want to name based on position
@@ -613,7 +622,7 @@ namespace VdlV.Simulator {
 
 
             // ************************************* Sifting: *************************************
-
+            /*
             var Monthly = Predicate("Monthly", person.Indexed, otherPerson.Indexed, interactionType, time)
                .If(Interaction.Chronicle, interactionType != Chatting, WithinOneMonth[time]);
 
@@ -646,6 +655,7 @@ namespace VdlV.Simulator {
             // This would be nice, but it will break... Needs a Relationship<T1, T2, T3> class to handle this
             //var LoveTriangles = Exists("LoveTriangles", trio);
             //LoveTriangles.StartWhen(LoveTriangle).EndWhen(LoveTriangles, !LoveTriangle[trio]);
+            */
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming

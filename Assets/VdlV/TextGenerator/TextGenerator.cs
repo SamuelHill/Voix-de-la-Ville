@@ -18,6 +18,12 @@ namespace VdlV.TextGenerator {
                     () => Random(rng), false);
             }
         }
+        public Func<string> GenerateRandomString {
+            get {
+                var rng = MakeRng();
+                return () => Random(rng);
+            }
+        }
 
         public string RandomUnique(Random rng) => GenerateUnique(Global, rng);
         public Function<string> GenerateRandomUnique {
