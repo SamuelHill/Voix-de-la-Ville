@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TED;
@@ -393,7 +394,7 @@ namespace VdlV.Simulator {
             Function<TextGenerator.TextGenerator, Function<string>> GenerateLocationName = 
                 new(nameof(GenerateLocationName), generator => generator.GenerateRandom);
 
-            var OnlyOne = Predicate("OnlyOne", locationType);
+            //var OnlyOne = Predicate("OnlyOne", locationType);
 
             //NewPlace.Add.If(OnlyOne, LocationNameGenerators[locationType, textGenerator], GenerateLocationName[textGenerator, generateFunction], locationName == generateFunction);
 
@@ -613,30 +614,38 @@ namespace VdlV.Simulator {
 
             // ************************************* Sifting: *************************************
 
-            var Monthly = Predicate("Monthly", 
-                person.Indexed, otherPerson.Indexed, interactionType.Indexed, time.Indexed).If(Interaction.Chronicle, 
-                interactionType != Chatting, WithinOneMonth[time]);
+            var Monthly = Predicate("Monthly", person.Indexed, otherPerson.Indexed, interactionType, time)
+               .If(Interaction.Chronicle, interactionType != Chatting, WithinOneMonth[time]);
 
             var person1 = (Var<Person>)"person1";
             var person2 = (Var<Person>)"person2";
             var person3 = (Var<Person>)"person3";
-
-            var romanticInteractions = new InteractionType[] { Flirting, Courting, Snogging, Negging, Procreating };
-            PrimitiveTest<InteractionType> romantic = new("romantic", i => romanticInteractions.Contains(i));
-
             var interaction1 = (Var<InteractionType>)"interaction1";
             var interaction2 = (Var<InteractionType>)"interaction2";
             var interaction3 = (Var<InteractionType>)"interaction3";
-            var interaction4 = (Var<InteractionType>)"interaction4";
-            var interaction5 = (Var<InteractionType>)"interaction5";
-            var interaction6 = (Var<InteractionType>)"interaction6";
+            var trio = (Var<ValueTuple<Person, Person, Person>>)"trio";
 
-            var LoveTriangle = Predicate("LoveTriangle", person1, person2, person3)
-                .If((Monthly[person1, person2, interaction1, __] & romantic[interaction1]) | (Monthly[person2, person1, interaction2, __] & romantic[interaction2]), 
-                    (Monthly[person3, person2, interaction3, __] & romantic[interaction3]) | (Monthly[person2, person3, interaction4, __] & romantic[interaction4]), 
-                    (Monthly[person1, person3, interaction5, __] & romantic[interaction5]) | (Monthly[person3, person1, interaction6, __] & romantic[interaction6]));
+            var romanticInteractions = new[] { Flirting, Courting, Snogging, Negging, Procreating };
 
+            Goal MonthlyRomance(Term<Person> p1, Term<Person> p2, Term<InteractionType> interact) => 
+                Monthly[p1, p2, interaction1, __] & In(interact, romanticInteractions);
 
+            var NewTrio = Function<Person, Person, Person, ValueTuple<Person, Person, Person>>("NewTrio", 
+                (p1, p2, p3) => {
+                    var toSort = new[] { p1, p2, p3 };
+                    Array.Sort(toSort, (person, other) => person.CompareTo(other));
+                    return (toSort[0], toSort[1], toSort[2]);
+                });
+
+            var LoveTriangle = Predicate("LoveTriangle", trio)
+                .If(Once[MonthlyRomance(person1, person2, interaction1) & 
+                         MonthlyRomance(person2, person3, interaction2) & 
+                         MonthlyRomance(person3, person1, interaction3) &
+                         NewTrio[person1, person2, person3, trio]]);
+
+            // This would be nice, but it will break... Needs a Relationship<T1, T2, T3> class to handle this
+            //var LoveTriangles = Exists("LoveTriangles", trio);
+            //LoveTriangles.StartWhen(LoveTriangle).EndWhen(LoveTriangles, !LoveTriangle[trio]);
 
             // ************************************ END TABLES ************************************
             // ReSharper restore InconsistentNaming
