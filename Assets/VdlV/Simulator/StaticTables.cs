@@ -7,11 +7,15 @@ using VdlV.Time;
 using VdlV.Utilities;
 using VdlV.ValueTypes;
 using UnityEngine;
+using VdlV.TextGenerator;
 using static TED.Language;
 
 namespace VdlV.Simulator {
-    using static Variables;
     using static CsvManager;
+    using static Generators;
+    using static LocationType;
+    using static InteractionType;
+    using static Variables;
 
     /// <summary>
     /// All static tables (Datalog style EDBs - in TED these can be extensional or intensional).
@@ -21,9 +25,10 @@ namespace VdlV.Simulator {
         public static TablePredicate<string> FemaleNames;
         public static TablePredicate<string> MaleNames;
         public static TablePredicate<string> Surnames;
+        public static TablePredicate<LocationType, TextGenerator.TextGenerator> LocationNameGenerators;
 
         // ***************************************** Enums ****************************************
-        //public static TablePredicate<Facet> Facets;
+        public static TablePredicate<Facet> Facets;
         public static TablePredicate<Vocation> Jobs;
 
         // ************************************* Primordial(s) ************************************
@@ -42,10 +47,14 @@ namespace VdlV.Simulator {
         private static TablePredicate<LocationType, Color> _locationColors;
         public static KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
 
+        public static TablePredicate<InteractionType, int> InteractionAffinityDelta;
+
+
         // ************************************** Collections *************************************
-        public static readonly LocationType[] permanentLocationTypes = {
-            LocationType.Cemetery, LocationType.CityHall, LocationType.DayCare,
-            LocationType.FireStation, LocationType.Hospital, LocationType.School
+        public static readonly LocationType[] permanentLocationTypes = { Cemetery, CityHall, DayCare, FireStation, Hospital, School };
+        public static readonly InteractionType[] romanticInteractions = new[] { Flirting, Courting, Snogging, Negging, Procreating };
+        public static readonly InteractionType[] platonicInteractions = new[] {
+            Empathizing, Assisting, Complimenting, Chatting, Insulting, Arguing, Fighting, Dueling
         };
 
         public static void InitStaticTables() {
@@ -53,16 +62,14 @@ namespace VdlV.Simulator {
             MaleNames = FromCsv("MaleNames", CsvDataFile("male_names"), firstName);
             Surnames = FromCsv("Surnames", CsvDataFile("english_surnames"), lastName);
 
-            //Facets = EnumTable("Facets", facet);
+            Facets = EnumTable("Facets", facet);
             Jobs = EnumTable("Jobs", job);
 
-            PrimordialBeing = FromCsv("PrimordialBeing", CsvDataFile("agents"), 
-                person, age, dateOfBirth, sex, sexuality);
-            PrimordialLocation = FromCsv("PrimordialLocation", CsvDataFile("locations"),
-                location, locationType, position, founding);
+            PrimordialBeing = FromCsv("PrimordialBeing", CsvDataFile("agents"), person, age, dateOfBirth, sex, sexuality);
+            PrimordialLocation = FromCsv("PrimordialLocation", CsvDataFile("locations"), location, locationType, position, founding);
 
-            LocationInformation = FromCsv("LocationInformation", CsvDataFile("locationInformation"),
-                locationType.Key, locationCategory.Indexed, operation, schedule);
+            LocationInformation = FromCsv("LocationInformation", CsvDataFile("locationInformation"), 
+                                          locationType.Key, locationCategory.Indexed, operation, schedule);
             _vocationLocations = FromCsv("VocationLocations", CsvDataFile("vocationLocations"), job.Indexed, locationType.Indexed);
             _operatingTimes = FromCsv("OperatingTimes", CsvDataFile("operatingTimes"), timeOfDay, operation);
             VocationShift = Predicate("VocationShift", locationType.Indexed, job.Indexed, timeOfDay);
@@ -74,6 +81,11 @@ namespace VdlV.Simulator {
             _locationColors = Predicate("LocationColors", locationType.Key, color);
             _locationColors.Initially.Where(LocationInformation, _categoryColors);
             LocationColorsIndex = _locationColors.KeyIndex(locationType);
+
+            LocationNameGenerators = Predicate("LocationNameGenerators", 
+                LocationNames.Select(kv => (kv.Key, kv.Value)), locationType.Indexed, textGenerator);
+
+            InteractionAffinityDelta = FromCsv("InteractionAffinityDelta", CsvDataFile("interactionAffinityDelta"), interactionType, num);
         }
 
         private static TablePredicate<T> EnumTable<T>(string name, IColumnSpec<T> column) where T : Enum {

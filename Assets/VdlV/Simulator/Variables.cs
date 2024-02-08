@@ -32,13 +32,12 @@ namespace VdlV.Simulator {
         public static readonly Var<int> charge = (Var<int>)"charge";
         public static readonly Var<int> distance = (Var<int>)"distance";
         public static readonly Var<int> positions = (Var<int>)"positions";
+        public static readonly Var<int> perCapita = (Var<int>)"perCapita";
         public static readonly Var<sbyte> aptitude = (Var<sbyte>)"aptitude";
         public static readonly Var<sbyte> personality = (Var<sbyte>)"personality";
 
         public static readonly Var<Sex> sex = (Var<Sex>)"sex";
-        public static readonly Var<Sex> sexOfPartner = (Var<Sex>)"sexOfPartner";
         public static readonly Var<Sexuality> sexuality = (Var<Sexuality>)"sexuality";
-        public static readonly Var<Sexuality> sexualOfPartner = (Var<Sexuality>)"sexualityOfPartner";
         public static readonly Var<VitalStatus> vitalStatus = (Var<VitalStatus>)"vitalStatus";
         public static readonly Var<Facet> facet = (Var<Facet>)"facet";
         public static readonly Var<Vocation> job = (Var<Vocation>)"job";
@@ -46,10 +45,7 @@ namespace VdlV.Simulator {
         public static readonly Var<Date> conception = (Var<Date>)"conception";
         public static readonly Var<Date> dateOfBirth = (Var<Date>)"dateOfBirth";
         public static readonly Var<TimePoint> birthday = (Var<TimePoint>)"birthday";
-        public static readonly Var<TimePoint> conceived = (Var<TimePoint>)"conceived";
         public static readonly Var<TimePoint> founding = (Var<TimePoint>)"founding";
-
-        public static readonly Var<Month> month = (Var<Month>)"month";
 
         public static readonly Var<Location> location = (Var<Location>)"location";
         public static readonly Var<Location> otherLocation = (Var<Location>)"otherLocation";
@@ -69,6 +65,8 @@ namespace VdlV.Simulator {
 
         public static readonly Var<ValueTuple<Person, Person>> pairing = (Var<ValueTuple<Person, Person>>)"pairing";
         public static readonly Var<SymmetricTuple<Person>> symmetricPair = (Var<SymmetricTuple<Person>>)"symmetricPair";
+
+        public static readonly Var<TextGenerator.TextGenerator> textGenerator = (Var<TextGenerator.TextGenerator>)"textGenerator";
 
         // ********************************** Socialog Variables **********************************
 

@@ -317,7 +317,9 @@ namespace VdlV.TextGenerator {
             { Quarry , QuarryName },
             { TattooParlor , TattooParlorName },
         };
-        #endregion
 
+        public static Function<TextGenerator, string> GenerateLocationName =
+            new(nameof(GenerateLocationName), generator => generator.GenerateRandomString());
+        #endregion
     }
 }

@@ -26,10 +26,13 @@ namespace VdlV.Unity {
         // ReSharper disable MemberCanBePrivate.Global
         // ReSharper disable FieldCanBeMadeReadOnly.Global
         // ReSharper disable once ConvertToConstant.Global
-        public bool PrettyNamesOnly = true;
+        // ReSharper disable once UnassignedField.Global
+        public bool SiftingEnabled;
         // ReSharper disable once ConvertToConstant.Global
         // ReSharper disable once UnassignedField.Global
         public bool RecordPerformanceData;
+        // ReSharper disable once ConvertToConstant.Global
+        public bool PrettyNamesOnly = true;
         // ReSharper disable once UnassignedField.Global
         public Vector2Int TownCenter;
         // ReSharper disable once UnassignedField.Global
@@ -56,6 +59,7 @@ namespace VdlV.Unity {
         internal void Start() {
             TED.Comparer<Vector2Int>.Default = new GridComparer();
             RecordingPerformance = RecordPerformanceData;
+            Sifting = SiftingEnabled;
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
             _graphVisualizer = GraphComponent.GetComponent<GraphVisualizer>();
             GraphScreenCoordinates();
