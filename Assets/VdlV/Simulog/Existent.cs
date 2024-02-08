@@ -38,6 +38,8 @@ namespace VdlV.Simulog {
             this.Colorize(exists, s => s ? white : gray);
         }
 
+        public void DiscardNonExistent() => ReclaimRowsWithColumnValue(state, false);
+
         #region Count table
         private TablePredicate<bool, int> _countPredicate;
         public TablePredicate<bool, int> Count {
@@ -165,6 +167,8 @@ namespace VdlV.Simulog {
             this.Colorize(exists, s => s ? white : gray);
         }
 
+        public void DiscardNonExistent() => ReclaimRowsWithColumnValue(state, false);
+
         #region Count table
         private TablePredicate<bool, int> _countPredicate;
         public TablePredicate<bool, int> Count {
@@ -280,6 +284,8 @@ namespace VdlV.Simulog {
             Attributes = Predicate($"{name}Attributes", ((Var<T>)DefaultVariables[0]).Key, feature1, feature2);
             this.Colorize(exists, s => s ? white : gray);
         }
+
+        public void DiscardNonExistent() => ReclaimRowsWithColumnValue(state, false);
 
         #region Count table
         private TablePredicate<bool, int> _countPredicate;
@@ -397,6 +403,8 @@ namespace VdlV.Simulog {
             this.Colorize(exists, s => s ? white : gray);
         }
 
+        public void DiscardNonExistent() => ReclaimRowsWithColumnValue(state, false);
+
         #region Count table
         private TablePredicate<bool, int> _countPredicate;
         public TablePredicate<bool, int> Count {
@@ -513,6 +521,8 @@ namespace VdlV.Simulog {
                                    feature1, feature2, feature3, feature4);
             this.Colorize(exists, s => s ? white : gray);
         }
+
+        public void DiscardNonExistent() => ReclaimRowsWithColumnValue(state, false);
 
         #region Count table
         private TablePredicate<bool, int> _countPredicate;
@@ -632,6 +642,8 @@ namespace VdlV.Simulog {
                                    feature1, feature2, feature3, feature4, feature5);
         }
 
+        public void DiscardNonExistent() => ReclaimRowsWithColumnValue(state, false);
+
         #region Count table
         private TablePredicate<bool, int> _countPredicate;
         public TablePredicate<bool, int> Count {
@@ -750,6 +762,8 @@ namespace VdlV.Simulog {
                                    feature1, feature2, feature3, feature4, feature5, feature6);
         }
 
+        public void DiscardNonExistent() => ReclaimRowsWithColumnValue(state, false);
+
         #region Count table
         private TablePredicate<bool, int> _countPredicate;
         public TablePredicate<bool, int> Count {
@@ -867,6 +881,8 @@ namespace VdlV.Simulog {
             Attributes = Predicate($"{name}Attributes", ((Var<T>)DefaultVariables[0]).Key, 
                                    feature1, feature2, feature3, feature4, feature5, feature6, feature7);
         }
+
+        public void DiscardNonExistent() => ReclaimRowsWithColumnValue(state, false);
 
         #region Count table
         private TablePredicate<bool, int> _countPredicate;
