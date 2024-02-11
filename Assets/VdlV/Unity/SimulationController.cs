@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TED.Utilities;
+using TMPro;
 using VdlV.Simulator;
 using VdlV.Time;
 using VdlV.Utilities;
@@ -23,26 +24,15 @@ namespace VdlV.Unity {
     // ReSharper disable once UnusedMember.Global
     /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>
     public class SimulationController : MonoBehaviour {
-        // ReSharper disable MemberCanBePrivate.Global
-        // ReSharper disable FieldCanBeMadeReadOnly.Global
-        // ReSharper disable once ConvertToConstant.Global
-        // ReSharper disable once UnassignedField.Global
+        // ReSharper disable MemberCanBePrivate.Global, FieldCanBeMadeReadOnly.Global, ConvertToConstant.Global, UnassignedField.Global
         public bool SiftingEnabled;
-        // ReSharper disable once ConvertToConstant.Global
-        // ReSharper disable once UnassignedField.Global
         public bool RecordPerformanceData;
-        // ReSharper disable once ConvertToConstant.Global
         public bool PrettyNamesOnly = true;
-        // ReSharper disable once UnassignedField.Global
         public Vector2Int TownCenter;
-        // ReSharper disable once UnassignedField.Global
         public Tilemap Tilemap;
-        // ReSharper disable once UnassignedField.Global
         public Tile OccupiedLot;
-        // ReSharper disable once UnassignedField.Global
         public Component GraphComponent;
-        // ReSharper restore FieldCanBeMadeReadOnly.Global
-        // ReSharper restore MemberCanBePrivate.Global
+        // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
         private const byte NumInRow = 3; // Used with ListWithRows
 
