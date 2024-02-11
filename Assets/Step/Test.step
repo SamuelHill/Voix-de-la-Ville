@@ -1,0 +1,1 @@
+DoSomething: [DoAll [Character ?who ? ? ?]  [Write ?who] [NewLine]]

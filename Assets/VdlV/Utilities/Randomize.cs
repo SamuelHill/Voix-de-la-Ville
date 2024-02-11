@@ -15,11 +15,16 @@ namespace VdlV.Utilities {
     /// </summary>
     // ReSharper disable MemberCanBePrivate.Global
     public static class Randomize {
-        private static readonly uint[] Primes = {
-            1u,  2u,  3u,  5u,  7u,  11u, 13u, 17u, 19u, 23u,
-            29u, 31u, 37u, 41u, 43u, 53u, 59u, 61u, 67u, 71u,
-            73u, 79u, 83u, 89u, 97u };
-        private static readonly int[] HighPrimes = new int[100];
+        public static readonly int[] Primes = new[]
+        {
+            1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 53, 59, 61, 67, 71, 73, 79,
+            83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
+            179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281,
+            283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409,
+            419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541
+        };
+
+        public static int RandomPrime(Random r) => RandomElement(Primes, r);
 
         private const int PseudoNormalNumAggregations = 10;
 
@@ -28,14 +33,6 @@ namespace VdlV.Utilities {
         public const sbyte BellCurveRange = BellCurveMax - BellCurveMin;
 
         public static readonly Random RngForInitialization = MakeRng();
-
-        static Randomize() {
-            var index = 0;
-            for (var i = 1; i < HighPrimes.Length; i++) {
-                if (index < Primes.Length - 1 && i > Primes[index + 1]) index++;
-                HighPrimes[i] = index;
-            }
-        }
 
         public static void Seed(int seed) => TEDRandom.SetGlobalSeed(seed);
         public static Random MakeRng() => TEDRandom.MakeRng();
@@ -117,19 +114,6 @@ namespace VdlV.Utilities {
                 (result[index], result[i]) = (result[i], result[index]);
             }
             return result;
-        }
-
-        public static IEnumerable<T> BadShuffle<T>(this IList<T> list, Random rng) {
-            var length = (uint)list.Count;
-            if (length == 0) yield break;
-            var position = rng.Next() % length;
-            var maxPrimeIndex = Primes.Length - 1;
-            if (length < HighPrimes.Length) maxPrimeIndex = HighPrimes[length];
-            var step = Primes[rng.Next() % (maxPrimeIndex + 1)];
-            for (uint i = 0; i < length; i++) {
-                yield return list[(int)position];
-                position = (position + step) % length;
-            }
         }
     }
 }

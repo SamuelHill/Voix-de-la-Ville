@@ -6163,6 +6163,11 @@
             Default variables for use in TrueWhen()
             </summary>
         </member>
+        <member name="P:TED.TablePredicate.Arity">
+            <summary>
+            Number of arguments to the predicate
+            </summary>
+        </member>
         <member name="P:TED.TablePredicate.Item(TED.Term[])">
             <summary>
             Returns a goal of the predicate applied to the specified arguments
@@ -6365,6 +6370,20 @@
             <summary>
             Null-tolerant version of ToString.
             </summary>
+        </member>
+        <member name="M:TED.TablePredicate.GetUntypedRowData(System.UInt32,System.Object[])">
+            <summary>
+            Write the columns of the specified row into the specified array
+            </summary>
+            <param name="rowNumber">Row number within the table</param>
+            <param name="buffer">Buffer in which to write the row data</param>
+        </member>
+        <member name="M:TED.TablePredicate.UntypedRows(System.Boolean)">
+            <summary>
+            Enumerate all rows of the table as object?[] arrays.
+            Note that this will box any value types in columns, so it is potentially expensive.
+            </summary>
+            <param name="reuseBuffer">If true, the save object?[] array will be reused for each returned result.  Otherwise, new buffers will be allocated for each row.</param>
         </member>
         <member name="M:TED.TablePredicate.RowToStrings(System.UInt32,System.String[])">
             <summary>
@@ -6702,6 +6721,9 @@
             Add a set of rows from a generator
             </summary>
         </member>
+        <member name="M:TED.TablePredicate`1.GetUntypedRowData(System.UInt32,System.Object[])">
+            <inheritdoc />
+        </member>
         <member name="M:TED.TablePredicate`1.RowToStrings(System.UInt32,System.String[])">
             <summary>
             Convert the columns of the specified row to strings and write them to buffer
@@ -6841,7 +6863,7 @@
             <param name="arg2">Second argument</param>
             <returns>The TablePredicate</returns>
         </member>
-        <member name="M:TED.TablePredicate`2.LoadCsv(System.String,System.String)">
+        <member name="M:TED.TablePredicate`2.GetUntypedRowData(System.UInt32,System.Object[])">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`2.RowToStrings(System.UInt32,System.String[])">
@@ -7061,7 +7083,7 @@
             <param name="arg3">Third argument</param>
             <returns>The TablePredicate</returns>
         </member>
-        <member name="M:TED.TablePredicate`3.LoadCsv(System.String,System.String)">
+        <member name="M:TED.TablePredicate`3.GetUntypedRowData(System.UInt32,System.Object[])">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`3.RowToStrings(System.UInt32,System.String[])">
@@ -7271,7 +7293,7 @@
             <param name="arg4">Fourth argument</param>
             <returns>The TablePredicate</returns>
         </member>
-        <member name="M:TED.TablePredicate`4.LoadCsv(System.String,System.String)">
+        <member name="M:TED.TablePredicate`4.GetUntypedRowData(System.UInt32,System.Object[])">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`4.RowToStrings(System.UInt32,System.String[])">
@@ -7486,7 +7508,7 @@
             <param name="arg5">Fifth argument</param>
             <returns>The TablePredicate</returns>
         </member>
-        <member name="M:TED.TablePredicate`5.LoadCsv(System.String,System.String)">
+        <member name="M:TED.TablePredicate`5.GetUntypedRowData(System.UInt32,System.Object[])">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`5.RowToStrings(System.UInt32,System.String[])">
@@ -7706,7 +7728,7 @@
             <param name="arg6">Sixth argument</param>
             <returns>The TablePredicate</returns>
         </member>
-        <member name="M:TED.TablePredicate`6.LoadCsv(System.String,System.String)">
+        <member name="M:TED.TablePredicate`6.GetUntypedRowData(System.UInt32,System.Object[])">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`6.RowToStrings(System.UInt32,System.String[])">
@@ -7931,7 +7953,7 @@
             <param name="arg7">Seventh argument</param>
             <returns>The TablePredicate</returns>
         </member>
-        <member name="M:TED.TablePredicate`7.LoadCsv(System.String,System.String)">
+        <member name="M:TED.TablePredicate`7.GetUntypedRowData(System.UInt32,System.Object[])">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`7.RowToStrings(System.UInt32,System.String[])">
@@ -8161,7 +8183,7 @@
             <param name="arg8">Eighth argument</param>
             <returns>The TablePredicate</returns>
         </member>
-        <member name="M:TED.TablePredicate`8.LoadCsv(System.String,System.String)">
+        <member name="M:TED.TablePredicate`8.GetUntypedRowData(System.UInt32,System.Object[])">
             <inheritdoc />
         </member>
         <member name="M:TED.TablePredicate`8.RowToStrings(System.UInt32,System.String[])">
