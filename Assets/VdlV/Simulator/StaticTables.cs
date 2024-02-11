@@ -52,8 +52,8 @@ namespace VdlV.Simulator {
 
         // ************************************** Collections *************************************
         public static readonly LocationType[] permanentLocationTypes = { Cemetery, CityHall, DayCare, FireStation, Hospital, School };
-        public static readonly InteractionType[] romanticInteractions = new[] { Flirting, Courting, Snogging, Negging, Procreating };
-        public static readonly InteractionType[] platonicInteractions = new[] {
+        public static readonly InteractionType[] romanticInteractions = { Flirting, Courting, Snogging, Negging, Procreating };
+        public static readonly InteractionType[] platonicInteractions = {
             Empathizing, Assisting, Complimenting, Chatting, Insulting, Arguing, Fighting, Dueling
         };
 
