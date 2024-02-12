@@ -67,7 +67,10 @@ namespace VdlV.Unity {
 
         // ReSharper disable once UnusedMember.Global
         internal void Update() {
-            if (GetKeyDown(KeyCode.Escape)) _simulationRunning = !_simulationRunning;
+            if (GetKeyDown(KeyCode.Escape)) {
+                _simulationRunning = !_simulationRunning;
+                SavingWithName = false;
+            }
             if (!_simulationRunning && GetKeyDown(KeyCode.Space)) _simulationSingleStep = true;
             if (GetKeyDown(KeyCode.BackQuote)) _profileRuleExecutionTime = !_profileRuleExecutionTime;
             if (GetKeyDown(KeyCode.F1)) ToggleShowTables();
@@ -76,7 +79,10 @@ namespace VdlV.Unity {
                 _simulationRunning = !ShowREPLTable;
             }
             if (GetKeyDown(KeyCode.F4)) Save(Simulation);
-            //if (GetKeyDown(KeyCode.F5)) {Save(Simulation);}
+            if (GetKeyDown(KeyCode.F5)) {
+                _simulationRunning = false;
+                SavingWithName = true;
+            }
             if (_simulationRunning || _simulationSingleStep) {
                 try { UpdateSimulator(); } catch (Exception e) {
                     Debug.LogException(e);
@@ -105,9 +111,10 @@ namespace VdlV.Unity {
             ChangeActiveTables();
             ShowFlowButtons();
             ShowREPL();
+            SaveNameText();
             _tileManager.SetVisibility(ShowTilemap);
             if (_profileRuleExecutionTime) RuleExecutionTimes();
-            if (!_simulationRunning && !ChangeTable && !ShowREPLTable) ShowPaused();
+            if (!_simulationRunning && !ChangeTable && !ShowREPLTable && !SavingWithName) ShowPaused();
         }
 
         // ************************************ Location Tiles ************************************

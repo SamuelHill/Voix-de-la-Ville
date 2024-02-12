@@ -18,6 +18,7 @@ namespace VdlV.Unity {
     using static GUILayout;
     using static Input;
     using static Mathf;
+    using static SaveManager;
     using static StaticTables; // used in PlaceColor
     using static StringProcessing;
     using static VoixDeLaVille; // used for RuleExecutionTime and PlaceColor
@@ -67,6 +68,9 @@ namespace VdlV.Unity {
         private static GUITable REPLTable;
         private static string REPLQuery;
         private static string _previousREPLQuery;
+
+        private static string _saveName;
+        public static bool SavingWithName;
 
         // ********************************** GUITable extensions *********************************
 
@@ -194,6 +198,22 @@ namespace VdlV.Unity {
                 Debug.LogException(e);
                 REPLTable = null;
             }
+        }
+        
+        // TODO: Fix text area captures ESC keypress
+        public static void SaveNameText() {
+            if (!SavingWithName) return;
+            BeginArea(CenteredRect(300, 40));
+            BeginArea(new Rect(0, 0, 240, 40));
+            _saveName = TextArea(_saveName);
+            EndArea();
+            BeginArea(new Rect(245, 0, 55, 40));
+            if (Button("Save", Width(50))) {
+                Save(_saveName, Simulation);
+                SavingWithName = false;
+            }
+            EndArea();
+            EndArea();
         }
 
         private static void PopTableIfNewActivity(string tableName) {
