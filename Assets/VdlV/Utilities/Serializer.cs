@@ -45,6 +45,11 @@ namespace VdlV.Utilities {
             return (id, w.ToString());
         }
 
+        public static void ResetIdTable() {
+            IdTable.Clear();
+            _idCounter = 0;
+        }
+
         /// <summary>
         /// Return the ID number attached to this object for this serialization.
         /// If the object hasn't already been assigned an ID, assign one and return (id, true).
@@ -249,7 +254,7 @@ namespace VdlV.Utilities {
         /// <param name="o">Object to serialize</param>
         private static int WriteComplexObject(object o) {
             (var id, var isNew) = GetId(o);
-            if (isNew || _writer != SaveStream) {
+            if (isNew || _writer != SerializerSaveStream) {
                 Write("#");
                 Write(id);
             }

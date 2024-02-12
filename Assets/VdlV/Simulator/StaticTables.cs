@@ -15,6 +15,7 @@ namespace VdlV.Simulator {
     using static Generators;
     using static LocationType;
     using static InteractionType;
+    using static SaveManager;
     using static Variables;
 
     /// <summary>
@@ -84,6 +85,7 @@ namespace VdlV.Simulator {
 
             LocationNameGenerators = Predicate("LocationNameGenerators", 
                 LocationNames.Select(kv => (kv.Key, kv.Value)), locationType.Indexed, textGenerator);
+            IgnoreTable(LocationNameGenerators);
 
             InteractionAffinityDelta = FromCsv("InteractionAffinityDelta", CsvDataFile("interactionAffinityDelta"), interactionType, num);
         }

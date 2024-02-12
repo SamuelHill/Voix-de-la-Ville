@@ -35,6 +35,8 @@ namespace VdlV.Utilities {
         /// <returns>Copy of the object on which Serialize was originally called</returns>
         public static object Deserialize(string s) => Deserialize(new StringReader(s));
 
+        public static void ResetIdTable() => IdTable.Clear();
+
         /// <summary>
         /// Update the value of a field in an object given the name of the field as a string.
         /// </summary>
@@ -77,6 +79,10 @@ namespace VdlV.Utilities {
             if (element is T typedElement) return typedElement;
             if (typeof(IConvertible).IsAssignableFrom(typeof(T)))
                 return (T)Convert.ChangeType(element, typeof(T));
+            if (element is string stringValue) { 
+                CsvReader.TryParse(typeof(T), stringValue, out var result);
+                if (result != null) return (T)result;
+            }
             try {
                 // ReSharper disable once PossibleInvalidCastException
                 return (T)element;

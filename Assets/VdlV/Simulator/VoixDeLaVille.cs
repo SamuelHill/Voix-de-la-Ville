@@ -66,6 +66,8 @@ namespace VdlV.Simulator {
             if (RecordingPerformance) {
                 using var file = CreateText("PerformanceData.csv");
             }
+            ReadSaveData = reader => ClockTick = uint.Parse(reader.ReadToEnd());
+            WriteSaveData = writer => writer.Write(ClockTick.ToString());
         }
 
         // ReSharper disable InconsistentNaming
@@ -401,7 +403,6 @@ namespace VdlV.Simulator {
             // *********************************************** Movement: **********************************************
             // TODO : NoOneToVisit change action assignment to StayingIn
             // TODO : NeedDayCare but not GoingToSchool follow a non-working parent
-            // TODO : Couple movements - i.e. GoingOutForDateNight
 
             var OpenLocationType = Predicate("OpenLocationType", locationType)
                .If(LocationInformation, CurrentlyOperating[operation], CurrentlyOpen[schedule]);
@@ -435,7 +436,7 @@ namespace VdlV.Simulator {
             ScoredPairing[symmetricPair, 0.25f].If(AvailablePair, Lover[symmetricPair, __, __, true]);
             ScoredPairing[symmetricPair, 0.1f].If(AvailablePair, !Lover[symmetricPair, __, __, true]);
 
-            var ScoredDates = Predicate("tempToMatch", person, otherPerson, score)
+            var ScoredDates = Predicate("ScoredDates", person, otherPerson, score)
                .If(ScoredPairing, Prob[rate], AvailablePair, RandomNormal[num], score == (num + 50));
             var DateGoers = MatchGreedily("DateGoers", ScoredDates);
 
@@ -565,8 +566,8 @@ namespace VdlV.Simulator {
                 var interaction3 = (Var<InteractionType>)"interaction3";
                 var trio = (Var<ValueTuple<Person, Person, Person>>)"trio";
 
-                Goal MonthlyRomance(Term<Person> p1, Term<Person> p2, Term<InteractionType> interact) => 
-                    Monthly[p1, p2, interaction1, __] & In(interact, romanticInteractions);
+                var MonthlyRomance = Definition("MonthlyRomance", person1, person2, interactionType)
+                   .Is(Monthly[person1, person2, interaction1, __] & In(interactionType, romanticInteractions));
 
                 var NewTrio = Function<Person, Person, Person, ValueTuple<Person, Person, Person>>("NewTrio", 
                     (p1, p2, p3) => {
@@ -576,9 +577,9 @@ namespace VdlV.Simulator {
                     });
 
                 var LoveTriangle = Predicate("LoveTriangle", trio)
-                    .If(Once[MonthlyRomance(person1, person2, interaction1) & 
-                             MonthlyRomance(person2, person3, interaction2) & 
-                             MonthlyRomance(person3, person1, interaction3) &
+                    .If(Once[MonthlyRomance[person1, person2, interaction1] & 
+                             MonthlyRomance[person2, person3, interaction2] & 
+                             MonthlyRomance[person3, person1, interaction3] &
                              NewTrio[person1, person2, person3, trio]]);
 
                 // This would be nice, but it will break... Needs a Relationship<T1, T2, T3> class to handle this
@@ -593,9 +594,6 @@ namespace VdlV.Simulator {
             UpdateFlowVisualizer.MakeGraph(Simulation, "Visualizations/UpdateFlow.dot");
             Simulation.Update(); // optional, not necessary to call Update after EndPredicates
             Simulation.CheckForProblems = true;
-
-            //Save("test", Simulation);
-            //Load("test", Simulation);
         }
 
         public static void UpdateSimulator() {

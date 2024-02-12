@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TED.Utilities;
-using TMPro;
 using VdlV.Simulator;
 using VdlV.Time;
 using VdlV.Utilities;
@@ -17,6 +16,7 @@ namespace VdlV.Unity {
     using static GUI;
     using static GUIManager;
     using static Input;
+    using static SaveManager;
     using static StaticTables;
     using static StringProcessing;
     using static VoixDeLaVille;
@@ -62,6 +62,7 @@ namespace VdlV.Unity {
             AddPopulationInfo(Population);
             ProcessInitialLocations();
             AddSelectedTileInfo(SelectedLocation);
+            LoadFromSave(Simulation);
         }
 
         // ReSharper disable once UnusedMember.Global
@@ -74,6 +75,8 @@ namespace VdlV.Unity {
                 ToggleREPLTable();
                 _simulationRunning = !ShowREPLTable;
             }
+            if (GetKeyDown(KeyCode.F4)) Save(Simulation);
+            //if (GetKeyDown(KeyCode.F5)) {Save(Simulation);}
             if (_simulationRunning || _simulationSingleStep) {
                 try { UpdateSimulator(); } catch (Exception e) {
                     Debug.LogException(e);
