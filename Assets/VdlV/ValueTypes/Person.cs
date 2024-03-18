@@ -51,6 +51,8 @@ namespace VdlV.ValueTypes {
             string.Compare(FullName, other.FullName, StringComparison.Ordinal);
         public bool Equals(Person other) => other is not null && ReferenceEquals(this, other);
         public override bool Equals(object obj) => obj is not null && ReferenceEquals(this, obj);
+
+        // TODO: change to pointer hash
         public override int GetHashCode() => HashCode.Combine(_firstName, _maidenName, _personality);
 
         public static bool operator ==(Person p1, Person p2) => p1 is not null && p1.Equals(p2);

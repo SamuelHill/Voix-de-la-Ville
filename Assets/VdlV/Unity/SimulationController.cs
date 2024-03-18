@@ -32,12 +32,14 @@ namespace VdlV.Unity {
         public Tilemap Tilemap;
         public Tile OccupiedLot;
         public Component GraphComponent;
+        public Component StepComponent;
         // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
         private const byte NumInRow = 3; // Used with ListWithRows
 
         private TileManager _tileManager;
         private GraphVisualizer _graphVisualizer;
+        private RunStepCode _runStepCode;
         private Vector2 _graphCenterPoint;
         private Vector2 _graphMaxDimensions;
         private bool _simulationRunning = true; // make public for unity inspector control of start
@@ -52,6 +54,7 @@ namespace VdlV.Unity {
             Sifting = SiftingEnabled;
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
             _graphVisualizer = GraphComponent.GetComponent<GraphVisualizer>();
+            _runStepCode = StepComponent.GetComponent<RunStepCode>();
             GraphScreenCoordinates();
             GraphBoundRect = REPLContainer;
             InitSimulator();
@@ -96,6 +99,7 @@ namespace VdlV.Unity {
                     PoppedTable = false;
                 }
             }
+            if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
             if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
         }
 
@@ -111,6 +115,7 @@ namespace VdlV.Unity {
             ChangeActiveTables();
             ShowFlowButtons();
             ShowREPL();
+            StepGUIControl();
             SaveNameText();
             _tileManager.SetVisibility(ShowTilemap);
             if (_profileRuleExecutionTime) RuleExecutionTimes();
@@ -217,6 +222,14 @@ namespace VdlV.Unity {
             var centerOffsets = dimensions / 2;
             var center = _graphCenterPoint - centerOffsets;
             return new Rect(center.x, center.y - offset, dimensions.x, dimensions.y);
+        }
+
+        // ************************************* STEP Layout **************************************
+
+        private void StepGUIControl() {
+            if (_simulationRunning) _runStepCode.ProcessGossip();
+            _runStepCode.ShowDeath();
+            _runStepCode.ShowGossip();
         }
     }
 }

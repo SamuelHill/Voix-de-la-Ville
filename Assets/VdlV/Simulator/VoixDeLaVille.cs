@@ -1,5 +1,8 @@
-﻿using System;
+﻿//#define ParallelUpdate
+
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.IO;
 using TED;
 using TED.Interpreter;
@@ -190,6 +193,8 @@ namespace VdlV.Simulator {
                   .EndCauses(Add(Parent[parent, child]).If(Embryo.Attributes[child, parent, __, __, __]),
                              Add(Parent[parent, child]).If(Embryo.Attributes[child, __, parent, __, __]));
 
+            Embryo.End.Unique = true;
+
             Character.StartWhen(Embryo.End[person]);
             Character.StartCauses(Add(CharacterAttributes[person, 0, CurrentDate, sex, sexuality, Alive])
                                      .If(Embryo.End[person], Embryo.Attributes[person, __, __, sex, __], RandomSexuality[sex, sexuality]));
@@ -274,7 +279,7 @@ namespace VdlV.Simulator {
                    .Where(PrimordialBeing[occupant, __, __, __, __], RandomElement(PrimordialHouse, location));
             Housing.StartWhen(Embryo.End[occupant], Embryo.Attributes[occupant, woman, __, __, __], Home[woman, location])
                    .StartWhen(Drifter[occupant, __, __], RandomElement(UnderOccupied, location))
-                   .StartWhen(Unhoused[occupant], RandomElement(UnderOccupied, location))
+                   //.StartWhen(Unhoused[occupant], RandomElement(UnderOccupied, location))
                    .EndWhen(Character.End[occupant], Housing[occupant, location])
                    .EndWhen(Housing[occupant, location], Place.End);
 
@@ -318,7 +323,7 @@ namespace VdlV.Simulator {
             Employment.TableButton("Visualize", VisualizeJobs);
 
             var EmploymentStatus = Predicate("EmploymentStatus", employee.Key, state.Indexed);
-            EmploymentStatus.Overwrite = true;
+            //EmploymentStatus.Overwrite = true;
             EmploymentStatus.Add[employee, true].If(Employment.Add);
             EmploymentStatus.Set(employee, state, false).If(Character.End[employee], EmploymentStatus[employee, true]);
             EmploymentStatus.Set(employee, state, false).If(Place.End[location], Employment, EmploymentStatus[employee, true]);
@@ -341,7 +346,6 @@ namespace VdlV.Simulator {
             // instead of overwrite = true, you could add Employment.Set options if the candidate exists in the employment table already
 
             // ******************************************* New Locations *********************************************
-            // TODO: Saves don't need to store the TextGenerators... Add a skip in saving/loading for static tables
 
             var OnlyLocationOfType = Definition("OnlyLocationOfType", locationType).Is(!Place.Attributes[__, locationType, __, __, InBusiness]);
             var NameLocation = Definition("NameLocation", locationType, locationName)
@@ -478,7 +482,7 @@ namespace VdlV.Simulator {
             WhereTheyAt.If(RandomActionAssign, LocationByActionAssign);
 
             // This relies on the mom having a house when the baby is born
-            WhereTheyAt[person, StayingIn, location].If(Character.Start[person], 
+            WhereTheyAt[person, StayingIn, location].If(Character.Start[person], Embryo[person],
                 Embryo.Attributes[person, woman, __, __, __], Housing[woman, location]);
 
             //WhereTheyAt.Problem("Not everyone moved").If(Character[person], !WhereTheyAt[person, __, __]);
@@ -576,7 +580,7 @@ namespace VdlV.Simulator {
                         return (toSort[0], toSort[1], toSort[2]);
                     });
 
-                var LoveTriangle = Predicate("LoveTriangle", trio)
+                var LoveTriangle = Predicate("LoveTriangle", person1, person2, person3)
                     .If(Once[MonthlyRomance[person1, person2, interaction1] & 
                              MonthlyRomance[person2, person3, interaction2] & 
                              MonthlyRomance[person3, person1, interaction3] &
@@ -611,6 +615,7 @@ namespace VdlV.Simulator {
                 }
             }
             Simulation.Update();
+            //Simulation.UpdateAsync().Wait();
             PopTableIfNewActivity(Simulation.Problems);
             PopTableIfNewActivity(Simulation.Exceptions);
 #endif
@@ -621,7 +626,7 @@ namespace VdlV.Simulator {
 
         static void LoopSimulator(){
             Clock.Tick();
-            Simulation.Update();
+            //Simulation.Update();
             update = Simulation.UpdateAsync().ContinueWith((_) => LoopSimulator());
         }
 #endif

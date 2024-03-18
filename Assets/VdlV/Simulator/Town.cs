@@ -18,6 +18,8 @@ namespace VdlV.Simulator {
         private static Vector2Int _max = new(6, 6);
         private static Vector2Int _min = new(-6, -6);
 
+        //interlock.increment(ref Vector.x)
+
         private static int GridSpaces() => (Math.Abs(_min.x) + _max.x) * (Math.Abs(_min.y) + _max.y);
         private static void ExpandAllSides() { _min.x--; _max.x++; _min.y--; _max.y++; }
         private static Vector2Int RandomLotWithinTown(Random rng) => 

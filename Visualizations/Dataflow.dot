@@ -69,8 +69,8 @@ v70 [ label = "EmbryoAttributes" fillcolor="limegreen"];
 v71 [ label = "Add"];
 }
 subgraph "cluster_Parent"{
-v90 [ label = "Parent" fillcolor="limegreen"];
-v91 [ label = "Add"];
+v89 [ label = "Parent" fillcolor="limegreen"];
+v90 [ label = "Add"];
 }
 subgraph "cluster_Place"{
 v61 [ label = "Place" fillcolor="limegreen"];
@@ -88,8 +88,8 @@ v102 [ label = "set businessStatus"];
 subgraph "cluster_Housing"{
 v78 [ label = "Housing" fillcolor="limegreen"];
 v79 [ label = "Add"];
-v94 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
-v96 [ label = "set state"];
+v93 [ label = "Initially" fillcolor="deepskyblue" shape="diamond"];
+v95 [ label = "set state"];
 }
 subgraph "cluster_BuriedAt"{
 v167 [ label = "BuriedAt" fillcolor="limegreen"];
@@ -103,6 +103,10 @@ v58 [ label = "set state"];
 subgraph "cluster_Employment"{
 v49 [ label = "Employment" fillcolor="limegreen"];
 v50 [ label = "Add"];
+}
+subgraph "cluster_InteractionChronicle"{
+v171 [ label = "InteractionChronicle" fillcolor="limegreen"];
+v172 [ label = "Add"];
 }
 v0 [ label = "FemaleNames" fillcolor="gold" shape="diamond"];
 v1 [ label = "MaleNames" fillcolor="gold" shape="diamond"];
@@ -157,15 +161,15 @@ v81 [ label = "Home"];
 v82 [ label = "UnderOccupied"];
 v83 [ label = "OccupancyCount"];
 v84 [ label = "Occupancy"];
-v85 [ label = "Unhoused"];
-v86 [ label = "MovingIn"];
-v87 [ label = "SelectedToMoveToFamily"];
-v88 [ label = "CanMoveToFamilyAssignments"];
-v89 [ label = "CanMoveToFamily"];
-v92 [ label = "SelectedOutsiderToMove"];
-v93 [ label = "FamilyInHouse"];
-v95 [ label = "PrimordialHouse" fillcolor="deepskyblue" shape="diamond"];
-v97 [ label = "HousingEnd"];
+v85 [ label = "MovingIn"];
+v86 [ label = "SelectedToMoveToFamily"];
+v87 [ label = "CanMoveToFamilyAssignments"];
+v88 [ label = "CanMoveToFamily"];
+v91 [ label = "SelectedOutsiderToMove"];
+v92 [ label = "FamilyInHouse"];
+v94 [ label = "PrimordialHouse" fillcolor="deepskyblue" shape="diamond"];
+v96 [ label = "HousingEnd"];
+v97 [ label = "Unhoused"];
 v98 [ label = "NumLocationsCount"];
 v99 [ label = "NumLocations"];
 v100 [ label = "PlaceCount"];
@@ -211,6 +215,8 @@ v164 [ label = "RomanticEnd"];
 v165 [ label = "VacatedLocation"];
 v166 [ label = "DisplayLocations"];
 v169 [ label = "Buried"];
+v170 [ label = "Monthly"];
+v173 [ label = "LoveTriangle"];
 v11 -> v10 [ color="blue" ]
 v8 -> v11 [ constraint="false" ]
 v7 -> v11 [ constraint="false" ]
@@ -332,42 +338,41 @@ v78 -> v82
 v38 -> v82
 v47 -> v80
 v85 -> v80
-v78 -> v85
-v19 -> v85
-v86 -> v80
+v86 -> v85
 v87 -> v86
 v88 -> v87
 v89 -> v88
-v90 -> v89
-v91 -> v90 [ color="green" ]
-v22 -> v91 [ constraint="false" ]
-v70 -> v91 [ constraint="false" ]
-v77 -> v89
-v78 -> v89
-v83 -> v89
-v88 -> v86
-v92 -> v86
-v93 -> v92
-v90 -> v93
-v77 -> v93
-v78 -> v93
+v90 -> v89 [ color="green" ]
+v22 -> v90 [ constraint="false" ]
+v70 -> v90 [ constraint="false" ]
+v77 -> v88
+v78 -> v88
+v83 -> v88
+v87 -> v85
+v91 -> v85
+v92 -> v91
+v89 -> v92
 v77 -> v92
-v82 -> v86
-v77 -> v86
-v94 -> v78 [ color="blue" ]
-v95 -> v94 [ constraint="false" ]
-v6 -> v95
-v5 -> v94 [ constraint="false" ]
-v96 -> v78 [ color="red" ]
-v97 -> v96 [ constraint="false" ]
-v59 -> v97
-v78 -> v97
-v60 -> v97
-v86 -> v97
-v78 -> v96 [ constraint="false" ]
-v80 -> v96 [ constraint="false" ]
+v78 -> v92
+v77 -> v91
+v82 -> v85
+v77 -> v85
+v93 -> v78 [ color="blue" ]
+v94 -> v93 [ constraint="false" ]
+v6 -> v94
+v5 -> v93 [ constraint="false" ]
+v95 -> v78 [ color="red" ]
+v96 -> v95 [ constraint="false" ]
+v59 -> v96
+v78 -> v96
+v60 -> v96
+v85 -> v96
+v78 -> v95 [ constraint="false" ]
+v80 -> v95 [ constraint="false" ]
 v83 -> v77
-v85 -> v76
+v97 -> v76
+v78 -> v97
+v19 -> v97
 v98 -> v76
 v99 -> v98
 v38 -> v99
@@ -424,7 +429,7 @@ v125 -> v124
 v126 -> v125
 v28 -> v126
 v104 -> v126
-v85 -> v125
+v97 -> v125
 v46 -> v125
 v127 -> v124
 v32 -> v127
@@ -436,7 +441,7 @@ v124 -> v129
 v78 -> v129
 v130 -> v129
 v131 -> v130
-v85 -> v131
+v97 -> v131
 v124 -> v131
 v132 -> v131
 v133 -> v132 [ color="green" ]
@@ -463,6 +468,7 @@ v125 -> v129
 v34 -> v129
 v38 -> v129
 v21 -> v121
+v23 -> v121
 v70 -> v121
 v78 -> v121
 v44 -> v120
@@ -477,7 +483,7 @@ v143 -> v141 [ color="red" ]
 v134 -> v143 [ constraint="false" ]
 v141 -> v143 [ constraint="false" ]
 v44 -> v115
-v90 -> v115
+v89 -> v115
 v132 -> v114
 v141 -> v114
 v144 -> v114
@@ -550,4 +556,8 @@ v168 -> v167 [ color="green" ]
 v59 -> v168 [ constraint="false" ]
 v38 -> v168 [ constraint="false" ]
 v167 -> v169
+v171 -> v170
+v172 -> v171 [ color="green" ]
+v114 -> v172 [ constraint="false" ]
+v170 -> v173
 }
