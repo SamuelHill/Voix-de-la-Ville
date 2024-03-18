@@ -99,7 +99,9 @@ namespace VdlV.Unity {
                     PoppedTable = false;
                 }
             }
-            if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
+            if (SiftingEnabled) {
+                if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
+            }
             if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
         }
 
@@ -115,7 +117,7 @@ namespace VdlV.Unity {
             ChangeActiveTables();
             ShowFlowButtons();
             ShowREPL();
-            StepGUIControl();
+            if (SiftingEnabled) StepGUIControl();
             SaveNameText();
             _tileManager.SetVisibility(ShowTilemap);
             if (_profileRuleExecutionTime) RuleExecutionTimes();
