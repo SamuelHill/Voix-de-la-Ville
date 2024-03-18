@@ -1,1 +1,45 @@
-DoSomething: [DoAll [Character ?who ? ? ?]  [Write ?who] [NewLine]]
+[randomly]
+
+Gossip: 
+    [MonthlyRomance ?person1 ?person2 ?interaction1]
+    [MonthlyRomance ?person2 ?person3 ?interaction2]
+    ?person2 is sleeping with both ?person1 and ?person3!
+[end]
+
+# Look more into death
+Death: [CharacterEnd ?person] ?person died!
+# birth - today date, born to mother father , children, cemetery name
+
+# male female predicates
+
+# Birth
+Gossip: 
+    [CharacterStart ?person]
+    [Parent ?parent1 ?person]
+    [Parent ?parent2 ?person]
+    [Not [= ?parent1 ?parent2]]
+    ?parent1 and ?parent2 just had a baby! [PosPronoun ?person] name is ?person!
+[end]
+
+# Gossip: Nothing happened...
+
+# Lovers start end
+
+# Placestart maybe
+
+# Ask Sam employment
+
+# Sam q 2 Dates
+
+[predicate]
+MonthlyRomance ?person1 ?person2 ?interaction: [Monthly ?person1 ?person2 ?interaction ?] [RomanticInteractions ?interactionType]
+
+[predicate]
+Male ?person: [Character ?person ?age ?dateOfBirth ?sex ?sexuality ?vitalStatus ?birthday] [= ?sex MaleSex]
+[predicate]
+Female ?person: [Character ?person ?age ?dateOfBirth ?sex ?sexuality ?vitalStatus ?birthday] [= ?sex FemaleSex]
+
+Pronoun ?person: [Male ?person] he
+Pronoun ?person: [Female ?person] she
+PosPronoun ?person: [Male ?person] his
+PosPronoun ?person: [Female ?person] her

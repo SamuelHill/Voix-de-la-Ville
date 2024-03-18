@@ -7,6 +7,7 @@ using Step.Interpreter;
 using TED;
 using VdlV.Simulator;
 using VdlV.Utilities;
+using VdlV.ValueTypes;
 
 // ReSharper disable once CheckNamespace
 namespace Vldv.Step
@@ -22,6 +23,9 @@ namespace Vldv.Step
             Module.AddBindHook((Module.BindHook)ImportTedPredicate);
             Module.LoadDirectory(Path.Combine(UnityEngine.Application.dataPath, "Step"));
             Rng = Randomize.MakeRng();
+            Module["RomanticInteractions"] = StaticTables.romanticInteractions;
+            Module["MaleSex"] = Sex.Male;
+            Module["FemaleSex"] = Sex.Female;
         }
 
         private static IEnumerable<object[]> TableRowsInRandomOrder(TablePredicate predicate)
