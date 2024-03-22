@@ -171,7 +171,8 @@ namespace VdlV.Unity {
             var selectionGridRect = TopMiddleRectStack(SelectionGridWidth, selectionGridHeight, 3);
             _tableSelector = SelectionGrid(selectionGridRect, _tableSelector, _tableDisplayNames, 5);
             // update the active table to change with the selected table
-            _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
+            if (_tableSelector != -1)
+                _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
         }
         
         public static void ShowREPL() {
