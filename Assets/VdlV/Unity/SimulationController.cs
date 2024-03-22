@@ -40,8 +40,8 @@ namespace VdlV.Unity {
         private const byte NumInRow = 3; // Used with ListWithRows
 
         private TileManager _tileManager;
-        private GraphVisualizer _graphVisualizer;
         private RunStepCode _runStepCode;
+        private GraphVisualizer _graphVisualizer;
         private Vector2 _graphCenterPoint;
         private Vector2 _graphMaxDimensions;
         private bool _simulationRunning = true; // make public for unity inspector control of start
