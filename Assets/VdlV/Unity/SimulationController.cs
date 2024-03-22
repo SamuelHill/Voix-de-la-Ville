@@ -25,6 +25,7 @@ namespace VdlV.Unity {
     /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>
     public class SimulationController : MonoBehaviour {
         // ReSharper disable MemberCanBePrivate.Global, FieldCanBeMadeReadOnly.Global, ConvertToConstant.Global, UnassignedField.Global
+        // ReSharper disable InconsistentNaming
         public bool SiftingEnabled;
         public bool RecordPerformanceData;
         public bool PrettyNamesOnly = true;
@@ -32,7 +33,8 @@ namespace VdlV.Unity {
         public Tilemap Tilemap;
         public Tile OccupiedLot;
         public Component GraphComponent;
-        public Component StepComponent;
+        public Component StepComponent; 
+        // ReSharper restore InconsistentNaming
         // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
         private const byte NumInRow = 3; // Used with ListWithRows

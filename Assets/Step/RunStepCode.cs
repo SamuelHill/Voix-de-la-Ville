@@ -4,16 +4,17 @@ using System.Collections.Generic;
 
 public class RunStepCode : MonoBehaviour {
     private string _death;
-    private Queue<string> _gossipQueue = new();
+    private readonly Queue<string> _gossipQueue = new();
 
+    // ReSharper disable MemberCanBePrivate.Global, FieldCanBeMadeReadOnly.Global, ConvertToConstant.Global, UnassignedField.Global
     public int MaxGossipCount = 10;
     public int MaxStepAttempts = 5;
+    // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
     public bool PauseOnDeath() {
-        try {
+        try { 
             _death = StepCode.Run("Death");
-        }
-        catch (Step.Interpreter.CallFailedException e) {
+        } catch (Step.Interpreter.CallFailedException) {
             _death = "";
         }
         return _death != "";
