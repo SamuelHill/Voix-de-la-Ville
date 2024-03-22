@@ -39,7 +39,7 @@ namespace VdlV.Simulog {
         public Affinity<T1, T2> Decay(float rate) {
             Set((Var<(T1, T2)>)DefaultVariables[0], (Var<int>)DefaultVariables[3], _setVal)
                .If(Unchanged, this, (Var<int>)DefaultVariables[3] != 0, 
-                   PerDay(rate), RegressToZero[(Var<int>)DefaultVariables[3], _setVal]);
+                   Prob[rate], RegressToZero[(Var<int>)DefaultVariables[3], _setVal]);
             return this;
         }
 
@@ -92,7 +92,7 @@ namespace VdlV.Simulog {
         public FloatAffinity<T1, T2> Decay(float rate) {
             Set((Var<(T1, T2)>)DefaultVariables[0], (Var<float>)DefaultVariables[3], _setVal)
                .If(Unchanged, this, (Var<float>)DefaultVariables[3] != 0,
-                   PerDay(rate), RegressToZero[(Var<float>)DefaultVariables[3], _setVal]);
+                   Prob[rate], RegressToZero[(Var<float>)DefaultVariables[3], _setVal]);
             return this;
         }
 

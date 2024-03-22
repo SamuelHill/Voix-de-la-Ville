@@ -150,7 +150,9 @@ namespace VdlV.Unity {
 
         public static void ShowActiveTables() {
             if (!_showTables) return;
-            for (var i = 0; i < _activeTables.Length; i++) Tables[_activeTables[i]].OnGUI(i);
+            for (var i = 0; i < _activeTables.Length; i++) {
+                if (_activeTables[i] != "") Tables[_activeTables[i]].OnGUI(i);
+            }
         }
         public static void ChangeActiveTables() {
             // Change and show/hide toggles:
