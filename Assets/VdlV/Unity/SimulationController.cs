@@ -32,8 +32,8 @@ namespace VdlV.Unity {
         public Vector2Int TownCenter;
         public Tilemap Tilemap;
         public Tile OccupiedLot;
-        public Component GraphComponent;
-        public Component StepComponent; 
+        public GameObject GraphVizGameObject;
+        public GameObject StepGameObject; 
         // ReSharper restore InconsistentNaming
         // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
@@ -55,8 +55,8 @@ namespace VdlV.Unity {
             RecordingPerformance = RecordPerformanceData;
             Sifting = SiftingEnabled;
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
-            _graphVisualizer = GraphComponent.GetComponent<GraphVisualizer>();
-            _runStepCode = StepComponent.GetComponent<RunStepCode>();
+            _graphVisualizer = GraphVizGameObject.GetComponent<GraphVisualizer>();
+            _runStepCode = StepGameObject.GetComponent<RunStepCode>();
             GraphScreenCoordinates();
             GraphBoundRect = REPLContainer;
             InitSimulator();
