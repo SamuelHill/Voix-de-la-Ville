@@ -39,8 +39,8 @@ namespace VdlV.Unity {
 
         private const byte NumInRow = 3; // Used with ListWithRows
 
-        private TileManager _tileManager;
         private RunStepCode _runStepCode;
+        private TileManager _tileManager;
         private GraphVisualizer _graphVisualizer;
         private Vector2 _graphCenterPoint;
         private Vector2 _graphMaxDimensions;
@@ -51,12 +51,12 @@ namespace VdlV.Unity {
 
         // ReSharper disable once UnusedMember.Global
         internal void Start() {
-            TED.Comparer<Vector2Int>.Default = new GridComparer();
             RecordingPerformance = RecordPerformanceData;
             Sifting = SiftingEnabled;
+            _runStepCode = StepGameObject.GetComponent<RunStepCode>();
+            TED.Comparer<Vector2Int>.Default = new GridComparer();
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
             _graphVisualizer = GraphVizGameObject.GetComponent<GraphVisualizer>();
-            _runStepCode = StepGameObject.GetComponent<RunStepCode>();
             GraphScreenCoordinates();
             GraphBoundRect = REPLContainer;
             InitSimulator();
@@ -72,6 +72,11 @@ namespace VdlV.Unity {
 
         // ReSharper disable once UnusedMember.Global
         internal void Update() {
+            if (SiftingEnabled && _simulationRunning) {
+                if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
+            }
+
+            // Keypress handling
             if (GetKeyDown(KeyCode.Escape)) {
                 _simulationRunning = !_simulationRunning;
                 SavingWithName = false;
@@ -83,28 +88,25 @@ namespace VdlV.Unity {
                 ToggleREPLTable();
                 _simulationRunning = !ShowREPLTable;
             }
+            if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
             if (GetKeyDown(KeyCode.F4)) Save(Simulation);
             if (GetKeyDown(KeyCode.F5)) {
                 _simulationRunning = false;
                 SavingWithName = true;
             }
-            if (_simulationRunning || _simulationSingleStep) {
-                try { UpdateSimulator(); } catch (Exception e) {
-                    Debug.LogException(e);
-                    _simulationRunning = false;
-                    throw;
-                }
-                ProcessLots();
-                _simulationSingleStep = false;
-                if (PoppedTable & _simulationRunning) {
-                    _simulationRunning = false;
-                    PoppedTable = false;
-                }
-            }
-            if (SiftingEnabled) {
-                if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
-            }
-            if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
+
+            // Simulation updating
+            if (!_simulationRunning && !_simulationSingleStep) return;
+            try { UpdateSimulator(); } catch (Exception e) {
+                Debug.LogException(e);
+                _simulationRunning = false;
+                throw;
+            } // The rest is simulation update side effects
+            ProcessLots();
+            _simulationSingleStep = false;
+            if (!(PoppedTable & _simulationRunning)) return;
+            _simulationRunning = false;
+            PoppedTable = false;
         }
 
         // ReSharper disable once UnusedMember.Global

@@ -11,14 +11,16 @@ public class RunStepCode : MonoBehaviour {
     public int MaxStepAttempts = 5;
     // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
-    public bool PauseOnDeath() {
-        try { 
-            _death = StepCode.Run("Death");
+    private static bool TryRun(string stepString, out string stepOutput) {
+        try {
+            stepOutput = StepCode.Run(stepString);
         } catch (Step.Interpreter.CallFailedException) {
-            _death = "";
+            stepOutput = "";
         }
-        return _death != "";
+        return stepOutput != "";
     }
+
+    public bool PauseOnDeath() => TryRun("Death", out _death);
 
     public void ShowDeath() => GUI.Label(new Rect(600, 100, 1000, 1000), _death);
 
