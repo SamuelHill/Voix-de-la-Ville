@@ -147,7 +147,13 @@ namespace VdlV.Unity {
             }
         }
 
-        public static void ShowPaused() => Paused.OnGUI();
+        public static void ShowPaused() {
+            if (SavingWithName) return;
+            if (ShowREPLTable) return;
+            if (ChangeTable && _showTables) return;
+            Paused.OnGUI();
+        }
+
         public static void ShowStrings() { foreach (var guiString in GuiStrings) guiString.OnGUI(); }
 
         public static void ShowActiveTables() {
@@ -169,9 +175,7 @@ namespace VdlV.Unity {
                                      _displayTableToChange, DisplayTableSelector);
             _tableSelector = IndexOf(Tables.Keys.ToArray(), _activeTables[_displayTableToChange]);
             // Build the selection grid:
-            var selectionGridHeight = CeilToInt(_tableDisplayNames.Length / 5f) * TopMiddleRectHeight;
-            var selectionGridRect = TopMiddleRectStack(SelectionGridWidth, selectionGridHeight, 3);
-            _tableSelector = SelectionGrid(selectionGridRect, _tableSelector, _tableDisplayNames, 5);
+            _tableSelector = SelectionGrid(SelectionGridRect(), _tableSelector, _tableDisplayNames, 5);
             // update the active table to change with the selected table
             if (_tableSelector != -1)
                 _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];

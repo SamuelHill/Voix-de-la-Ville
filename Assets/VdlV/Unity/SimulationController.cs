@@ -125,7 +125,7 @@ namespace VdlV.Unity {
             SaveNameText();
             _tileManager.SetVisibility(ShowTilemap);
             if (_profileRuleExecutionTime) RuleExecutionTimes();
-            if (!_simulationRunning && !ChangeTable && !ShowREPLTable && !SavingWithName) ShowPaused();
+            if (!_simulationRunning) ShowPaused();
         }
 
         // ************************************ Location Tiles ************************************
