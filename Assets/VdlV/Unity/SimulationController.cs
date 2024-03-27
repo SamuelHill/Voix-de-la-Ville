@@ -45,6 +45,7 @@ namespace VdlV.Unity {
         private Vector2 _graphCenterPoint;
         private Vector2 _graphMaxDimensions;
         private bool _simulationRunning = true; // make public for unity inspector control of start
+        private bool _runningBeforeREPL;
         private bool _simulationSingleStep;
         private bool _profileRuleExecutionTime;
         private bool _guiRunOnce;
@@ -79,14 +80,16 @@ namespace VdlV.Unity {
             // Keypress handling
             if (GetKeyDown(KeyCode.Escape)) {
                 _simulationRunning = !_simulationRunning;
+                _runningBeforeREPL = _simulationRunning;
                 SavingWithName = false;
             }
             if (!_simulationRunning && GetKeyDown(KeyCode.Space)) _simulationSingleStep = true;
             if (GetKeyDown(KeyCode.BackQuote)) _profileRuleExecutionTime = !_profileRuleExecutionTime;
             if (GetKeyDown(KeyCode.F1)) ToggleShowTables();
             if (GetKeyDown(KeyCode.F2)) {
+                if (!ShowREPLTable) _runningBeforeREPL = _simulationRunning;
                 ToggleREPLTable();
-                _simulationRunning = !ShowREPLTable;
+                _simulationRunning = !ShowREPLTable && _runningBeforeREPL;
             }
             if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
             if (GetKeyDown(KeyCode.F4)) Save(Simulation);
