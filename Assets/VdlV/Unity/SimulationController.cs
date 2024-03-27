@@ -156,7 +156,15 @@ namespace VdlV.Unity {
         // ************************************* Info Strings *************************************
 
         private static string Population() => $"Population of {PopulationCount}";
-        private static int PopulationCount => PopulationCountIndex[true].Item2;
+        private static int PopulationCount {
+            get {
+                try {
+                    return PopulationCountIndex[true].Item2;
+                } catch (KeyNotFoundException) {
+                    return 0;
+                }
+            }
+        }
 
         #region Tile hover (selected location)
         private string SelectedLocation() => _tileManager.SelectedLot is null ? null : 
