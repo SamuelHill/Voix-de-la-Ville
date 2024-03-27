@@ -220,11 +220,17 @@ namespace VdlV.Unity {
             EndArea();
         }
 
-        public static bool MouseInGUIs() {
+        public static bool IsMouseInGUIs() {
             var mousePositionForRects = new Vector2(mousePosition.x, height - mousePosition.y);
             return _activeTables.Where((table, i) => table != "" && Tables[table].LeftSideTables(i).Contains(mousePositionForRects)).Any() ||
                    GuiStrings.Any(guiString => guiString.GUIStringRect().Contains(mousePositionForRects)) ||
                    (ShowREPLTable && REPLRect.Contains(mousePositionForRects)) ||
+                   TopMiddleRectStack(ChangeTablesWidth + ShowTablesWidth).Contains(mousePositionForRects) ||
+                   (ChangeTable && _showTables && TopMiddleRectStack(TableSelectorToolbarWidth, 2).Contains(mousePositionForRects)) ||
+                   (ChangeTable && _showTables && SelectionGridRect().Contains(mousePositionForRects)) ||
+                   (GraphVisible && DataFlowButton(true).Contains(mousePositionForRects)) ||
+                   (GraphVisible && DataFlowButton(false).Contains(mousePositionForRects)) ||
+                   (!GraphVisible && RemoveGraphButton().Contains(mousePositionForRects)) ||
                    // TODO: Store the save name area sizes somewhere...
                    (SavingWithName && CenteredRect(300, 40).Contains(mousePositionForRects));
         }
@@ -275,6 +281,9 @@ namespace VdlV.Unity {
 
         private static Rect SelectedTileInfoRect(int width, int height) => // Rect following mouse position
             new(mousePosition.x + TileSize, (Screen.height - mousePosition.y) + TileSize, width, height);
+
+        private static Rect SelectionGridRect() => 
+            TopMiddleRectStack(SelectionGridWidth, CeilToInt(_tableDisplayNames.Length / 5f) * TopMiddleRectHeight, 3);
 
         private static void BoldLabel(string label, params GUILayoutOption[] options) {
             skin.label.fontStyle = FontStyle.Bold;
