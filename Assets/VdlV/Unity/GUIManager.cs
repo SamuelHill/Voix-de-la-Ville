@@ -18,6 +18,7 @@ namespace VdlV.Unity {
     using static GUILayout;
     using static Input;
     using static Mathf;
+    using static Screen;
     using static SaveManager;
     using static StaticTables; // used in PlaceColor
     using static StringProcessing;
@@ -66,6 +67,7 @@ namespace VdlV.Unity {
 
         public static Func<int, int, int, Rect> GraphBoundRect;
         private static GUITable REPLTable;
+        private static Rect REPLRect;
         private static string REPLQuery;
         private static string _previousREPLQuery;
 
@@ -177,14 +179,13 @@ namespace VdlV.Unity {
         
         public static void ShowREPL() {
             if (!ShowREPLTable) return;
-            Rect query;
-            if (REPLTable == null) query = GraphBoundRect(REPLQueryWidth, REPLQueryHeight, 0);
+            if (REPLTable == null) REPLRect = GraphBoundRect(REPLQueryWidth, REPLQueryHeight, 0);
             else {
                 var table = GraphBoundRect((int)REPLTable.TableWidth, REPLTable.REPLHeight, REPLQueryHeight);
                 REPLTable.OnGUI(-1, table);
-                query = new Rect(table.center.x - QueryCenterXOffset, table.yMax, REPLQueryWidth, REPLQueryHeight);
+                REPLRect = new Rect(table.center.x - QueryCenterXOffset, table.yMax, REPLQueryWidth, REPLQueryHeight);
             }
-            BeginArea(query);
+            BeginArea(REPLRect);
             REPLArea();
             EndArea();
         }
@@ -217,6 +218,15 @@ namespace VdlV.Unity {
             }
             EndArea();
             EndArea();
+        }
+
+        public static bool MouseInGUIs() {
+            var mousePositionForRects = new Vector2(mousePosition.x, height - mousePosition.y);
+            return _activeTables.Where((table, i) => table != "" && Tables[table].LeftSideTables(i).Contains(mousePositionForRects)).Any() ||
+                   GuiStrings.Any(guiString => guiString.GUIStringRect().Contains(mousePositionForRects)) ||
+                   (ShowREPLTable && REPLRect.Contains(mousePositionForRects)) ||
+                   // TODO: Store the save name area sizes somewhere...
+                   (SavingWithName && CenteredRect(300, 40).Contains(mousePositionForRects));
         }
 
         private static void PopTableIfNewActivity(string tableName) {
