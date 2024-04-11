@@ -99,7 +99,7 @@ namespace VdlV.Unity {
                     PoppedTable = false;
                 }
             }
-            if (SiftingEnabled) {
+            if (SiftingEnabled && _simulationRunning) {
                 if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
             }
             if (!ShowREPLTable) _tileManager.UpdateSelectedTile();

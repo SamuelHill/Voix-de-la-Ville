@@ -5,14 +5,6 @@ Gossip:
     [MonthlyRomance ?person2 ?person3 ?interaction2]
     ?person2 is sleeping with both ?person1 and ?person3!
 [end]
-
-# Look more into death
-Death: [CharacterEnd ?person] ?person died!
-# birth - today date, born to mother father , children, cemetery name
-
-# male female predicates
-
-# Birth
 Gossip: 
     [CharacterStart ?person]
     [Parent ?parent1 ?person]
@@ -21,15 +13,32 @@ Gossip:
     ?parent1 and ?parent2 just had a baby! [PosPronoun ?person] name is ?person!
 [end]
 
+# Look more into death - cause of death in sim
+# Cause - enumtype if shot/stabbed, see "KilledBy"
+# natural causes / accidents / murder / suicide
+Death: 
+    [CharacterEnd ?person]
+# [Parent ?parent1 ?person]
+# [Parent ?parent2 ?person]
+    [CauseOfDeath ?person ?cause]
+    [DescribeDeath ?person ?cause]
+# [PosPronoun ?person] was born to ?parent1 and ?parent2.
+[end]
+
+
+DescribeDeath ?person stabbed: ?person was found stabbed today!
+DescribeDeath ?person heart_attack: ?person had a heart attack and passed away...
+DescribeDeath ?person shot: There was a shootout and ?person got hit and died on the spot!
+DescribeDeath ?person lightning_strike: ?person got hit by lighting! He did not turn into the Flash...
+
+
+
 # Gossip: Nothing happened...
 
 # Lovers start end
 
-# Placestart maybe
-
 # Ask Sam employment
 
-# Sam q 2 Dates
 
 [predicate]
 MonthlyRomance ?person1 ?person2 ?interaction: [Monthly ?person1 ?person2 ?interaction ?] [RomanticInteractions ?interactionType]
@@ -43,3 +52,16 @@ Pronoun ?person: [Male ?person] he
 Pronoun ?person: [Female ?person] she
 PosPronoun ?person: [Male ?person] his
 PosPronoun ?person: [Female ?person] her
+
+[predicate]
+CauseOfDeath ?person ?cause: [PossibleCauseOfDeath ?cause]
+
+# [predicate]
+# CauseOfDeath ?person ?cause: [RememberedCauseOfDeath ?person ?cause]
+# CauseOfDeath ?person ?cause: [NotAny [RememberedCauseOfDeath ?person ?]] [PossibleCauseOfDeath ?person ?cause] [now [RememberedCauseOfDeath ?person ?cause]]
+# function RememberedCauseOfDeath ?person ?cause.
+[randomly]
+PossibleCauseOfDeath heart_attack.    
+PossibleCauseOfDeath shot.
+PossibleCauseOfDeath stabbed.
+PossibleCauseOfDeath lightning_strike.
