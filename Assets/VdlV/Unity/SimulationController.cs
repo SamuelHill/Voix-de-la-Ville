@@ -93,16 +93,18 @@ namespace VdlV.Unity {
                     throw;
                 }
                 ProcessLots();
-                _simulationSingleStep = false;
                 if (PoppedTable & _simulationRunning) {
                     _simulationRunning = false;
                     PoppedTable = false;
                 }
             }
             if (SiftingEnabled && _simulationRunning) {
-                if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
+                if (_runStepCode.PauseOnDeath() || _runStepCode.PauseOnMarriage()) _simulationRunning = false;
+                _runStepCode.ProcessGossip();
+                _runStepCode.getNews();
             }
             if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
+            _simulationSingleStep = false;
         }
 
         // ReSharper disable once UnusedMember.Global
@@ -229,9 +231,11 @@ namespace VdlV.Unity {
         // ************************************* STEP Layout **************************************
 
         private void StepGUIControl() {
-            if (_simulationRunning) _runStepCode.ProcessGossip();
+            
             _runStepCode.ShowDeath();
             _runStepCode.ShowGossip();
+            _runStepCode.ShowMarriage();
+            _runStepCode.ShowNews();
         }
     }
 }

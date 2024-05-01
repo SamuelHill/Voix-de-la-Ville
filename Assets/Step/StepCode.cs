@@ -8,6 +8,7 @@ using TED;
 using VdlV.Simulator;
 using VdlV.Utilities;
 using VdlV.ValueTypes;
+using Random = System.Random;
 
 // ReSharper disable once CheckNamespace
 namespace Vldv.Step
@@ -26,6 +27,8 @@ namespace Vldv.Step
             Module["RomanticInteractions"] = StaticTables.romanticInteractions;
             Module["MaleSex"] = Sex.Male;
             Module["FemaleSex"] = Sex.Female;
+            Module["CurrentDate"] = new SimpleFunction<int, string>("CurrentDate", (int _) => VdlV.Time.Clock.Date().ToString());
+            Module["Log"] = new SimplePredicate<object>("Log", (object o) => {UnityEngine.Debug.Log(o); return true;});
         }
 
         private static IEnumerable<object[]> TableRowsInRandomOrder(TablePredicate predicate)

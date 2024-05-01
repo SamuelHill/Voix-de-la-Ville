@@ -1,9 +1,11 @@
+PrintDate: [CurrentDate 0 ?date] ?date/Write
+
 [randomly]
 
 Gossip: 
     [MonthlyRomance ?person1 ?person2 ?interaction1]
     [MonthlyRomance ?person2 ?person3 ?interaction2]
-    ?person2 is sleeping with both ?person1 and ?person3!
+    [PrintDate] ?person2 is sleeping with both ?person1 and ?person3!
 [end]
 Gossip: 
     [CharacterStart ?person]
@@ -26,16 +28,28 @@ Death:
 [end]
 
 
+
 DescribeDeath ?person stabbed: ?person was found stabbed today!
 DescribeDeath ?person heart_attack: ?person had a heart attack and passed away...
 DescribeDeath ?person shot: There was a shootout and ?person got hit and died on the spot!
 DescribeDeath ?person lightning_strike: ?person got hit by lighting! He did not turn into the Flash...
 
+Marriage:
+    [LoverStart ?person1 ?person2]
+    ?person1 just married ?person2!
+[end]
 
+# [randomly]
+Newspaper:
+    [CharacterEnd ?person]
+    
+    The town lost someone today. [DescribeDeath ?person ?cause] In other news, an anonymous source informed us that recently [Gossip]
+[end]
+Newspaper:
+    Did everyone hear [Gossip]
+[end]
 
 # Gossip: Nothing happened...
-
-# Lovers start end
 
 # Ask Sam employment
 

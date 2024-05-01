@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class RunStepCode : MonoBehaviour {
     private string _death;
+    private string _news;
+    private string _marriage;
     private Queue<string> _gossipQueue = new();
 
     public int MaxGossipCount = 10;
@@ -29,6 +31,7 @@ public class RunStepCode : MonoBehaviour {
             if (!_gossipQueue.Contains(newGossip)) {
                 break;
             }
+            tryCounter++;
         }
         _gossipQueue.Enqueue(newGossip);
         if (_gossipQueue.Count > MaxGossipCount) _gossipQueue.Dequeue();
@@ -36,4 +39,22 @@ public class RunStepCode : MonoBehaviour {
 
     public void ShowGossip() => GUI.Label(new Rect(600, 200, 1000, 1000),
         string.Join("\n", _gossipQueue.ToArray()));
+
+    public void getNews() {
+        _news = StepCode.Run("Newspaper");
+    }
+
+    public void ShowNews() => GUI.Label(new Rect(600, 500, 1000, 1000), _news);
+
+    public bool PauseOnMarriage() {
+        try {
+            _marriage = StepCode.Run("Marriage");
+        }
+        catch (Step.Interpreter.CallFailedException e) {
+            _marriage = "";
+        }
+        return _marriage != "";
+    }
+
+    public void ShowMarriage() => GUI.Label(new Rect(600, 700, 1000, 1000), _marriage);
 }
