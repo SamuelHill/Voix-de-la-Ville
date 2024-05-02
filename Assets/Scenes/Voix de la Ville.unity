@@ -241,14 +241,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6810649d7fdd32e448180772fd59a960, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SiftingEnabled: 1
+  SiftingEnabled: 0
   RecordPerformanceData: 0
   PrettyNamesOnly: 1
   TownCenter: {x: 12, y: 0}
   Tilemap: {fileID: 1000091122}
   OccupiedLot: {fileID: 11400000, guid: d9d4319b8860fe748b914d7823963c6d, type: 2}
-  GraphComponent: {fileID: 1926495701}
-  StepComponent: {fileID: 1761369371}
+  GraphVizGameObject: {fileID: 1926495699}
+  StepGameObject: {fileID: 1761369369}
 --- !u!1 &646401261
 GameObject:
   m_ObjectHideFlags: 0

@@ -38,6 +38,8 @@ namespace VdlV.Unity {
             if (!_centered) GUI.skin.box.alignment = TextAnchor.MiddleCenter;
         }
 
+        public Rect GUIStringRect() => _displayFunc(_width, _height);
+
         private void UpdateString() {
             if (_stringFunc is not null) {
                 if (IsNewString()) UpdateSize(); }

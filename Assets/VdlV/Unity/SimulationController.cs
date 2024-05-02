@@ -25,36 +25,39 @@ namespace VdlV.Unity {
     /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>
     public class SimulationController : MonoBehaviour {
         // ReSharper disable MemberCanBePrivate.Global, FieldCanBeMadeReadOnly.Global, ConvertToConstant.Global, UnassignedField.Global
+        // ReSharper disable InconsistentNaming
         public bool SiftingEnabled;
         public bool RecordPerformanceData;
         public bool PrettyNamesOnly = true;
         public Vector2Int TownCenter;
         public Tilemap Tilemap;
         public Tile OccupiedLot;
-        public Component GraphComponent;
-        public Component StepComponent;
+        public GameObject GraphVizGameObject;
+        public GameObject StepGameObject; 
+        // ReSharper restore InconsistentNaming
         // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
         private const byte NumInRow = 3; // Used with ListWithRows
 
+        private RunStepCode _runStepCode;
         private TileManager _tileManager;
         private GraphVisualizer _graphVisualizer;
-        private RunStepCode _runStepCode;
         private Vector2 _graphCenterPoint;
         private Vector2 _graphMaxDimensions;
         private bool _simulationRunning = true; // make public for unity inspector control of start
+        private bool _runningBeforeREPL;
         private bool _simulationSingleStep;
         private bool _profileRuleExecutionTime;
         private bool _guiRunOnce;
 
         // ReSharper disable once UnusedMember.Global
         internal void Start() {
-            TED.Comparer<Vector2Int>.Default = new GridComparer();
             RecordingPerformance = RecordPerformanceData;
             Sifting = SiftingEnabled;
+            _runStepCode = StepGameObject.GetComponent<RunStepCode>();
+            TED.Comparer<Vector2Int>.Default = new GridComparer();
             _tileManager = new TileManager(Tilemap, TownCenter, OccupiedLot);
-            _graphVisualizer = GraphComponent.GetComponent<GraphVisualizer>();
-            _runStepCode = StepComponent.GetComponent<RunStepCode>();
+            _graphVisualizer = GraphVizGameObject.GetComponent<GraphVisualizer>();
             GraphScreenCoordinates();
             GraphBoundRect = REPLContainer;
             InitSimulator();
@@ -70,41 +73,46 @@ namespace VdlV.Unity {
 
         // ReSharper disable once UnusedMember.Global
         internal void Update() {
+            if (SiftingEnabled && _simulationRunning) {
+                if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
+            }
+
+            // Keypress handling
             if (GetKeyDown(KeyCode.Escape)) {
                 _simulationRunning = !_simulationRunning;
+                _runningBeforeREPL = _simulationRunning;
                 SavingWithName = false;
             }
             if (!_simulationRunning && GetKeyDown(KeyCode.Space)) _simulationSingleStep = true;
             if (GetKeyDown(KeyCode.BackQuote)) _profileRuleExecutionTime = !_profileRuleExecutionTime;
             if (GetKeyDown(KeyCode.F1)) ToggleShowTables();
             if (GetKeyDown(KeyCode.F2)) {
+                if (!ShowREPLTable) _runningBeforeREPL = _simulationRunning;
                 ToggleREPLTable();
-                _simulationRunning = !ShowREPLTable;
+                _simulationRunning = !ShowREPLTable && _runningBeforeREPL;
             }
+            if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
             if (GetKeyDown(KeyCode.F4)) Save(Simulation);
             if (GetKeyDown(KeyCode.F5)) {
                 _simulationRunning = false;
                 SavingWithName = true;
             }
-            if (_simulationRunning || _simulationSingleStep) {
-                try { UpdateSimulator(); } catch (Exception e) {
-                    Debug.LogException(e);
-                    _simulationRunning = false;
-                    throw;
-                }
-                ProcessLots();
-                if (PoppedTable & _simulationRunning) {
-                    _simulationRunning = false;
-                    PoppedTable = false;
-                }
+            if (!_simulationRunning && !_simulationSingleStep) return;
+            try { UpdateSimulator(); } catch (Exception e) {
+                Debug.LogException(e);
+                _simulationRunning = false;
+                throw;
             }
-            if (SiftingEnabled && _simulationRunning) {
+            ProcessLots();
+            if (SiftingEnabled) {
                 if (_runStepCode.PauseOnDeath() || _runStepCode.PauseOnMarriage()) _simulationRunning = false;
                 _runStepCode.ProcessGossip();
                 _runStepCode.getNews();
             }
-            if (!ShowREPLTable) _tileManager.UpdateSelectedTile();
             _simulationSingleStep = false;
+            if (!(PoppedTable & _simulationRunning)) return;
+            _simulationRunning = false;
+            PoppedTable = false;
         }
 
         // ReSharper disable once UnusedMember.Global
@@ -123,7 +131,7 @@ namespace VdlV.Unity {
             SaveNameText();
             _tileManager.SetVisibility(ShowTilemap);
             if (_profileRuleExecutionTime) RuleExecutionTimes();
-            if (!_simulationRunning && !ChangeTable && !ShowREPLTable && !SavingWithName) ShowPaused();
+            if (!_simulationRunning) ShowPaused();
         }
 
         // ************************************ Location Tiles ************************************
@@ -154,7 +162,15 @@ namespace VdlV.Unity {
         // ************************************* Info Strings *************************************
 
         private static string Population() => $"Population of {PopulationCount}";
-        private static int PopulationCount => PopulationCountIndex[true].Item2;
+        private static int PopulationCount {
+            get {
+                try {
+                    return PopulationCountIndex[true].Item2;
+                } catch (KeyNotFoundException) {
+                    return 0;
+                }
+            }
+        }
 
         #region Tile hover (selected location)
         private string SelectedLocation() => _tileManager.SelectedLot is null ? null : 

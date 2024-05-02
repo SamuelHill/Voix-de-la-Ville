@@ -18,6 +18,7 @@ namespace VdlV.Unity {
     using static GUILayout;
     using static Input;
     using static Mathf;
+    using static Screen;
     using static SaveManager;
     using static StaticTables; // used in PlaceColor
     using static StringProcessing;
@@ -66,6 +67,7 @@ namespace VdlV.Unity {
 
         public static Func<int, int, int, Rect> GraphBoundRect;
         private static GUITable REPLTable;
+        private static Rect REPLRect;
         private static string REPLQuery;
         private static string _previousREPLQuery;
 
@@ -145,12 +147,20 @@ namespace VdlV.Unity {
             }
         }
 
-        public static void ShowPaused() => Paused.OnGUI();
+        public static void ShowPaused() {
+            if (SavingWithName) return;
+            if (ShowREPLTable) return;
+            if (ChangeTable && _showTables) return;
+            Paused.OnGUI();
+        }
+
         public static void ShowStrings() { foreach (var guiString in GuiStrings) guiString.OnGUI(); }
 
         public static void ShowActiveTables() {
             if (!_showTables) return;
-            for (var i = 0; i < _activeTables.Length; i++) Tables[_activeTables[i]].OnGUI(i);
+            for (var i = 0; i < _activeTables.Length; i++) {
+                if (_activeTables[i] != "") Tables[_activeTables[i]].OnGUI(i);
+            }
         }
         public static void ChangeActiveTables() {
             // Change and show/hide toggles:
@@ -165,23 +175,21 @@ namespace VdlV.Unity {
                                      _displayTableToChange, DisplayTableSelector);
             _tableSelector = IndexOf(Tables.Keys.ToArray(), _activeTables[_displayTableToChange]);
             // Build the selection grid:
-            var selectionGridHeight = CeilToInt(_tableDisplayNames.Length / 5f) * TopMiddleRectHeight;
-            var selectionGridRect = TopMiddleRectStack(SelectionGridWidth, selectionGridHeight, 3);
-            _tableSelector = SelectionGrid(selectionGridRect, _tableSelector, _tableDisplayNames, 5);
+            _tableSelector = SelectionGrid(SelectionGridRect(), _tableSelector, _tableDisplayNames, 5);
             // update the active table to change with the selected table
-            _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
+            if (_tableSelector != -1)
+                _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
         }
         
         public static void ShowREPL() {
             if (!ShowREPLTable) return;
-            Rect query;
-            if (REPLTable == null) query = GraphBoundRect(REPLQueryWidth, REPLQueryHeight, 0);
+            if (REPLTable == null) REPLRect = GraphBoundRect(REPLQueryWidth, REPLQueryHeight, 0);
             else {
                 var table = GraphBoundRect((int)REPLTable.TableWidth, REPLTable.REPLHeight, REPLQueryHeight);
                 REPLTable.OnGUI(-1, table);
-                query = new Rect(table.center.x - QueryCenterXOffset, table.yMax, REPLQueryWidth, REPLQueryHeight);
+                REPLRect = new Rect(table.center.x - QueryCenterXOffset, table.yMax, REPLQueryWidth, REPLQueryHeight);
             }
-            BeginArea(query);
+            BeginArea(REPLRect);
             REPLArea();
             EndArea();
         }
@@ -214,6 +222,21 @@ namespace VdlV.Unity {
             }
             EndArea();
             EndArea();
+        }
+
+        public static bool IsMouseInGUIs() {
+            var mousePositionForRects = new Vector2(mousePosition.x, height - mousePosition.y);
+            return _activeTables.Where((table, i) => table != "" && Tables[table].LeftSideTables(i).Contains(mousePositionForRects)).Any() ||
+                   GuiStrings.Any(guiString => guiString.GUIStringRect().Contains(mousePositionForRects)) ||
+                   (ShowREPLTable && REPLRect.Contains(mousePositionForRects)) ||
+                   TopMiddleRectStack(ChangeTablesWidth + ShowTablesWidth).Contains(mousePositionForRects) ||
+                   (ChangeTable && _showTables && TopMiddleRectStack(TableSelectorToolbarWidth, 2).Contains(mousePositionForRects)) ||
+                   (ChangeTable && _showTables && SelectionGridRect().Contains(mousePositionForRects)) ||
+                   (GraphVisible && DataFlowButton(true).Contains(mousePositionForRects)) ||
+                   (GraphVisible && DataFlowButton(false).Contains(mousePositionForRects)) ||
+                   (!GraphVisible && RemoveGraphButton().Contains(mousePositionForRects)) ||
+                   // TODO: Store the save name area sizes somewhere...
+                   (SavingWithName && CenteredRect(300, 40).Contains(mousePositionForRects));
         }
 
         private static void PopTableIfNewActivity(string tableName) {
@@ -262,6 +285,9 @@ namespace VdlV.Unity {
 
         private static Rect SelectedTileInfoRect(int width, int height) => // Rect following mouse position
             new(mousePosition.x + TileSize, (Screen.height - mousePosition.y) + TileSize, width, height);
+
+        private static Rect SelectionGridRect() => 
+            TopMiddleRectStack(SelectionGridWidth, CeilToInt(_tableDisplayNames.Length / 5f) * TopMiddleRectHeight, 3);
 
         private static void BoldLabel(string label, params GUILayoutOption[] options) {
             skin.label.fontStyle = FontStyle.Bold;

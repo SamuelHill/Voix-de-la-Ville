@@ -173,7 +173,7 @@ namespace VdlV.Unity {
             return Width(_columnWidths[i]);
         }
         
-        private Rect LeftSideTables(int tableNum) => new(TablePadding, tableNum * 
+        public Rect LeftSideTables(int tableNum) => new(TablePadding, tableNum * 
             (DefaultTableHeight + TablePadding) + TablePadding, TableWidth, DefaultTableHeight);
 
         private static bool ScrollingInRect(Rect rect) => // Scroll check based on Rects

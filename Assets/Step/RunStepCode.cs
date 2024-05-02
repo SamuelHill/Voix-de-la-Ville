@@ -8,18 +8,21 @@ public class RunStepCode : MonoBehaviour {
     private string _marriage;
     private Queue<string> _gossipQueue = new();
 
+    // ReSharper disable MemberCanBePrivate.Global, FieldCanBeMadeReadOnly.Global, ConvertToConstant.Global, UnassignedField.Global
     public int MaxGossipCount = 10;
     public int MaxStepAttempts = 5;
+    // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
-    public bool PauseOnDeath() {
+    private static bool TryRun(string stepString, out string stepOutput) {
         try {
-            _death = StepCode.Run("Death");
+            stepOutput = StepCode.Run(stepString);
+        } catch (Step.Interpreter.CallFailedException) {
+            stepOutput = "";
         }
-        catch (Step.Interpreter.CallFailedException e) {
-            _death = "";
-        }
-        return _death != "";
+        return stepOutput != "";
     }
+
+    public bool PauseOnDeath() => TryRun("Death", out _death);
 
     public void ShowDeath() => GUI.Label(new Rect(600, 100, 1000, 1000), _death);
 
