@@ -2953,6 +2953,11 @@
             True if any argument goals are true
             </summary>
         </member>
+        <member name="F:TED.Language.FirstOf">
+            <summary>
+            True if any argument goals are true
+            </summary>
+        </member>
         <member name="F:TED.Language.False">
             <summary>
             Predicate that always fails
@@ -4875,6 +4880,22 @@
         </member>
         <member name="P:TED.Primitives.EvalPrimitive`1.EvalCall.IsPure">
             <inheritdoc />
+        </member>
+        <member name="T:TED.Primitives.FirstOfPrimitive">
+            <summary>
+            Implements conjunctions as a primitive predicate.  That is, And[g1, g2, ...] is true when all the gi are true.
+            Procedurally, this means find solutions to g1, then g2, etc., backtracking in the normal manner.
+            </summary>
+        </member>
+        <member name="F:TED.Primitives.FirstOfPrimitive.Singleton">
+            <summary>
+            The And primitive itself
+            </summary>
+        </member>
+        <member name="P:TED.Primitives.FirstOfPrimitive.Item(TED.Interpreter.Goal[])">
+            <summary>
+            True when all the subgoals are true
+            </summary>
         </member>
         <member name="T:TED.Primitives.InPrimitive`1">
             <summary>
