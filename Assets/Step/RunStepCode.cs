@@ -24,6 +24,15 @@ public class RunStepCode : MonoBehaviour {
 
     public bool PauseOnDeath() => TryRun("Death", out _death);
 
+    public bool PauseOnMarriage() {
+        try {
+            _marriage = StepCode.Run("Marriage");
+        } catch (Step.Interpreter.CallFailedException e) {
+            _marriage = "";
+        }
+        return _marriage != "";
+    }
+
     public void ShowDeath() => GUI.Label(new Rect(600, 100, 1000, 1000), _death);
 
     public void ProcessGossip() {
@@ -48,16 +57,6 @@ public class RunStepCode : MonoBehaviour {
     }
 
     public void ShowNews() => GUI.Label(new Rect(600, 500, 1000, 1000), _news);
-
-    public bool PauseOnMarriage() {
-        try {
-            _marriage = StepCode.Run("Marriage");
-        }
-        catch (Step.Interpreter.CallFailedException e) {
-            _marriage = "";
-        }
-        return _marriage != "";
-    }
 
     public void ShowMarriage() => GUI.Label(new Rect(600, 700, 1000, 1000), _marriage);
 }

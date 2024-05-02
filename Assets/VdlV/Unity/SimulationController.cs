@@ -247,7 +247,6 @@ namespace VdlV.Unity {
         // ************************************* STEP Layout **************************************
 
         private void StepGUIControl() {
-            
             _runStepCode.ShowDeath();
             _runStepCode.ShowGossip();
             _runStepCode.ShowMarriage();
