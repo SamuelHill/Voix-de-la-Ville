@@ -73,10 +73,6 @@ namespace VdlV.Unity {
 
         // ReSharper disable once UnusedMember.Global
         internal void Update() {
-            if (SiftingEnabled && _simulationRunning) {
-                if (_runStepCode.PauseOnDeath()) _simulationRunning = false;
-            }
-
             // Keypress handling
             if (GetKeyDown(KeyCode.Escape)) {
                 _simulationRunning = !_simulationRunning;
@@ -107,7 +103,7 @@ namespace VdlV.Unity {
             if (SiftingEnabled) {
                 if (_runStepCode.PauseOnDeath() || _runStepCode.PauseOnMarriage()) _simulationRunning = false;
                 _runStepCode.ProcessGossip();
-                _runStepCode.getNews();
+                _runStepCode.GetNews();
             }
             _simulationSingleStep = false;
             if (!(PoppedTable & _simulationRunning)) return;

@@ -23,17 +23,8 @@ public class RunStepCode : MonoBehaviour {
     }
 
     public bool PauseOnDeath() => TryRun("Death", out _death);
-
-    public bool PauseOnMarriage() {
-        try {
-            _marriage = StepCode.Run("Marriage");
-        } catch (Step.Interpreter.CallFailedException e) {
-            _marriage = "";
-        }
-        return _marriage != "";
-    }
-
-    public void ShowDeath() => GUI.Label(new Rect(600, 100, 1000, 1000), _death);
+    
+    public bool PauseOnMarriage() => TryRun("Marriage", out _marriage);
 
     public void ProcessGossip() {
         var tryCounter = 0;
@@ -49,14 +40,13 @@ public class RunStepCode : MonoBehaviour {
         if (_gossipQueue.Count > MaxGossipCount) _gossipQueue.Dequeue();
     }
 
-    public void ShowGossip() => GUI.Label(new Rect(600, 200, 1000, 1000),
-        string.Join("\n", _gossipQueue.ToArray()));
+    public void GetNews() => _news = StepCode.Run("Newspaper");
+    
+    public void ShowDeath() => GUI.Label(new Rect(600, 100, 1000, 1000), _death);
 
-    public void getNews() {
-        _news = StepCode.Run("Newspaper");
-    }
+    public void ShowMarriage() => GUI.Label(new Rect(600, 150, 1000, 1000), _marriage);
+
+    public void ShowGossip() => GUI.Label(new Rect(600, 200, 1000, 1000), string.Join("\n", _gossipQueue.ToArray()));
 
     public void ShowNews() => GUI.Label(new Rect(600, 500, 1000, 1000), _news);
-
-    public void ShowMarriage() => GUI.Label(new Rect(600, 700, 1000, 1000), _marriage);
 }
