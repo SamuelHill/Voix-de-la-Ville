@@ -6,6 +6,7 @@ public class RunStepCode : MonoBehaviour {
     private string _death;
     private string _news;
     private string _marriage;
+    private string _previousMarriage;
     private readonly Queue<string> _gossipQueue = new();
 
     // ReSharper disable MemberCanBePrivate.Global, FieldCanBeMadeReadOnly.Global, ConvertToConstant.Global, UnassignedField.Global, InconsistentNaming
@@ -21,21 +22,21 @@ public class RunStepCode : MonoBehaviour {
         }
         return stepOutput != "";
     }
-    private static bool TryRunCheckIfNew(string stepString, out string stepOutput, string previousStepOutput) {
+    
+    private static bool TryRunCheckIfNew(string stepString, out string stepOutput, ref string previousStepOutput) {
         try {
             stepOutput = StepCode.Run(stepString);
         } catch (Step.Interpreter.CallFailedException) {
             stepOutput = "";
         }
-        if (stepOutput == previousStepOutput) {
-            previousStepOutput = stepOutput;
-        }
+        if (stepOutput == previousStepOutput) return false;
+        previousStepOutput = stepOutput;
         return stepOutput != "";
     }
 
     public bool PauseOnDeath() => TryRun("Death", out _death);
     
-    public bool PauseOnMarriage() => TryRun("Marriage", out _marriage);
+    public bool PauseOnMarriage() => TryRunCheckIfNew("Marriage", out _marriage, ref _previousMarriage);
 
     public void ProcessGossip() {
         var tryCounter = 0;
