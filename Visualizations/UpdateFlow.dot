@@ -143,10 +143,6 @@ v138 [ label = "BestCandidate"];
 v139 [ label = "EmploymentStatus" fillcolor="limegreen"];
 v140 [ label = "set state"];
 v141 [ label = "Add"];
-v142 [ label = "Monthly" rank="min"];
-v143 [ label = "InteractionChronicle" fillcolor="limegreen"];
-v144 [ label = "Add"];
-v145 [ label = "LoveTriangle"];
 v1 -> v0 [ color="red" ]
 v2 -> v1
 v3 -> v0 [ color="red" ]
@@ -346,7 +342,4 @@ v2 -> v140
 v97 -> v140
 v141 -> v139 [ color="green" ]
 v133 -> v141
-v144 -> v143 [ color="green" ]
-v20 -> v144
-v142 -> v145
 }

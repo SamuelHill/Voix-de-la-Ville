@@ -49,8 +49,7 @@ namespace VdlV.Simulator {
         public static KeyIndex<(LocationType, Color), LocationType> LocationColorsIndex;
 
         public static TablePredicate<InteractionType, int> InteractionAffinityDelta;
-
-
+        
         // ************************************** Collections *************************************
         public static readonly LocationType[] permanentLocationTypes = { Cemetery, CityHall, DayCare, FireStation, Hospital, School };
         public static readonly InteractionType[] romanticInteractions = { Flirting, Courting, Snogging, Negging, Procreating };

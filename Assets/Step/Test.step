@@ -35,7 +35,7 @@ DescribeDeath ?person shot: There was a shootout and ?person got hit and died on
 DescribeDeath ?person lightning_strike: ?person got hit by lighting! He did not turn into the Flash...
 
 Marriage:
-    [LoverStart ?person1 ?person2]
+    [Lover__add ?pair ?person1 ?person2 ?state]
     ?person1 just married ?person2!
 [end]
 
