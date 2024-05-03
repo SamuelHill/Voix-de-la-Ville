@@ -19,13 +19,6 @@ namespace VdlV.Step {
             return stepOutput != "";
         }
 
-        private static bool TryRunCheckIfNew(string stepString, out string stepOutput, ref string previousStepOutput) {
-            try { stepOutput = StepCode.Run(stepString); } catch (CallFailedException) { stepOutput = ""; }
-            if (stepOutput == previousStepOutput) return false;
-            previousStepOutput = stepOutput;
-            return stepOutput != "";
-        }
-
         public bool PauseOnDeath() => TryRun("Death", out _death);
 
         public bool PauseOnMarriage() => TryRun("Marriage", out _marriage);
