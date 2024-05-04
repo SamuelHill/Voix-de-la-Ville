@@ -53,6 +53,7 @@ namespace VdlV.Unity {
 
         // ReSharper disable once UnusedMember.Global
         internal void Start() {
+            AlphabetizeTables = AlphabeticalTables;
             RecordingPerformance = RecordPerformanceData;
             Sifting = SiftingEnabled;
             _runStepCode = StepGameObject.GetComponent<RunStepCode>();
@@ -64,8 +65,7 @@ namespace VdlV.Unity {
             InitSimulator();
             AvailableTables((PrettyNamesOnly ?
                                  Simulation.Tables.Where(t => !t.Name.Contains("_")) :
-                                 Simulation.Tables).Append(Simulation.Exceptions).Append(Simulation.Problems),
-                            AlphabeticalTables);
+                                 Simulation.Tables).Append(Simulation.Exceptions).Append(Simulation.Problems));
             ActiveTables(new[] { "Character", "Parent", "Employment", "WhereTheyAt" });
             AddPopulationInfo(Population);
             ProcessInitialLocations();

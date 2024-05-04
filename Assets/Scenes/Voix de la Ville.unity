@@ -244,7 +244,7 @@ MonoBehaviour:
   SiftingEnabled: 0
   RecordPerformanceData: 0
   AlphabeticalTables: 0
-  PrettyNamesOnly: 1
+  PrettyNamesOnly: 0
   TownCenter: {x: 12, y: 0}
   Tilemap: {fileID: 1000091122}
   OccupiedLot: {fileID: 11400000, guid: d9d4319b8860fe748b914d7823963c6d, type: 2}

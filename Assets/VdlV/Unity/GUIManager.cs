@@ -60,6 +60,7 @@ namespace VdlV.Unity {
         public static bool ShowREPLTable;
         public static bool PoppedTable;
         public static bool ShowTilemap = true;
+        public static bool AlphabetizeTables;
         public static bool ChangeTable;
         private static bool ChangeTableNeedsScroll;
         private static Vector2 ChangeTableScroll;
@@ -105,7 +106,7 @@ namespace VdlV.Unity {
 
         // *************************************** GUI setup **************************************
 
-        public static void AvailableTables(IEnumerable<TablePredicate> tables, bool alphabetize) {
+        public static void AvailableTables(IEnumerable<TablePredicate> tables) {
             foreach (var table in tables) Tables[table.Name] = new GUITable(table);
             _tableDisplayNames = Tables.Keys.Select(CutoffName).ToArray();
             ChangeTableNeedsScroll = _tableDisplayNames.Length > 150;
@@ -190,8 +191,6 @@ namespace VdlV.Unity {
                 EndArea(); 
             }
             // update the active table to change with the selected table
-            if (_tableSelector != -1)
-                _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
         }
         
         public static void ShowREPL() {
