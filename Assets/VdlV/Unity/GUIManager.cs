@@ -112,7 +112,7 @@ namespace VdlV.Unity {
             ChangeTableNeedsScroll = _tableDisplayNames.Length > 150;
             _displayNameToTableName = _tableDisplayNames.Zip(Tables.Keys.ToArray(),
                 (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
-            if (AlphabetizeTables) Sort(_tableDisplayNames);
+            //if (AlphabetizeTables) Sort(_tableDisplayNames);
         }
         public static void ActiveTables(string[] activeTables) => _activeTables = activeTables;
 
@@ -191,6 +191,8 @@ namespace VdlV.Unity {
                 EndArea(); 
             }
             // update the active table to change with the selected table
+            if (_tableSelector != -1)
+                _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
         }
         
         public static void ShowREPL() {
