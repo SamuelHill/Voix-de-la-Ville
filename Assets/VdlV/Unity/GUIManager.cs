@@ -108,10 +108,10 @@ namespace VdlV.Unity {
         public static void AvailableTables(IEnumerable<TablePredicate> tables, bool alphabetize) {
             foreach (var table in tables) Tables[table.Name] = new GUITable(table);
             _tableDisplayNames = Tables.Keys.Select(CutoffName).ToArray();
-            if (alphabetize) Sort(_tableDisplayNames);
             ChangeTableNeedsScroll = _tableDisplayNames.Length > 150;
             _displayNameToTableName = _tableDisplayNames.Zip(Tables.Keys.ToArray(),
                 (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
+            if (alphabetize) Sort(_tableDisplayNames);
         }
         public static void ActiveTables(string[] activeTables) => _activeTables = activeTables;
 
@@ -179,12 +179,15 @@ namespace VdlV.Unity {
                                      _displayTableToChange, DisplayTableSelector);
             _tableSelector = IndexOf(Tables.Keys.ToArray(), _activeTables[_displayTableToChange]);
             // Build the selection grid:
+            var selectionGridRect = SelectionGridRect();
             if (ChangeTableNeedsScroll) {
-                ChangeTableScroll = GUI.BeginScrollView(CappedSelectionGridRect(), ChangeTableScroll, SelectionGridRect(), false, true);
-                _tableSelector = SelectionGrid(SelectionGridRect(), _tableSelector, _tableDisplayNames, 5);
-                GUI.EndScrollView();
+                ChangeTableScroll = BeginScrollView(CappedSelectionGridRect(), ChangeTableScroll, selectionGridRect, false, true);
+                _tableSelector = SelectionGrid(selectionGridRect, _tableSelector, _tableDisplayNames, 5);
+                GUI.EndScrollView(); // Conflicts with GUILayout...
             } else {
-                _tableSelector = SelectionGrid(SelectionGridRect(), _tableSelector, _tableDisplayNames, 5);
+                BeginArea(selectionGridRect);
+                _tableSelector = SelectionGrid(new Rect(selectionGridRect) {x = 0, y = 0}, _tableSelector, _tableDisplayNames, 5);
+                EndArea(); 
             }
             // update the active table to change with the selected table
             if (_tableSelector != -1)
