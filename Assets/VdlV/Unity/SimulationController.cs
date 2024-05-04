@@ -25,18 +25,17 @@ namespace VdlV.Unity {
     // ReSharper disable once UnusedMember.Global
     /// <summary>Handles running the simulation and interfacing with the GUI and Tile Managers.</summary>
     public class SimulationController : MonoBehaviour {
-        // ReSharper disable MemberCanBePrivate.Global, FieldCanBeMadeReadOnly.Global, ConvertToConstant.Global, UnassignedField.Global
-        // ReSharper disable InconsistentNaming
+        // ReSharper disable MemberCanBePrivate.Global, FieldCanBeMadeReadOnly.Global, ConvertToConstant.Global, UnassignedField.Global, InconsistentNaming
         public bool SiftingEnabled;
         public bool RecordPerformanceData;
+        public bool AlphabeticalTables = true;
         public bool PrettyNamesOnly = true;
         public Vector2Int TownCenter;
         public Tilemap Tilemap;
         public Tile OccupiedLot;
         public GameObject GraphVizGameObject;
-        public GameObject StepGameObject; 
-        // ReSharper restore InconsistentNaming
-        // ReSharper restore UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
+        public GameObject StepGameObject;
+        // ReSharper restore InconsistentNaming, UnassignedField.Global, ConvertToConstant.Global, FieldCanBeMadeReadOnly.Global, MemberCanBePrivate.Global
 
         private const byte NumInRow = 3; // Used with ListWithRows
 
@@ -46,6 +45,7 @@ namespace VdlV.Unity {
         private Vector2 _graphCenterPoint;
         private Vector2 _graphMaxDimensions;
         private bool _simulationRunning = true; // make public for unity inspector control of start
+        // ReSharper disable once InconsistentNaming
         private bool _runningBeforeREPL;
         private bool _simulationSingleStep;
         private bool _profileRuleExecutionTime;
@@ -62,9 +62,10 @@ namespace VdlV.Unity {
             GraphScreenCoordinates();
             GraphBoundRect = REPLContainer;
             InitSimulator();
-            AvailableTables((PrettyNamesOnly ? 
-                Simulation.Tables.Where(t => !t.Name.Contains("_")) :
-                Simulation.Tables).Append(Simulation.Exceptions).Append(Simulation.Problems));
+            AvailableTables((PrettyNamesOnly ?
+                                 Simulation.Tables.Where(t => !t.Name.Contains("_")) :
+                                 Simulation.Tables).Append(Simulation.Exceptions).Append(Simulation.Problems),
+                            AlphabeticalTables);
             ActiveTables(new[] { "Character", "Parent", "Employment", "WhereTheyAt" });
             AddPopulationInfo(Population);
             ProcessInitialLocations();

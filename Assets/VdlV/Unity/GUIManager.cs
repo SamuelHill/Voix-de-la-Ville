@@ -103,9 +103,10 @@ namespace VdlV.Unity {
 
         // *************************************** GUI setup **************************************
 
-        public static void AvailableTables(IEnumerable<TablePredicate> tables) {
+        public static void AvailableTables(IEnumerable<TablePredicate> tables, bool alphabetize) {
             foreach (var table in tables) Tables[table.Name] = new GUITable(table);
             _tableDisplayNames = Tables.Keys.Select(CutoffName).ToArray();
+            if (alphabetize) Sort(_tableDisplayNames);
             _displayNameToTableName = _tableDisplayNames.Zip(Tables.Keys.ToArray(),
                 (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
         }
