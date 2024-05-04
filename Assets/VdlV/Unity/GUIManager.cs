@@ -38,7 +38,7 @@ namespace VdlV.Unity {
         private const int TableSelectorToolbarWidth = 250;
         private const int SelectionGridWidth = 760;
         private const int TileSize = 16;
-        private const int TableDisplayNameCutoff = 20;
+        private const int TableDisplayNameCutoff = 21;
         private const string REPLTableTitle = "REPL results";
         private const int REPLQueryWidth = 400;
         private const int QueryCenterXOffset = REPLQueryWidth / 2;
@@ -61,6 +61,8 @@ namespace VdlV.Unity {
         public static bool PoppedTable;
         public static bool ShowTilemap = true;
         public static bool ChangeTable;
+        private static bool ChangeTableNeedsScroll;
+        private static Vector2 ChangeTableScroll;
         private static bool _showTables = true;
         private static readonly Rect ChangeTablesRect = new(0, 0, ChangeTablesWidth, TopMiddleRectHeight);
         private static readonly Rect ShowTablesRect = new(ChangeTablesWidth, 0, ShowTablesWidth, TopMiddleRectHeight);
@@ -107,6 +109,7 @@ namespace VdlV.Unity {
             foreach (var table in tables) Tables[table.Name] = new GUITable(table);
             _tableDisplayNames = Tables.Keys.Select(CutoffName).ToArray();
             if (alphabetize) Sort(_tableDisplayNames);
+            ChangeTableNeedsScroll = _tableDisplayNames.Length > 150;
             _displayNameToTableName = _tableDisplayNames.Zip(Tables.Keys.ToArray(),
                 (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
         }
@@ -176,7 +179,13 @@ namespace VdlV.Unity {
                                      _displayTableToChange, DisplayTableSelector);
             _tableSelector = IndexOf(Tables.Keys.ToArray(), _activeTables[_displayTableToChange]);
             // Build the selection grid:
-            _tableSelector = SelectionGrid(SelectionGridRect(), _tableSelector, _tableDisplayNames, 5);
+            if (ChangeTableNeedsScroll) {
+                ChangeTableScroll = GUI.BeginScrollView(CappedSelectionGridRect(), ChangeTableScroll, SelectionGridRect(), false, true);
+                _tableSelector = SelectionGrid(SelectionGridRect(), _tableSelector, _tableDisplayNames, 5);
+                GUI.EndScrollView();
+            } else {
+                _tableSelector = SelectionGrid(SelectionGridRect(), _tableSelector, _tableDisplayNames, 5);
+            }
             // update the active table to change with the selected table
             if (_tableSelector != -1)
                 _activeTables[_displayTableToChange] = _displayNameToTableName[_tableDisplayNames[_tableSelector]];
@@ -289,6 +298,9 @@ namespace VdlV.Unity {
 
         private static Rect SelectionGridRect() => 
             TopMiddleRectStack(SelectionGridWidth, CeilToInt(_tableDisplayNames.Length / 5f) * TopMiddleRectHeight, 3);
+
+        private static Rect CappedSelectionGridRect() => 
+            TopMiddleRectStack(SelectionGridWidth + GUITable.ScrollbarOffset, 30 * TopMiddleRectHeight, 3);
 
         private static void BoldLabel(string label, params GUILayoutOption[] options) {
             skin.label.fontStyle = FontStyle.Bold;

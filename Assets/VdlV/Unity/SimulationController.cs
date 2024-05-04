@@ -75,7 +75,6 @@ namespace VdlV.Unity {
 
         // ReSharper disable once UnusedMember.Global
         internal void Update() {
-            // Keypress handling
             if (GetKeyDown(KeyCode.Escape)) {
                 _simulationRunning = !_simulationRunning;
                 _runningBeforeREPL = _simulationRunning;

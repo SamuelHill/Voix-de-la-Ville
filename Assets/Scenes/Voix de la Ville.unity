@@ -243,6 +243,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SiftingEnabled: 0
   RecordPerformanceData: 0
+  AlphabeticalTables: 0
   PrettyNamesOnly: 1
   TownCenter: {x: 12, y: 0}
   Tilemap: {fileID: 1000091122}

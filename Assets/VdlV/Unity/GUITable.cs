@@ -27,7 +27,7 @@ namespace VdlV.Unity {
         private const int LabelHeight = 16; // same as fontSize + padding
         private const int TablePadding = 8; // using height padding for left side offset as well
         private const int DefaultTableHeight = 260; // (260 * 4) + (8 * 5) = 1080...
-        private const int ScrollbarOffset = 20;
+        internal const int ScrollbarOffset = 20;
         private const int DefaultNumRowsToDisplay = (DefaultTableHeight - TablePadding) / LabelHeight - 5;
         // - 5 from display rows; two for the bold title and header row, and three to not get cutoff/crowd the space
         // this could probably be calculated dynamically based on label margins but for now this offset math is good enough.
