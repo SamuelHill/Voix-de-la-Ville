@@ -28,6 +28,7 @@ namespace VdlV.Simulator {
     using static Sex;
     using static TimeOfDay;
     using static VitalStatus;
+    using static CauseOfDeath;
     // "Utils" (Utilities and Time)
     using static BindingList;    // Parameters for name generation
     using static Calendar;       // Prob per interval type
@@ -136,8 +137,16 @@ namespace VdlV.Simulator {
             Aptitude.Initially[person, job, RandomNormalSByte].Where(PrimordialBeing, Jobs);
             Aptitude.Add[person, job, RandomNormalSByte].If(Character.Add, Jobs);
 
-            Character.EndWhen(AgeOf, age > 60, PerMonth(0.003f))
+            var CauseOfDeath = Character.Features("CauseOfDeath", causeOfDeath.Indexed);
+            var DieOfOldAge = Event("DieOfOldAge", person).OccursWhen(Character[person], AgeOf, age > 60, PerMonth(0.003f));
+            var DieMidLife = Event("DieMidLife", person).OccursWhen(Character[person], AgeOf, age > 18, age <= 60, PerMonth(0.001f));
+
+            Character.EndWhen(DieOfOldAge)
+                     .EndWhen(DieMidLife)
                      .EndCauses(Set(Character.Attributes, person, vitalStatus, Dead));
+            
+            CauseOfDeath.Add[person, OldAge].If(DieOfOldAge);
+            CauseOfDeath.Add[person, causeOfDeath].If(DieMidLife, RandomElement(CausesOfDeathNotOld, causeOfDeath));
 
             var Drifter = Predicate("Drifter", person, sex, sexuality);
             Drifter[person, RandomSex, sexuality].If(PerYear(0.05f), RandomPerson, RandomSexuality[sex, sexuality]);

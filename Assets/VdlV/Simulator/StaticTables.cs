@@ -15,6 +15,7 @@ namespace VdlV.Simulator {
     using static Generators;
     using static LocationType;
     using static InteractionType;
+    using static CauseOfDeath;
     using static SaveManager;
     using static Variables;
 
@@ -31,6 +32,8 @@ namespace VdlV.Simulator {
         // ***************************************** Enums ****************************************
         public static TablePredicate<Facet> Facets;
         public static TablePredicate<Vocation> Jobs;
+        public static TablePredicate<CauseOfDeath> CausesOfDeath;
+        public static TablePredicate<CauseOfDeath> CausesOfDeathNotOld;
 
         // ************************************* Primordial(s) ************************************
         public static TablePredicate<Person, int, Date, Sex, Sexuality> PrimordialBeing;
@@ -64,6 +67,8 @@ namespace VdlV.Simulator {
 
             Facets = EnumTable("Facets", facet);
             Jobs = EnumTable("Jobs", job);
+            CausesOfDeath = EnumTable("CausesOfDeath", causeOfDeath);
+            CausesOfDeathNotOld = Predicate("CausesOfDeathNotOld", causeOfDeath).Initially.Where(CausesOfDeath, causeOfDeath != OldAge);
 
             PrimordialBeing = FromCsv("PrimordialBeing", CsvDataFile("agents"), person, age, dateOfBirth, sex, sexuality);
             PrimordialLocation = FromCsv("PrimordialLocation", CsvDataFile("locations"), location, locationType, position, founding);

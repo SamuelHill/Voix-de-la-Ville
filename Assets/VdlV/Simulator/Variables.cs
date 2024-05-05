@@ -41,6 +41,7 @@ namespace VdlV.Simulator {
         public static readonly Var<VitalStatus> vitalStatus = (Var<VitalStatus>)"vitalStatus";
         public static readonly Var<Facet> facet = (Var<Facet>)"facet";
         public static readonly Var<Vocation> job = (Var<Vocation>)"job";
+        public static readonly Var<CauseOfDeath> causeOfDeath = (Var<CauseOfDeath>)"causeOfDeath";
 
         public static readonly Var<Date> conception = (Var<Date>)"conception";
         public static readonly Var<Date> dateOfBirth = (Var<Date>)"dateOfBirth";
