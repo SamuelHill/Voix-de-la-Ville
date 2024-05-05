@@ -52,6 +52,7 @@ namespace VdlV.Unity {
         private static readonly Dictionary<string, GUITable> Tables = new();
         private static Dictionary<string, string> _displayNameToTableName = new();
         private static string[] _tableDisplayNames;
+        private static string[] _tableKeys;
 
         private static readonly string[] DisplayTableSelector = { "Table 1", "Table 2", "Table 3", "Table 4" };
         private static string[] _activeTables;  // should also be a string[4]
@@ -109,10 +110,12 @@ namespace VdlV.Unity {
         public static void AvailableTables(IEnumerable<TablePredicate> tables) {
             foreach (var table in tables) Tables[table.Name] = new GUITable(table);
             _tableDisplayNames = Tables.Keys.Select(CutoffName).ToArray();
+            _tableKeys = Tables.Keys.ToArray();
             ChangeTableNeedsScroll = _tableDisplayNames.Length > 150;
-            _displayNameToTableName = _tableDisplayNames.Zip(Tables.Keys.ToArray(),
-                (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
-            //if (AlphabetizeTables) Sort(_tableDisplayNames);
+            _displayNameToTableName = _tableDisplayNames.Zip(_tableKeys, (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
+            if (!AlphabetizeTables) return;
+            Sort(_tableDisplayNames);
+            Sort(_tableKeys);
         }
         public static void ActiveTables(string[] activeTables) => _activeTables = activeTables;
 
@@ -178,7 +181,7 @@ namespace VdlV.Unity {
             // If we are trying to change tables:
             _displayTableToChange = Toolbar(TopMiddleRectStack(TableSelectorToolbarWidth, 2),
                                      _displayTableToChange, DisplayTableSelector);
-            _tableSelector = IndexOf(Tables.Keys.ToArray(), _activeTables[_displayTableToChange]);
+            _tableSelector = IndexOf(_tableKeys, _activeTables[_displayTableToChange]);
             // Build the selection grid:
             var selectionGridRect = SelectionGridRect();
             if (ChangeTableNeedsScroll) {
