@@ -75,6 +75,7 @@ namespace VdlV.Unity {
 
         // ReSharper disable once UnusedMember.Global
         internal void Update() {
+            // Keyboard inputs:
             if (GetKeyDown(KeyCode.Escape)) {
                 _simulationRunning = !_simulationRunning;
                 _runningBeforeREPL = _simulationRunning;
@@ -94,12 +95,14 @@ namespace VdlV.Unity {
                 _simulationRunning = false;
                 SavingWithName = true;
             }
+            // Update simulation:
             if (!_simulationRunning && !_simulationSingleStep) return;
             try { UpdateSimulator(); } catch (Exception e) {
                 Debug.LogException(e);
                 _simulationRunning = false;
                 throw;
             }
+            // Side effects of simulation update:
             ProcessLots();
             if (SiftingEnabled) {
                 if (_runStepCode.PauseOnDeath() || _runStepCode.PauseOnMarriage()) _simulationRunning = false;
