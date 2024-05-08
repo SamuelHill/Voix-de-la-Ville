@@ -1,11 +1,12 @@
+# Date
 PrintDate: [CurrentDate 0 ?date] ?date/Write
 
+# Gossip - love triangle or birth
 [randomly]
-
 Gossip: 
     [MonthlyRomance ?person1 ?person2 ?interaction1]
     [MonthlyRomance ?person2 ?person3 ?interaction2]
-    [PrintDate] ?person2 is sleeping with both ?person1 and ?person3!
+    ?person2 is sleeping with both ?person1 and ?person3!
 [end]
 Gossip: 
     [CharacterStart ?person]
@@ -14,45 +15,47 @@ Gossip:
     [Not [= ?parent1 ?parent2]]
     ?parent1 and ?parent2 just had a baby! [PosPronoun ?person] name is ?person!
 [end]
+Gossip:
+    Nothing happened...
+[end]
 
-# Look more into death - cause of death in sim
-# Cause - enumtype if shot/stabbed, see "KilledBy"
-# natural causes / accidents / murder / suicide
+
+# Death - TODO variable not found? + parents
 Death: 
     [CharacterEnd ?person]
 # [Parent ?parent1 ?person]
 # [Parent ?parent2 ?person]
     [CauseOfDeath ?person ?cause]
+    [Log ?cause]
     [DescribeDeath ?person ?cause]
 # [PosPronoun ?person] was born to ?parent1 and ?parent2.
 [end]
 
+DescribeDeath ?person OldAge: ?person passed away peacefully today.
+DescribeDeath ?person Stabbed: ?person was found stabbed today!
+DescribeDeath ?person HeartAttack: ?person had a heart attack and passed away...
+DescribeDeath ?person Shot: There was a shootout and ?person got hit and died on the spot!
+DescribeDeath ?person StruckByLightning: ?person got hit by lighting! He did not turn into the Flash...
 
 
-DescribeDeath ?person stabbed: ?person was found stabbed today!
-DescribeDeath ?person heart_attack: ?person had a heart attack and passed away...
-DescribeDeath ?person shot: There was a shootout and ?person got hit and died on the spot!
-DescribeDeath ?person lightning_strike: ?person got hit by lighting! He did not turn into the Flash...
-
+# Marriage
 Marriage:
     [Lover__add ?pair ?person1 ?person2 ?state]
     ?person1 just married ?person2!
 [end]
 
-# [randomly]
+
+# Newspaper
 Newspaper:
     [CharacterEnd ?person]
-    
-    The town lost someone today. [DescribeDeath ?person ?cause] In other news, an anonymous source informed us that recently [Gossip]
+    [PrintDate] The town lost someone today. [DescribeDeath ?person ?cause] In other news, an anonymous source informed us that recently [Gossip]
 [end]
 Newspaper:
-    Did everyone hear [Gossip]
+    [PrintDate] Did everyone hear [Gossip]
 [end]
 
-# Gossip: Nothing happened...
 
-# Ask Sam employment
-
+# Predicates
 
 [predicate]
 MonthlyRomance ?person1 ?person2 ?interaction: [Monthly ?person1 ?person2 ?interaction ?] [RomanticInteractions ?interactionType]
@@ -67,15 +70,21 @@ Pronoun ?person: [Female ?person] she
 PosPronoun ?person: [Male ?person] his
 PosPronoun ?person: [Female ?person] her
 
-[predicate]
-CauseOfDeath ?person ?cause: [PossibleCauseOfDeath ?cause]
 
+# Hardcoded cause of death
+# [predicate]
+# CauseOfDeath ?person ?cause: [PossibleCauseOfDeath ?cause]
+
+# [randomly]
+# PossibleCauseOfDeath heart_attack.    
+# PossibleCauseOfDeath shot.
+# PossibleCauseOfDeath stabbed.
+# PossibleCauseOfDeath lightning_strike.
+
+
+
+# Not using this
 # [predicate]
 # CauseOfDeath ?person ?cause: [RememberedCauseOfDeath ?person ?cause]
 # CauseOfDeath ?person ?cause: [NotAny [RememberedCauseOfDeath ?person ?]] [PossibleCauseOfDeath ?person ?cause] [now [RememberedCauseOfDeath ?person ?cause]]
 # function RememberedCauseOfDeath ?person ?cause.
-[randomly]
-PossibleCauseOfDeath heart_attack.    
-PossibleCauseOfDeath shot.
-PossibleCauseOfDeath stabbed.
-PossibleCauseOfDeath lightning_strike.
