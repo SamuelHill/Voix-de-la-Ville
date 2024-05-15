@@ -26,13 +26,15 @@ Death:
 # [Parent ?parent1 ?person]
 # [Parent ?parent2 ?person]
     [CauseOfDeath ?person ?cause]
-    [Log ?cause]
     [DescribeDeath ?person ?cause]
 # [PosPronoun ?person] was born to ?parent1 and ?parent2.
 [end]
 
+[randomly]
 DescribeDeath ?person OldAge: ?person passed away peacefully today.
+DescribeDeath ?person OldAge: ?person passed away, surrounded by loved ones.
 DescribeDeath ?person Stabbed: ?person was found stabbed today!
+DescribeDeath ?person Stabbed: ?person got stabbed by someone!
 DescribeDeath ?person HeartAttack: ?person had a heart attack and passed away...
 DescribeDeath ?person Shot: There was a shootout and ?person got hit and died on the spot!
 DescribeDeath ?person StruckByLightning: ?person got hit by lighting! He did not turn into the Flash...
@@ -48,7 +50,11 @@ Marriage:
 # Newspaper
 Newspaper:
     [CharacterEnd ?person]
-    [PrintDate] The town lost someone today. [DescribeDeath ?person ?cause] In other news, an anonymous source informed us that recently [Gossip]
+    [PrintDate] [DescribeDeath ?person ?cause] In other news, an anonymous source informed us that recently [Gossip]
+[end]
+Newspaper:
+    [Lover__add ?pair ?person1 ?person2 ?state]
+    [PrintDate] ?person1 just married ?person2! In other news, an anonymous source informed us that recently [Gossip]
 [end]
 Newspaper:
     [PrintDate] Did everyone hear [Gossip]

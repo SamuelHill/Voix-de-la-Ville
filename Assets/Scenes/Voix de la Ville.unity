@@ -241,7 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6810649d7fdd32e448180772fd59a960, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SiftingEnabled: 0
+  SiftingEnabled: 1
   RecordPerformanceData: 0
   AlphabeticalTables: 1
   PrettyNamesOnly: 1

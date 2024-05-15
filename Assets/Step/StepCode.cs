@@ -32,6 +32,11 @@ namespace VdlV.Step {
             Module["FemaleSex"] = Sex.Female;
             Module["CurrentDate"] = new SimpleFunction<int, string>("CurrentDate", _ => Date().ToString());
             Module["Log"] = new SimplePredicate<object>("Log", o => { Log(o); return true; });
+            foreach (var Cause in (typeof(CauseOfDeath).GetEnumValues()))
+            {
+                Module[typeof(CauseOfDeath).GetEnumName(Cause)] = Cause;
+            }
+            
         }
 
         private static IEnumerable<object[]> TableRowsInRandomOrder(TablePredicate predicate) {
