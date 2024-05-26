@@ -393,7 +393,7 @@ namespace VdlV.Simulator {
             NewPlace.If(Multiple, NameLocation);
 
             // Houses whenever there is a need for housing
-            Multiple[House].If(Once[WantToMove[__] | Unhoused[__]]);
+            Multiple[House].If((Once[WantToMove[__] | Unhoused[__]]), !Once[UnderOccupied[__]]);
             
             // Needs the !NumLocations check as CountsBy won't have a row for a type with 0 occurrences
             var BelowPerCapita = Definition("BelowPerCapita", locationType, perCapita)
@@ -494,7 +494,7 @@ namespace VdlV.Simulator {
             WhereTheyAt[person, StayingIn, location].If(Character.Start[person], Embryo[person],
                 Embryo.Attributes[person, woman, __, __, __], Housing[woman, location]);
 
-            //WhereTheyAt.Problem("Not everyone moved").If(Character[person], !WhereTheyAt[person, __, __]);
+            WhereTheyAt.Problem("Not everyone moved").If(Character[person], !WhereTheyAt[person, __, __]);
 
             // ********************************************* Interactions: ********************************************
 
