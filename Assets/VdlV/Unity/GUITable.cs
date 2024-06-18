@@ -293,7 +293,7 @@ namespace VdlV.Unity {
                     Update();
                     _oldScroll = _scrollPosition;
                 }
-                _usingScroll = true; // Only needs to be set to true once, this is faster than a branch
+                _usingScroll = true; // Only needs to be set to true once
             } else if (RowCountChanged() || CheckForUpdate()) Update();
             EndHorizontal(); // Table contents and scroll bar
             EndArea();
